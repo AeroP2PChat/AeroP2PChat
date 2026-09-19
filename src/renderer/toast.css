@@ -1,7 +1,7 @@
 :root {
-  --background: #09090b;
+  --background: #313338;
   --foreground: #fafafa;
-  --border: #27272a;
+  --border: #41434a;
   --muted: #a1a1aa;
   --radius: 8px;
   --accent: #2563eb;
@@ -17,6 +17,11 @@
   text-shadow: none !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+}
+
+body.ultra-dark-theme {
+  --background: #000000;
+  --border: #242424;
 }
 
 body.light-theme {

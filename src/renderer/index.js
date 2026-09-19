@@ -208,6 +208,7 @@ const welcomeNickname = document.querySelector("#welcome-nickname");
 const welcomeThemeSystem = document.querySelector("#welcome-theme-system");
 const welcomeThemeLight = document.querySelector("#welcome-theme-light");
 const welcomeThemeDark = document.querySelector("#welcome-theme-dark");
+const welcomeThemeUltraDark = document.querySelector("#welcome-theme-ultra-dark");
 const welcomeAccentColorSelect = document.querySelector(
   "#welcome-accent-color-select",
 );
@@ -285,6 +286,7 @@ if (profileSettingsMount && profilePanel) {
 }
 const themeLight = document.querySelector("#theme-light");
 const themeDark = document.querySelector("#theme-dark");
+const themeUltraDark = document.querySelector("#theme-ultra-dark");
 const themeSystem = document.querySelector("#theme-system");
 const accentColorSelect = document.querySelector("#accent-color-select");
 const customAccentColorInput = document.querySelector("#custom-accent-color");
@@ -2277,7 +2279,7 @@ function normalizeAppSettings() {
     )
       ? appConfig.appSettings.presenceStatus
       : "online",
-    theme: ["system", "light", "dark"].includes(appConfig.appSettings.theme)
+    theme: ["system", "light", "dark", "ultra-dark"].includes(appConfig.appSettings.theme)
       ? appConfig.appSettings.theme
       : "system",
     accentColor: ["system", "aero", "violet", "green", "rose", "amber", "custom"].includes(
@@ -2373,7 +2375,7 @@ function resolveAppTheme(theme = "system") {
   if (theme === "system") {
     return systemThemeQuery.matches ? "dark" : "light";
   }
-  return theme === "dark" ? "dark" : "light";
+  return ["dark", "ultra-dark"].includes(theme) ? theme : "light";
 }
 
 function applyAppTheme(theme = "system") {
@@ -2382,7 +2384,7 @@ function applyAppTheme(theme = "system") {
   document.body.dataset.theme = nextTheme;
   // Keep UserJot on the same setting: system follows the OS, while explicit
   // Aero themes override it.
-  window.uj?.setTheme?.(theme === "system" ? "auto" : nextTheme);
+  window.uj?.setTheme?.(theme === "system" ? "auto" : nextTheme === "light" ? "light" : "dark");
   try {
     localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
   } catch {
@@ -2658,6 +2660,7 @@ function renderWelcomeSettings() {
   welcomeThemeSystem.checked = settings.theme === "system";
   welcomeThemeLight.checked = settings.theme === "light";
   welcomeThemeDark.checked = settings.theme === "dark";
+  welcomeThemeUltraDark.checked = settings.theme === "ultra-dark";
   welcomeAccentColorSelect.value = settings.accentColor;
   welcomeCustomAccentColorInput.value = settings.customAccentColor;
   welcomeCustomAccentColorInput.classList.toggle(
@@ -2800,6 +2803,7 @@ function renderAppSettings() {
   themeSystem.checked = appConfig.appSettings.theme === "system";
   themeLight.checked = appConfig.appSettings.theme === "light";
   themeDark.checked = appConfig.appSettings.theme === "dark";
+  themeUltraDark.checked = appConfig.appSettings.theme === "ultra-dark";
   accentColorSelect.value = appConfig.appSettings.accentColor;
   customAccentColorInput.value = appConfig.appSettings.customAccentColor;
   customAccentColorInput.classList.toggle(
@@ -4038,7 +4042,7 @@ function applyCustomWallpaperStyle() {
       lightUrl,
     ),
     buildRule(
-      "html[data-theme=\"dark\"] body.chat-wallpaper-ready.has-custom-wallpaper-dark .messages,body[data-theme=\"dark\"].chat-wallpaper-ready.has-custom-wallpaper-dark .messages",
+      "html:is([data-theme=\"dark\"],[data-theme=\"ultra-dark\"]) body.chat-wallpaper-ready.has-custom-wallpaper-dark .messages,body:is([data-theme=\"dark\"],[data-theme=\"ultra-dark\"]).chat-wallpaper-ready.has-custom-wallpaper-dark .messages",
       darkUrl,
     ),
     ...(useCustomDuringBoot
@@ -4048,7 +4052,7 @@ function applyCustomWallpaperStyle() {
             lightUrl,
           ),
           buildRule(
-            "html[data-theme=\"dark\"] body.app-loading.has-custom-wallpaper-dark .boot-screen,body[data-theme=\"dark\"].app-loading.has-custom-wallpaper-dark .boot-screen",
+            "html:is([data-theme=\"dark\"],[data-theme=\"ultra-dark\"]) body.app-loading.has-custom-wallpaper-dark .boot-screen,body:is([data-theme=\"dark\"],[data-theme=\"ultra-dark\"]).app-loading.has-custom-wallpaper-dark .boot-screen",
             darkUrl,
           ),
         ]
@@ -8259,10 +8263,10 @@ function drawCallPlaceholderFrame(canvas, context) {
       .trim()
       .slice(0, 1)
       .toUpperCase() || "A";
-  const darkMode = document.body?.dataset?.theme === "dark";
-  const background = darkMode ? "#111b24" : "#eef4f7";
-  const plateBackground = darkMode ? "#182733" : "#ffffff";
-  const plateBorder = darkMode ? "#334858" : "#cfdee6";
+  const darkMode = ["dark", "ultra-dark"].includes(document.body?.dataset?.theme);
+  const background = darkMode ? (document.body.dataset.theme === "ultra-dark" ? "#000000" : "#313338") : "#eef4f7";
+  const plateBackground = darkMode ? "#383a40" : "#ffffff";
+  const plateBorder = darkMode ? "#4e5058" : "#cfdee6";
   const textColor = darkMode ? "#edf4f7" : "#122b3a";
 
   context.clearRect(0, 0, width, height);
@@ -13986,6 +13990,12 @@ welcomeThemeDark.addEventListener("change", () => {
   }
 });
 
+welcomeThemeUltraDark.addEventListener("change", () => {
+  if (welcomeThemeUltraDark.checked) {
+    saveAppSettings({ theme: "ultra-dark" });
+  }
+});
+
 welcomeAccentColorSelect.addEventListener("change", () => {
   saveAppSettings({ accentColor: welcomeAccentColorSelect.value });
 });
@@ -14231,6 +14241,12 @@ themeLight.addEventListener("change", () => {
 themeDark.addEventListener("change", () => {
   if (themeDark.checked) {
     saveAppSettings({ theme: "dark" });
+  }
+});
+
+themeUltraDark.addEventListener("change", () => {
+  if (themeUltraDark.checked) {
+    saveAppSettings({ theme: "ultra-dark" });
   }
 });
 
@@ -15185,7 +15201,7 @@ function updateFeedbackControls(enabled = isFeedbackEnabled()) {
 function getUserJotTheme() {
   return appConfig.appSettings?.theme === "system"
     ? "auto"
-    : document.documentElement.dataset.theme === "dark"
+    : ["dark", "ultra-dark"].includes(document.documentElement.dataset.theme)
       ? "dark"
       : "light";
 }
@@ -15638,6 +15654,8 @@ platformApi.onTrayAction(({ action, value }) => {
     setDebugOfflineMode(value);
   } else if (action === "set-debug-boot-simulation") {
     setBootSimulation(value);
+  } else if (action === "set-theme" && ["system", "light", "dark", "ultra-dark"].includes(value)) {
+    saveAppSettings({ theme: value });
   } else if (action === "toggle-theme") {
     appConfig.appSettings.theme = appConfig.appSettings.theme === "light" ? "dark" : "light";
     renderAppSettings();

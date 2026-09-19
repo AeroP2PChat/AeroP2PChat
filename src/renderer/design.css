@@ -4,9 +4,9 @@
     sans-serif;
   font-synthesis: none;
   --titlebar-height: 44px;
-  --canvas: #eaf1f5;
+  --canvas: #edf2f5;
   --frame: #f8fbfc;
-  --sidebar: #f1f6f8;
+  --sidebar: #f5f8fa;
   --surface: #ffffff;
   --surface-subtle: #f6f9fa;
   --surface-raised: #ffffff;
@@ -18,8 +18,8 @@
   --line-accent: #79b7ce;
   --text: #102936;
   --text-soft: #365664;
-  --muted: #6a818c;
-  --faint: #92a4ad;
+  --muted: #607581;
+  --faint: #728692;
   --on-accent: #ffffff;
   --accent: #147fa6;
   --accent-hover: #0f6d90;
@@ -44,13 +44,54 @@
   --radius-md: 13px;
   --radius-lg: 18px;
   --radius-xl: 24px;
-  --message-font-size: 13px;
+  --message-font-size: 14px;
   background: var(--canvas);
   color: var(--text);
 }
 
-html[data-theme="dark"],
-body[data-theme="dark"] {
+html:is([data-theme="dark"], [data-theme="ultra-dark"]),
+body:is([data-theme="dark"], [data-theme="ultra-dark"]) {
+  color-scheme: dark;
+  --canvas: #232428;
+  --frame: #232428;
+  --sidebar: #2b2d31;
+  --surface: #313338;
+  --surface-subtle: #2b2d31;
+  --surface-raised: #383a40;
+  --surface-hover: #404249;
+  --surface-active: #46484f;
+  --overlay: rgba(0, 0, 0, 0.65);
+  --line: #41434a;
+  --line-strong: #55575f;
+  --line-accent: #757780;
+  --text: #f2f3f5;
+  --text-soft: #dbdee1;
+  --muted: #b5bac1;
+  --faint: #949ba4;
+  --on-accent: #050505;
+  --accent: #f2f2f2;
+  --accent-hover: #ffffff;
+  --accent-pressed: #d7d7d7;
+  --accent-soft: #3b3d44;
+  --accent-soft-hover: #45474e;
+  --accent-ring: rgba(255, 255, 255, 0.14);
+  --success: #65d69b;
+  --success-soft: #0d2418;
+  --warning: #e0b15e;
+  --warning-soft: #251b0d;
+  --danger: #f07b91;
+  --danger-hover: #ff98aa;
+  --danger-soft: #2c1118;
+  --info: #9ebfe8;
+  --info-soft: #243448;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.22);
+  --shadow-md: 0 14px 38px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 28px 80px rgba(0, 0, 0, 0.52);
+}
+
+/* OLED preserves the original black Aero palette. */
+html[data-theme="ultra-dark"],
+body[data-theme="ultra-dark"] {
   color-scheme: dark;
   --canvas: #000000;
   --frame: #000000;
@@ -88,6 +129,7 @@ body[data-theme="dark"] {
   --shadow-md: 0 14px 38px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 28px 80px rgba(0, 0, 0, 0.52);
 }
+
 
 *,
 *::before,
@@ -172,15 +214,14 @@ p {
   background-size: cover;
   background-blend-mode: normal, hue, difference, normal;
 }
-html[data-theme="dark"] .boot-screen,
-body[data-theme="dark"] .boot-screen {
+html:is([data-theme="dark"], [data-theme="ultra-dark"]) .boot-screen,
+body:is([data-theme="dark"], [data-theme="ultra-dark"]) .boot-screen {
   background-image: linear-gradient(
       color-mix(in srgb, var(--surface) 32%, transparent),
       color-mix(in srgb, var(--surface) 32%, transparent)
     ),
-    linear-gradient(var(--boot-fill), var(--boot-fill)),
     url("../../assets/chat/background.png");
-  background-blend-mode: normal, hue, normal;
+  background-blend-mode: normal, luminosity;
 }
 .boot-panel {
   display: grid;
@@ -650,12 +691,12 @@ textarea,
   width: 100%;
   height: 36px;
   border: 1px solid var(--line-strong);
-  border-radius: 6px;
-  background: transparent;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
   color: var(--text);
   font-size: 14px;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: border-color 150ms ease, background-color 150ms ease;
 }
 input,
 textarea {
@@ -671,7 +712,7 @@ textarea::placeholder {
 input:hover:not(:disabled),
 select:hover:not(:disabled),
 textarea:hover:not(:disabled) {
-  border-color: var(--text-soft);
+  border-color: var(--line-accent);
 }
 input:focus,
 select:focus,
@@ -1102,7 +1143,7 @@ select.native-select {
 .peer-section-label {
   margin: 8px 5px 3px;
   color: var(--faint);
-  font-size: 9px;
+  font-size: 10px;
 }
 .peer-chip,
 .contact-item,
@@ -1123,14 +1164,14 @@ select.native-select {
   align-items: center;
   gap: 7px;
   width: 100%;
-  padding: 4px 8px;
+  padding: 8px 10px;
   text-align: left;
 }
 .contact-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 32px;
   align-items: center;
-  padding: 3px 4px 3px 5px;
+  padding: 7px 6px 7px 9px;
 }
 .contact-name {
   display: grid;
@@ -2350,7 +2391,7 @@ select.native-select {
   grid-row: 5;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 10px;
   min-height: 0;
   padding: 22px 20px 16px;
   overflow-x: hidden;
@@ -2365,8 +2406,8 @@ select.native-select {
 body.chat-wallpaper-ready .messages {
   /* Only recolor the existing hue; black, white and the image contrast stay neutral. */
   background-image: linear-gradient(
-      color-mix(in srgb, var(--surface) 18%, transparent),
-      color-mix(in srgb, var(--surface) 18%, transparent)
+      color-mix(in srgb, var(--surface) 78%, transparent),
+      color-mix(in srgb, var(--surface) 78%, transparent)
     ),
     linear-gradient(var(--accent), var(--accent)),
     linear-gradient(#ffffff, #ffffff),
@@ -2389,7 +2430,7 @@ body.wallpapers-disabled .boot-screen {
 .messages.empty::before {
   content: "Start a private conversation";
   color: var(--text);
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 760;
   letter-spacing: -0.01em;
 }
@@ -2397,7 +2438,7 @@ body.wallpapers-disabled .boot-screen {
   content: attr(data-empty);
   max-width: 320px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 550;
   line-height: 1.6;
 }
@@ -2466,7 +2507,7 @@ body.wallpapers-disabled .boot-screen {
 }
 .bubble {
   max-width: min(72%, 560px);
-  padding: 10px 12px 8px;
+  padding: 11px 14px 9px;
   border: 1px solid var(--line);
   border-radius: 15px 15px 15px 5px;
   background: var(--surface-subtle);
@@ -2482,19 +2523,18 @@ body.wallpapers-disabled .boot-screen {
 .bubble p {
   color: inherit;
   font-size: var(--message-font-size);
-  line-height: 1.45;
+  line-height: 1.6;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
-html[data-theme="dark"] body.chat-wallpaper-ready .messages,
-body[data-theme="dark"].chat-wallpaper-ready .messages {
+html:is([data-theme="dark"], [data-theme="ultra-dark"]) body.chat-wallpaper-ready .messages,
+body:is([data-theme="dark"], [data-theme="ultra-dark"]).chat-wallpaper-ready .messages {
   background-image: linear-gradient(
-      color-mix(in srgb, var(--surface) 28%, transparent),
-      color-mix(in srgb, var(--surface) 28%, transparent)
+      color-mix(in srgb, var(--surface) 52%, transparent),
+      color-mix(in srgb, var(--surface) 52%, transparent)
     ),
-    linear-gradient(var(--accent), var(--accent)),
     url("../../assets/chat/background.png");
-  background-blend-mode: normal, hue, normal;
+  background-blend-mode: normal, luminosity;
 }
 .message-link {
   color: var(--accent);
@@ -2514,9 +2554,9 @@ body[data-theme="dark"].chat-wallpaper-ready .messages {
   justify-content: flex-end;
   gap: 5px;
   min-height: 13px;
-  margin-top: 4px;
+  margin-top: 6px;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 650;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -2612,7 +2652,7 @@ body.reduce-motion *::after {
   padding: 0 90px 0 50px;
   border-radius: 14px;
   background: var(--surface-subtle);
-  font-size: 13px;
+  font-size: 14px;
 }
 #send-button,
 #voice-record-button,
@@ -3124,7 +3164,7 @@ body.reduce-motion *::after {
 }
 .welcome-theme-options {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   width: min(520px, 100%);
   gap: 12px;
 }
@@ -3666,9 +3706,14 @@ body.reduce-motion *::after {
   color: #17323f;
 }
 .welcome-theme-card.dark-preview {
-  border-color: #282828;
-  background: #090909;
+  border-color: #55575f;
+  background: #313338;
   color: #f3f3f3;
+}
+.welcome-theme-card.ultra-dark-preview {
+  border-color: #333333;
+  background: #000000;
+  color: #ededed;
 }
 .welcome-theme-options input:checked + .welcome-theme-card {
   border-color: var(--accent);
@@ -3830,7 +3875,7 @@ body.reduce-motion *::after {
 }
 .settings-nav-item {
   display: flex;
-  min-height: 34px;
+  min-height: 38px;
   align-items: center;
   gap: 9px;
   padding: 0 10px;
@@ -3855,7 +3900,7 @@ body.reduce-motion *::after {
 }
 .settings-nav-item.active {
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--text);
   box-shadow: inset 2px 0 0 var(--accent);
 }
 .settings-nav-item:active {
@@ -4325,7 +4370,7 @@ body:not(.platform-android) [data-settings-nav="feedback"] {
 }
 .theme-switcher {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 .theme-switcher label {
@@ -4356,7 +4401,7 @@ body:not(.platform-android) [data-settings-nav="feedback"] {
 .theme-switcher input:checked + span {
   border-color: var(--accent);
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--text);
   box-shadow: 0 0 0 2px var(--accent-ring);
 }
 .theme-switcher input:focus-visible + span {
@@ -6317,7 +6362,7 @@ body.platform-android .incoming-call-screen {
 }
 .sidebar-quick-actions button {
   display: inline-flex;
-  min-height: 34px;
+  min-height: 38px;
   align-items: center;
   justify-content: center;
   gap: 6px;
@@ -6326,7 +6371,7 @@ body.platform-android .incoming-call-screen {
   border-radius: var(--radius-sm);
   background: var(--surface-raised);
   color: var(--text-soft);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
 }
 .sidebar-quick-actions button:hover {
@@ -6469,14 +6514,14 @@ body.platform-android .incoming-call-screen {
 #settings-modal .settings-section button:not(.danger) {
   border-color: var(--line-accent);
   background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
+  color: var(--text);
   box-shadow: none !important;
   transform: none !important;
 }
 #settings-modal .settings-section button:not(.danger):hover:not(:disabled) {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 20%, transparent);
-  color: var(--accent);
+  color: var(--text);
   transform: none !important;
 }
 #settings-modal .settings-section button:not(.danger):active:not(:disabled) {
@@ -6507,4 +6552,33 @@ body.platform-android .incoming-call-screen {
 *:focus-visible {
   outline: 2px solid var(--accent) !important;
   outline-offset: 2px;
+}
+
+/* Keep the Aero wallpaper visible in OLED, just like the original dark theme. */
+html[data-theme="ultra-dark"] body.chat-wallpaper-ready .messages,
+body[data-theme="ultra-dark"].chat-wallpaper-ready .messages {
+  background-image: linear-gradient(
+      color-mix(in srgb, var(--surface) 28%, transparent),
+      color-mix(in srgb, var(--surface) 28%, transparent)
+    ),
+    linear-gradient(var(--accent), var(--accent)),
+    url("../../assets/chat/background.png");
+  background-blend-mode: normal, hue, normal;
+}
+html[data-theme="ultra-dark"] .boot-screen,
+body[data-theme="ultra-dark"] .boot-screen {
+  background-image: linear-gradient(
+      color-mix(in srgb, var(--surface) 32%, transparent),
+      color-mix(in srgb, var(--surface) 32%, transparent)
+    ),
+    linear-gradient(var(--boot-fill), var(--boot-fill)),
+    url("../../assets/chat/background.png");
+  background-blend-mode: normal, hue, normal;
+}
+
+@media (max-width: 700px) {
+  .theme-switcher,
+  .welcome-theme-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

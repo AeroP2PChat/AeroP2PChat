@@ -1012,7 +1012,7 @@ function normalizeConfig(config = {}) {
     )
       ? settings.presenceStatus
       : "online",
-    theme: ["system", "light", "dark"].includes(settings.theme)
+    theme: ["system", "light", "dark", "ultra-dark"].includes(settings.theme)
       ? settings.theme
       : "system",
     customTheme: isThemeFileName(settings.customTheme)
@@ -1648,10 +1648,16 @@ function updateTrayMenu() {
       label: "Quick Settings",
       submenu: [
         {
-          label: "Dark Mode",
-          type: "checkbox",
-          checked: trayState.theme === "dark",
-          click: () => sendTrayAction("toggle-theme"),
+          label: "Theme",
+          submenu: [
+            ["system", "System"], ["light", "Light"],
+            ["dark", "Dark"], ["ultra-dark", "OLED"],
+          ].map(([value, label]) => ({
+            label,
+            type: "radio",
+            checked: trayState.theme === value,
+            click: () => sendTrayAction("set-theme", value),
+          })),
         },
         {
           label: "Launch on Startup",
@@ -2663,8 +2669,8 @@ function createWindow({ hidden = false } = {}) {
       ? nativeTheme.shouldUseDarkColors
         ? "dark"
         : "light"
-      : savedTheme === "dark"
-      ? "dark"
+      : ["dark", "ultra-dark"].includes(savedTheme)
+      ? savedTheme
       : "light";
   const savedAccent = appConfig?.appSettings?.accentColor || "system";
   let initialAccent = bootAccentPresets[savedAccent] || bootAccentPresets.aero;
@@ -2695,7 +2701,7 @@ function createWindow({ hidden = false } = {}) {
     backgroundMaterial: "none",
     transparent: false,
     titleBarStyle: "hidden",
-    backgroundColor: initialTheme === "dark" ? "#000000" : "#eef4f7",
+    backgroundColor: initialTheme === "ultra-dark" ? "#000000" : initialTheme === "dark" ? "#232428" : "#eef4f7",
     autoHideMenuBar: true,
     show: !hidden,
     webPreferences: {

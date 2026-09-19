@@ -11,14 +11,14 @@
         const parameters = new URLSearchParams(window.location.search);
         const requestedTheme = parameters.get("theme");
         const requestedAccent = parameters.get("accent");
-        let theme = ["light", "dark"].includes(requestedTheme)
+        let theme = ["light", "dark", "ultra-dark"].includes(requestedTheme)
           ? requestedTheme
           : null;
 
         if (!theme) {
           try {
             const storedTheme = localStorage.getItem("aero-p2p-chat.theme");
-            theme = ["light", "dark"].includes(storedTheme)
+            theme = ["light", "dark", "ultra-dark"].includes(storedTheme)
               ? storedTheme
               : null;
           } catch {
@@ -37,7 +37,7 @@
     </script>
     <style>
       :root {
-        --boot-bg: #eaf1f5;
+        --boot-bg: #edf2f5;
         --boot-panel: #ffffff;
         --boot-line: #d7e2e7;
         --boot-text: #102936;
@@ -49,14 +49,23 @@
         font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
       }
 
-      html[data-theme="dark"] {
+      html:is([data-theme="dark"], [data-theme="ultra-dark"]) {
+        --boot-bg: #232428;
+        --boot-panel: #313338;
+        --boot-line: #41434a;
+        --boot-text: #f2f3f5;
+        --boot-muted: #b5bac1;
+        --boot-track: #41434a;
+        --boot-fill: #f2f2f2;
+      }
+
+      html[data-theme="ultra-dark"] {
         --boot-bg: #000000;
         --boot-panel: #0a0a0a;
         --boot-line: #242424;
+        --boot-track: #242424;
         --boot-text: #f5f5f5;
         --boot-muted: #9a9a9a;
-        --boot-track: #242424;
-        --boot-fill: #f2f2f2;
       }
 
       html,
@@ -101,15 +110,14 @@
         background-blend-mode: normal, hue, difference, normal;
       }
 
-      html[data-theme="dark"] .boot-screen {
+      html:is([data-theme="dark"], [data-theme="ultra-dark"]) .boot-screen {
         background-image:
           linear-gradient(
             color-mix(in srgb, var(--boot-bg) 32%, transparent),
             color-mix(in srgb, var(--boot-bg) 32%, transparent)
           ),
-          linear-gradient(var(--boot-fill), var(--boot-fill)),
-          url("../../assets/chat/background.png");
-        background-blend-mode: normal, hue, normal;
+                url("../../assets/chat/background.png");
+        background-blend-mode: normal, luminosity;
       }
 
       .boot-panel {
@@ -124,7 +132,7 @@
         box-shadow: 0 12px 32px rgba(18, 45, 58, 0.12);
       }
 
-      html[data-theme="dark"] .boot-panel {
+      html:is([data-theme="dark"], [data-theme="ultra-dark"]) .boot-panel {
         box-shadow: 0 18px 46px rgba(0, 0, 0, 0.72);
       }
 
@@ -232,6 +240,17 @@
           opacity: 0;
         }
       }
+      html[data-theme="ultra-dark"] .boot-screen {
+        background-image:
+          linear-gradient(
+            color-mix(in srgb, var(--boot-bg) 32%, transparent),
+            color-mix(in srgb, var(--boot-bg) 32%, transparent)
+          ),
+          linear-gradient(var(--boot-fill), var(--boot-fill)),
+          url("../../assets/chat/background.png");
+        background-blend-mode: normal, hue, normal;
+      }
+
     </style>
     <script type="module" src="/index.js"></script>
   </head>
@@ -1091,6 +1110,7 @@
                 <label><input id="welcome-theme-system" type="radio" name="welcome-theme" value="system" /><span class="welcome-theme-card system-preview"><i class="fa-solid fa-desktop" aria-hidden="true"></i><strong>System</strong></span></label>
                 <label><input id="welcome-theme-light" type="radio" name="welcome-theme" value="light" /><span class="welcome-theme-card light-preview"><strong>Light</strong></span></label>
                 <label><input id="welcome-theme-dark" type="radio" name="welcome-theme" value="dark" /><span class="welcome-theme-card dark-preview"><strong>Dark</strong></span></label>
+                <label><input id="welcome-theme-ultra-dark" type="radio" name="welcome-theme" value="ultra-dark" /><span class="welcome-theme-card ultra-dark-preview"><strong>OLED</strong></span></label>
               </div>
               <label class="welcome-accent-field"><span>Accent color</span><select id="welcome-accent-color-select"><option value="system">System accent</option><option value="aero">Aero blue</option><option value="violet">Violet</option><option value="green">Green</option><option value="rose">Rose</option><option value="amber">Amber</option><option value="custom">Custom color</option></select><input id="welcome-custom-accent-color" class="hidden" type="color" value="#147fa6" aria-label="Custom accent color" /></label>
             </div>
@@ -1260,6 +1280,7 @@
                     <label><input id="theme-system" type="radio" name="theme" value="system" /><span><i class="fa-solid fa-desktop" aria-hidden="true"></i>System</span></label>
                     <label><input id="theme-light" type="radio" name="theme" value="light" /><span><i class="fa-solid fa-sun" aria-hidden="true"></i>Light</span></label>
                     <label><input id="theme-dark" type="radio" name="theme" value="dark" /><span><i class="fa-solid fa-moon" aria-hidden="true"></i>Dark</span></label>
+                    <label><input id="theme-ultra-dark" type="radio" name="theme" value="ultra-dark" /><span><i class="fa-solid fa-moon" aria-hidden="true"></i>OLED</span></label>
                   </div>
                   <label class="settings-field">
                     <span>Accent color</span>

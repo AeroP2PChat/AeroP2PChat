@@ -145,10 +145,10 @@ async function applyMobileSystemTheme(theme) {
     return;
   }
 
-  const dark = theme === "dark";
+  const dark = theme === "dark" || theme === "ultra-dark";
   await StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light });
   if (getCapacitorPlatform() === "android") {
-    await StatusBar.setBackgroundColor({ color: dark ? "#000000" : "#eaf1f5" });
+    await StatusBar.setBackgroundColor({ color: theme === "ultra-dark" ? "#000000" : dark ? "#232428" : "#eaf1f5" });
   }
 }
 

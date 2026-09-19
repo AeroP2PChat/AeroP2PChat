@@ -104,7 +104,7 @@ function showToast(details) {
   } = details;
 
   // Apply theme
-  document.body.className = theme === "light" ? "light-theme" : "";
+  document.body.className = theme === "light" ? "light-theme" : theme === "ultra-dark" ? "ultra-dark-theme" : "";
 
   // Enforce max 1 toast at a time: close all currently active toasts instantly without animation
   // This prevents the window from temporarily expanding to fit 2 toasts, which causes a visual jump.
