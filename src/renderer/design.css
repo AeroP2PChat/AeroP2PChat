@@ -52,47 +52,6 @@
 html:is([data-theme="dark"], [data-theme="ultra-dark"]),
 body:is([data-theme="dark"], [data-theme="ultra-dark"]) {
   color-scheme: dark;
-  --canvas: #232428;
-  --frame: #232428;
-  --sidebar: #2b2d31;
-  --surface: #313338;
-  --surface-subtle: #2b2d31;
-  --surface-raised: #383a40;
-  --surface-hover: #404249;
-  --surface-active: #46484f;
-  --overlay: rgba(0, 0, 0, 0.65);
-  --line: #41434a;
-  --line-strong: #55575f;
-  --line-accent: #757780;
-  --text: #f2f3f5;
-  --text-soft: #dbdee1;
-  --muted: #b5bac1;
-  --faint: #949ba4;
-  --on-accent: #050505;
-  --accent: #f2f2f2;
-  --accent-hover: #ffffff;
-  --accent-pressed: #d7d7d7;
-  --accent-soft: #3b3d44;
-  --accent-soft-hover: #45474e;
-  --accent-ring: rgba(255, 255, 255, 0.14);
-  --success: #65d69b;
-  --success-soft: #0d2418;
-  --warning: #e0b15e;
-  --warning-soft: #251b0d;
-  --danger: #f07b91;
-  --danger-hover: #ff98aa;
-  --danger-soft: #2c1118;
-  --info: #9ebfe8;
-  --info-soft: #243448;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.22);
-  --shadow-md: 0 14px 38px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 28px 80px rgba(0, 0, 0, 0.52);
-}
-
-/* OLED preserves the original black Aero palette. */
-html[data-theme="ultra-dark"],
-body[data-theme="ultra-dark"] {
-  color-scheme: dark;
   --canvas: #000000;
   --frame: #000000;
   --sidebar: #050505;
@@ -128,6 +87,47 @@ body[data-theme="ultra-dark"] {
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.22);
   --shadow-md: 0 14px 38px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 28px 80px rgba(0, 0, 0, 0.52);
+}
+
+/* OLED keeps every resting surface truly black; only interaction states lift. */
+html[data-theme="ultra-dark"],
+body[data-theme="ultra-dark"] {
+  color-scheme: dark;
+  --canvas: #000000;
+  --frame: #000000;
+  --sidebar: #000000;
+  --surface: #000000;
+  --surface-subtle: #000000;
+  --surface-raised: #000000;
+  --surface-hover: #101010;
+  --surface-active: #181818;
+  --overlay: rgba(0, 0, 0, 0.92);
+  --line: #181818;
+  --line-strong: #303030;
+  --line-accent: #525252;
+  --text: #f5f5f5;
+  --text-soft: #d0d0d0;
+  --muted: #9a9a9a;
+  --faint: #707070;
+  --on-accent: #050505;
+  --accent: #f2f2f2;
+  --accent-hover: #ffffff;
+  --accent-pressed: #d7d7d7;
+  --accent-soft: #141414;
+  --accent-soft-hover: #202020;
+  --accent-ring: rgba(255, 255, 255, 0.14);
+  --success: #65d69b;
+  --success-soft: #0d2418;
+  --warning: #e0b15e;
+  --warning-soft: #251b0d;
+  --danger: #f07b91;
+  --danger-hover: #ff98aa;
+  --danger-soft: #2c1118;
+  --info: #c7c7c7;
+  --info-soft: #121212;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
 }
 
 
