@@ -13154,7 +13154,11 @@ function selectSettingsPage(page = "appearance") {
   for (const item of settingsNavItems) {
     const active = item.dataset.settingsNav === selectedPage;
     item.classList.toggle("active", active);
-    item.setAttribute("aria-current", active ? "page" : "false");
+    if (active) {
+      item.setAttribute("aria-current", "page");
+    } else {
+      item.removeAttribute("aria-current");
+    }
   }
   const pageChanged = activeSettingsPage !== selectedPage;
   let selectedSection = null;
@@ -13432,7 +13436,7 @@ function openSettings(focusContactId = "") {
   renderContactNicknameList(focusContactId);
   renderBlockedList();
   clearSettingsSearch();
-  selectSettingsPage(focusContactId ? "contacts" : "appearance");
+  selectSettingsPage(focusContactId ? "contacts" : activeSettingsPage || "appearance");
   settingsModal.classList.remove("hidden");
   if (focusContactId) {
     requestAnimationFrame(() => {
@@ -15298,6 +15302,26 @@ for (const item of settingsNavItems) {
   item.addEventListener("click", () => {
     clearSettingsSearch();
     selectSettingsPage(item.dataset.settingsNav);
+  });
+  item.addEventListener("keydown", (event) => {
+    if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+      return;
+    }
+    const visibleItems = settingsNavItems.filter(
+      (candidate) => getComputedStyle(candidate).display !== "none",
+    );
+    const currentIndex = visibleItems.indexOf(item);
+    const nextIndex = event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? visibleItems.length - 1
+        : (currentIndex + (["ArrowDown", "ArrowRight"].includes(event.key) ? 1 : -1) + visibleItems.length) % visibleItems.length;
+    const nextItem = visibleItems[nextIndex];
+    if (!nextItem) return;
+    event.preventDefault();
+    clearSettingsSearch();
+    selectSettingsPage(nextItem.dataset.settingsNav);
+    nextItem.focus();
   });
 }
 

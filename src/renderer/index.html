@@ -1190,7 +1190,10 @@
     >
       <section class="modal-panel">
         <header class="modal-header">
-          <h2 id="settings-title">Settings</h2>
+          <div class="settings-modal-title">
+            <span>Preferences</span>
+            <h2 id="settings-title">Settings</h2>
+          </div>
           <div class="settings-search" role="search">
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
             <input
@@ -1202,12 +1205,13 @@
               aria-label="Search settings"
               aria-controls="settings-search-results"
             />
+            <kbd aria-hidden="true">Ctrl K</kbd>
             <button id="settings-search-clear" class="settings-search-clear hidden" type="button" aria-label="Clear settings search">
               <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
           </div>
-          <button id="settings-close" class="ghost-button" type="button">
-            Close
+          <button id="settings-close" class="ghost-button icon-only-button" type="button" aria-label="Close settings" title="Close">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
           </button>
         </header>
         <div class="settings-layout">
@@ -1268,11 +1272,11 @@
           <section id="settings-search-results" class="settings-search-results hidden" aria-live="polite" aria-label="Settings search results"></section>
           <div class="settings-column">
             <section class="settings-section" data-settings-page="profile">
-              <h3>Profile</h3>
+              <div class="settings-page-heading"><div><h3>Profile</h3><p>Choose how you appear to your contacts.</p></div></div>
               <div id="profile-settings-mount"></div>
             </section>
             <section class="settings-section" data-settings-page="appearance">
-              <h3>Appearance</h3>
+              <div class="settings-page-heading"><div><h3>Appearance</h3><p>Personalize Aero and make conversations easier to read.</p></div></div>
               <div class="appearance-settings-stack">
                 <div class="appearance-settings-group">
                   <div class="appearance-settings-heading"><h4>Theme</h4></div>
@@ -1320,7 +1324,7 @@
             </section>
 
             <section class="settings-section" data-settings-page="themes">
-              <h3>Themes</h3>
+              <div class="settings-page-heading"><div><h3>Themes</h3><p>Manage local styles and themes from trusted online sources.</p></div></div>
               <div class="theme-tabs" role="tablist" aria-label="Theme source">
                 <button class="theme-tab active" type="button" role="tab" aria-selected="true" data-theme-tab="local">Installed</button>
                 <button class="theme-tab" type="button" role="tab" aria-selected="false" data-theme-tab="online">Online</button>
@@ -1365,7 +1369,7 @@
             </section>
 
             <section class="settings-section" data-settings-page="general">
-              <h3>System</h3>
+              <div class="settings-page-heading"><div><h3>System</h3><p>Control how Aero starts, closes, and integrates with your device.</p></div></div>
               <div class="general-settings-stack">
                 <div class="general-settings-group">
                   <div class="general-settings-heading"><h4>Startup</h4></div>
@@ -1402,7 +1406,7 @@
             </section>
 
             <section class="settings-section" data-settings-page="updates">
-              <h3>Updates</h3>
+              <div class="settings-page-heading"><div><h3>Updates</h3><p>Keep Aero current and choose how new versions are delivered.</p></div></div>
               <div class="update-settings-stack">
                 <p id="update-platform-note" class="settings-help update-platform-note"></p>
                 <div class="update-settings-group">
@@ -1433,7 +1437,7 @@
             </section>
 
             <section class="settings-section" data-settings-page="notifications">
-              <h3>Notifications</h3>
+              <div class="settings-page-heading"><div><h3>Notifications</h3><p>Decide when Aero may get your attention and what it reveals.</p></div></div>
               <div class="notification-settings-stack">
                 <div class="notification-settings-group">
                   <div class="notification-settings-heading"><h4>Desktop notifications</h4></div>
@@ -1471,7 +1475,7 @@
             </section>
 
             <section class="settings-section" data-settings-page="sounds">
-              <h3>Sounds</h3>
+              <div class="settings-page-heading"><div><h3>Sounds</h3><p>Configure alerts, call tones, and your own sound files.</p></div></div>
               <div class="sound-settings-stack">
                 <div class="sound-settings-group">
                   <div class="sound-settings-heading"><h4>Playback</h4></div>
@@ -1556,7 +1560,7 @@
             </section>
 
             <section class="settings-section" data-settings-page="chat">
-              <h3>Chat</h3>
+              <div class="settings-page-heading"><div><h3>Chat</h3><p>Control media downloads, voice messages, and trusted links.</p></div></div>
               <div class="chat-settings-stack">
                 <div class="chat-settings-group">
                   <div class="chat-settings-heading"><h4>Voice messages</h4></div>
@@ -1613,7 +1617,7 @@
 
           <div class="settings-column">
             <section class="settings-section" data-settings-page="voice">
-              <h3>Voice</h3>
+              <div class="settings-page-heading"><div><h3>Voice &amp; Video</h3><p>Select your devices and fine-tune call audio.</p></div></div>
               <div class="voice-settings-stack">
                 <div class="voice-settings-group">
                   <div class="voice-settings-heading"><h4>Devices</h4></div>
@@ -1671,7 +1675,7 @@
           </div>
 
           <section class="settings-section" data-settings-page="contacts">
-            <h3>Contacts</h3>
+            <div class="settings-page-heading"><div><h3>Contacts</h3><p>Manage nicknames and people you have blocked.</p></div></div>
             <div class="contacts-settings-group">
               <div class="contacts-settings-heading">
                 <div>
@@ -1691,7 +1695,7 @@
           </section>
 
           <section class="settings-section mobile-feedback-section" data-settings-page="feedback">
-            <h3>Feedback</h3>
+            <div class="settings-page-heading"><div><h3>Feedback</h3><p>Tell us what works and what Aero should improve.</p></div></div>
             <button
               id="feedback-button-mobile"
               class="sidebar-feedback-button hidden"
@@ -1703,7 +1707,7 @@
           </section>
 
           <section class="settings-section settings-reset-section" data-settings-page="reset">
-            <h3>Reset</h3>
+            <div class="settings-page-heading"><div><h3>Reset settings</h3><p>Restore defaults without removing your Aero ID, contacts, or chats.</p></div></div>
             <button
               id="reset-all-settings"
               class="ghost-button danger"
