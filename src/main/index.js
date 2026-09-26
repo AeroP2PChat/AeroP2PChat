@@ -2201,29 +2201,22 @@ function assertTrustedReleaseAssetUrl(rawUrl, expectedAssetName) {
   return url;
 }
 
-function assertTrustedOnlineInstallerUrl(rawUrl) {
+function assertTrustedWindowsSetupUrl(rawUrl) {
   return assertTrustedReleaseAssetUrl(
     rawUrl,
-    projectConfig.release.windowsOnlineInstallerAsset,
+    projectConfig.release.windowsSetupAsset,
   );
 }
 
-function getInstalledOnlineInstallerPath() {
-  return join(
-    dirname(process.execPath),
-    projectConfig.release.windowsOnlineInstallerAsset,
-  );
-}
-
-function getCachedOnlineInstallerPath() {
+function getCachedWindowsSetupPath() {
   return join(
     app.getPath("userData"),
     "Updates",
-    projectConfig.release.windowsOnlineInstallerAsset,
+    projectConfig.release.windowsSetupAsset,
   );
 }
 
-async function hasInstalledOnlineInstaller(filePath) {
+async function hasUsableUpdateFile(filePath) {
   try {
     const file = await stat(filePath);
     return file.isFile() && file.size > 0;
@@ -2233,9 +2226,9 @@ async function hasInstalledOnlineInstaller(filePath) {
 }
 
 async function stageWindowsUpdateInstaller(
-  rawOnlineInstallerUrl,
-  expectedOnlineInstallerSha256 = "",
-  expectedOnlineInstallerSha512 = "",
+  rawSetupUrl,
+  expectedSetupSha256 = "",
+  expectedSetupSha512 = "",
   onProgress = () => {},
 ) {
   if (process.platform !== "win32" || process.windowsStore) {
@@ -2245,13 +2238,13 @@ async function stageWindowsUpdateInstaller(
     throw new Error("Automatic update downloads are only available in the packaged app.");
   }
 
-  const cachedInstallerPath = getCachedOnlineInstallerPath();
-  if (await hasInstalledOnlineInstaller(cachedInstallerPath)) {
+  const cachedInstallerPath = getCachedWindowsSetupPath();
+  if (await hasUsableUpdateFile(cachedInstallerPath)) {
     try {
       verifyUpdateDownload(
         cachedInstallerPath,
-        expectedOnlineInstallerSha256,
-        expectedOnlineInstallerSha512,
+        expectedSetupSha256,
+        expectedSetupSha512,
       );
       return { path: cachedInstallerPath, cached: true };
     } catch {
@@ -2259,11 +2252,11 @@ async function stageWindowsUpdateInstaller(
     }
   }
 
-  const onlineInstallerUrl = assertTrustedOnlineInstallerUrl(rawOnlineInstallerUrl);
+  const setupUrl = assertTrustedWindowsSetupUrl(rawSetupUrl);
   const temporaryUpdateDir = await mkdtemp(join(tmpdir(), "aero-p2p-update-"));
   const downloadedInstallerPath = join(
     temporaryUpdateDir,
-    projectConfig.release.windowsOnlineInstallerAsset,
+    projectConfig.release.windowsSetupAsset,
   );
 
   try {
@@ -2274,15 +2267,15 @@ async function stageWindowsUpdateInstaller(
       totalBytes: null,
     });
     await downloadFileWithRetry(
-      onlineInstallerUrl,
+      setupUrl,
       downloadedInstallerPath,
       onProgress,
     );
     onProgress({ phase: "verify", percent: 100 });
     verifyUpdateDownload(
       downloadedInstallerPath,
-      expectedOnlineInstallerSha256,
-      expectedOnlineInstallerSha512,
+      expectedSetupSha256,
+      expectedSetupSha512,
     );
     await mkdir(dirname(cachedInstallerPath), { recursive: true });
     await copyFile(downloadedInstallerPath, cachedInstallerPath);
@@ -2563,9 +2556,9 @@ function verifyUpdateDownload(
 }
 
 async function installWindowsUpdate(
-  rawOnlineInstallerUrl,
-  expectedOnlineInstallerSha256 = "",
-  expectedOnlineInstallerSha512 = "",
+  rawSetupUrl,
+  expectedSetupSha256 = "",
+  expectedSetupSha512 = "",
   onProgress = () => {},
 ) {
   if (process.platform !== "win32") {
@@ -2575,34 +2568,14 @@ async function installWindowsUpdate(
     throw new Error("Update install is only available in the packaged app.");
   }
 
-  const installedOnlineInstallerPath = getInstalledOnlineInstallerPath();
-  let onlineInstallerPath = installedOnlineInstallerPath;
-
   try {
-    let useInstalledOnlineInstaller =
-      await hasInstalledOnlineInstaller(installedOnlineInstallerPath);
-    if (useInstalledOnlineInstaller) {
-      try {
-        verifyUpdateDownload(
-          installedOnlineInstallerPath,
-          expectedOnlineInstallerSha256,
-          expectedOnlineInstallerSha512,
-        );
-      } catch {
-        // An older bundled updater must never bypass the current release hashes.
-        useInstalledOnlineInstaller = false;
-      }
-    }
-
-    if (!useInstalledOnlineInstaller) {
-      const stagedInstaller = await stageWindowsUpdateInstaller(
-        rawOnlineInstallerUrl,
-        expectedOnlineInstallerSha256,
-        expectedOnlineInstallerSha512,
-        onProgress,
-      );
-      onlineInstallerPath = stagedInstaller.path;
-    }
+    const stagedInstaller = await stageWindowsUpdateInstaller(
+      rawSetupUrl,
+      expectedSetupSha256,
+      expectedSetupSha512,
+      onProgress,
+    );
+    const setupPath = stagedInstaller.path;
 
     onProgress({ phase: "install", percent: 100 });
 
@@ -2611,8 +2584,8 @@ async function installWindowsUpdate(
     for (let attempt = 1; attempt <= 10; attempt += 1) {
       try {
         updater = spawn(
-          onlineInstallerPath,
-          [`--wait-for-pid=${process.pid}`, "--auto-install"],
+          setupPath,
+          ["/S"],
           {
             detached: true,
             stdio: "ignore",
@@ -2641,6 +2614,68 @@ async function installWindowsUpdate(
     return { ok: true };
   } catch (error) {
     throw error;
+  }
+}
+
+async function installLinuxAppImageUpdate(
+  rawAppImageUrl,
+  expectedSha256 = "",
+  expectedSha512 = "",
+  version = "",
+  onProgress = () => {},
+) {
+  if (process.platform !== "linux" || !app.isPackaged) {
+    throw new Error("AppImage updates are only available in the packaged Linux app.");
+  }
+  const appImagePath = process.env.APPIMAGE ? resolve(process.env.APPIMAGE) : "";
+  if (!appImagePath || !(await hasUsableUpdateFile(appImagePath))) {
+    throw new Error("This installation is not running from an AppImage. Open the release page to update the RPM or DEB package.");
+  }
+  const appImageUrl = assertTrustedReleaseAssetUrl(
+    rawAppImageUrl,
+    projectConfig.release.linuxAppImageAsset,
+  );
+  const updateDir = await mkdtemp(join(dirname(appImagePath), ".aero-update-"));
+  const downloadedPath = join(updateDir, projectConfig.release.linuxAppImageAsset);
+  try {
+    await downloadFileWithRetry(appImageUrl, downloadedPath, onProgress);
+    onProgress({ phase: "verify", percent: 100 });
+    verifyUpdateDownload(downloadedPath, expectedSha256, expectedSha512);
+    await chmod(downloadedPath, 0o755);
+    await rename(downloadedPath, appImagePath);
+    if (
+      basename(appImagePath) === projectConfig.linux.installedAppImageName &&
+      /^\d+\.\d+\.\d+$/.test(version)
+    ) {
+      const versionPath = join(dirname(appImagePath), "version");
+      const temporaryVersionPath = `${versionPath}.${process.pid}.tmp`;
+      await writeFile(temporaryVersionPath, `${version}\n`, { mode: 0o644 });
+      await rename(temporaryVersionPath, versionPath);
+    }
+    onProgress({ phase: "install", percent: 100 });
+    const updatedApp = spawn(
+      "/bin/sh",
+      [
+        "-c",
+        'while kill -0 "$1" 2>/dev/null; do sleep 0.2; done; exec "$2"',
+        "aero-appimage-update",
+        String(process.pid),
+        appImagePath,
+      ],
+      {
+        detached: true,
+        stdio: "ignore",
+        env: { ...process.env, APPIMAGE: appImagePath },
+      },
+    );
+    updatedApp.unref();
+    setTimeout(() => {
+      forceQuit = true;
+      app.quit();
+    }, 250);
+    return { ok: true };
+  } finally {
+    await rm(updateDir, { recursive: true, force: true }).catch(() => {});
   }
 }
 
@@ -2796,22 +2831,30 @@ app.whenReady().then(async () => {
       callback(requestingWindow === mainWindow && permission === "media");
     },
   );
-  ipcMain.handle("install-update", (event, details) =>
-    installWindowsUpdate(
-      details.onlineInstallerUrl,
-      details.onlineInstallerSha256,
-      details.onlineInstallerSha512,
-      (progress) => {
-        event.sender.send("update-progress", progress);
-      },
-    ),
-  );
+  ipcMain.handle("install-update", (event, details) => {
+    const onProgress = (progress) => event.sender.send("update-progress", progress);
+    if (process.platform === "linux") {
+      return installLinuxAppImageUpdate(
+        details.url,
+        details.sha256,
+        details.sha512,
+        details.version,
+        onProgress,
+      );
+    }
+    return installWindowsUpdate(
+      details.url,
+      details.sha256,
+      details.sha512,
+      onProgress,
+    );
+  });
   ipcMain.handle("download-update", async (_event, details = {}) => {
     try {
       const result = await stageWindowsUpdateInstaller(
-        details.onlineInstallerUrl,
-        details.onlineInstallerSha256,
-        details.onlineInstallerSha512,
+        details.url,
+        details.sha256,
+        details.sha512,
       );
       return { ok: true, cached: result.cached };
     } catch (error) {

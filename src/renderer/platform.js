@@ -1,43 +1,5 @@
-import { Capacitor, CapacitorHttp, registerPlugin } from "@capacitor/core";
-import { Clipboard } from "@capacitor/clipboard";
-import { LocalNotifications } from "@capacitor/local-notifications";
-import { Preferences } from "@capacitor/preferences";
-import { Filesystem, Directory } from "@capacitor/filesystem";
-import { FileOpener } from "@capacitor-community/file-opener";
-import { App } from "@capacitor/app";
-import { Haptics, ImpactStyle } from "@capacitor/haptics";
-import { StatusBar, Style } from "@capacitor/status-bar";
-
-const BackgroundMode = registerPlugin("AeroBackgroundMode");
-const AeroFileSave = registerPlugin("AeroFileSave");
-
 const CONFIG_KEY = "aero-p2p-chat.config.v1";
 const MAX_REMOTE_THEME_BYTES = 2 * 1024 * 1024;
-
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(reader.error || new Error("File could not be read."));
-    reader.onload = () => resolve(String(reader.result || "").split(",", 2)[1] || "");
-    reader.readAsDataURL(blob);
-  });
-}
-
-function arrayBufferToBase64(value) {
-  const bytes = value instanceof Uint8Array ? value : new Uint8Array(value);
-  let binary = "";
-  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
-  }
-  return btoa(binary);
-}
-
-function base64ToArrayBuffer(value) {
-  const binary = atob(String(value || ""));
-  const bytes = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
-  return bytes.buffer;
-}
 
 function triggerBrowserDownload(blob, fileName) {
   const objectUrl = URL.createObjectURL(blob);
@@ -81,18 +43,6 @@ function getElectronApi() {
   return window.aeroChat || null;
 }
 
-function getCapacitorPlatform() {
-  try {
-    return Capacitor.getPlatform();
-  } catch {
-    return "web";
-  }
-}
-
-function isNativeCapacitor() {
-  return getCapacitorPlatform() !== "web";
-}
-
 async function readStoredConfig() {
   const chromeStorage = getChromeStorage();
   if (chromeStorage) {
@@ -100,11 +50,11 @@ async function readStoredConfig() {
     return stored[CONFIG_KEY] || {};
   }
 
-  const result = await Preferences.get({ key: CONFIG_KEY });
-  if (!result.value) {
+  const value = localStorage.getItem(CONFIG_KEY);
+  if (!value) {
     return {};
   }
-  return JSON.parse(result.value);
+  return JSON.parse(value);
 }
 
 async function writeStoredConfig(config) {
@@ -114,42 +64,7 @@ async function writeStoredConfig(config) {
     return;
   }
 
-  await Preferences.set({
-    key: CONFIG_KEY,
-    value: JSON.stringify(config || {}),
-  });
-}
-
-async function requestLocalNotificationPermission() {
-  const current = await LocalNotifications.checkPermissions();
-  if (current.display === "granted") {
-    return true;
-  }
-
-  const requested = await LocalNotifications.requestPermissions();
-  return requested.display === "granted";
-}
-
-function getAndroidNotificationId(value) {
-  const text = String(value || "notification");
-  let hash = 2166136261;
-  for (let index = 0; index < text.length; index += 1) {
-    hash ^= text.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash & 0x7fffffff || 1;
-}
-
-async function applyMobileSystemTheme(theme) {
-  if (!isNativeCapacitor()) {
-    return;
-  }
-
-  const dark = theme === "dark" || theme === "ultra-dark";
-  await StatusBar.setStyle({ style: dark ? Style.Dark : Style.Light });
-  if (getCapacitorPlatform() === "android") {
-    await StatusBar.setBackgroundColor({ color: theme === "ultra-dark" ? "#000000" : dark ? "#232428" : "#eaf1f5" });
-  }
+  localStorage.setItem(CONFIG_KEY, JSON.stringify(config || {}));
 }
 
 async function showWebNotification({ title, body }) {
@@ -172,14 +87,11 @@ async function showWebNotification({ title, body }) {
 export function createPlatformApi() {
   const electron = getElectronApi();
   const isChromeExtension = Boolean(getChromeStorage());
-  const capacitorPlatform = getCapacitorPlatform();
   const platform =
     electron?.platform ||
-    (isChromeExtension ? "chrome-extension" : capacitorPlatform || "web");
-  const isAndroid = platform === "android";
+    (isChromeExtension ? "chrome-extension" : "web");
   const isElectron = Boolean(electron);
   const isWindowsStore = Boolean(electron?.isWindowsStore);
-  let androidUpdateProgressCallback = null;
   const browserTempFiles = new Map();
   let browserTempDirectoryPromise = null;
 
@@ -208,7 +120,6 @@ export function createPlatformApi() {
 
   return {
     platform,
-    isAndroid,
     isElectron,
     isPackaged: Boolean(electron?.isPackaged),
     isWindowsStore,
@@ -217,8 +128,10 @@ export function createPlatformApi() {
     hasDesktopIntegration: isElectron,
     supportsAutostart: isElectron,
     supportsCloseToTray: isElectron,
-    supportsUpdateChecks: isElectron || isAndroid,
-    supportsNativeUpdateInstall: platform === "win32" && !isWindowsStore,
+    supportsUpdateChecks: isElectron,
+    supportsNativeUpdateInstall:
+      (platform === "win32" && !isWindowsStore) ||
+      (platform === "linux" && Boolean(electron?.isAppImage)),
     supportsUpdateDownloads:
       platform === "win32" &&
       !isWindowsStore &&
@@ -227,16 +140,13 @@ export function createPlatformApi() {
     supportsDesktopScreenSources: isElectron,
     supportsCustomSounds: isElectron,
     supportsCustomWallpapers: isElectron,
-    supportsFileDirectoryChoice: isElectron || isAndroid,
+    supportsFileDirectoryChoice: isElectron,
     supportsReceivedFileScan:
       isElectron && ["win32", "linux"].includes(platform),
 
     async prepareIncomingFile({ id, name, size, mimeType, sha256 }) {
       if (electron?.prepareIncomingFile) {
         return electron.prepareIncomingFile({ id, name, size, mimeType, sha256 });
-      }
-      if (isAndroid) {
-        return AeroFileSave.beginReceive({ id, name, size, mimeType, sha256 });
       }
       try {
         const estimate = await navigator.storage?.estimate?.();
@@ -262,9 +172,6 @@ export function createPlatformApi() {
       if (electron?.appendIncomingFile) {
         return electron.appendIncomingFile(tempRef, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
       }
-      if (isAndroid) {
-        return AeroFileSave.appendReceive({ tempRef, data: arrayBufferToBase64(bytes) });
-      }
       const entry = browserTempFiles.get(tempRef);
       if (!entry?.writable || entry.received + bytes.byteLength > entry.size) {
         throw new Error("Invalid temporary file write.");
@@ -277,13 +184,6 @@ export function createPlatformApi() {
     async finalizeIncomingFile(tempRef) {
       if (electron?.finalizeIncomingFile) {
         return electron.finalizeIncomingFile(tempRef);
-      }
-      if (isAndroid) {
-        const result = await AeroFileSave.finishReceive({ tempRef });
-        return {
-          ...result,
-          header: result?.headerBase64 ? base64ToArrayBuffer(result.headerBase64) : null,
-        };
       }
       try {
         const entry = browserTempFiles.get(tempRef);
@@ -303,10 +203,6 @@ export function createPlatformApi() {
 
     async createReceivedFilePreview(tempRef, mimeType) {
       if (electron?.getIncomingFileUrl) return electron.getIncomingFileUrl(tempRef);
-      if (isAndroid) {
-        const result = await AeroFileSave.getReceiveUri({ tempRef });
-        return result?.uri ? Capacitor.convertFileSrc(result.uri) : "";
-      }
       const file = await getBrowserTempFile(tempRef);
       return URL.createObjectURL(new File([file], file.name, { type: mimeType || file.type }));
     },
@@ -314,7 +210,6 @@ export function createPlatformApi() {
     async releaseReceivedFile(tempRef) {
       if (!tempRef) return;
       if (electron?.releaseIncomingFile) return electron.releaseIncomingFile(tempRef);
-      if (isAndroid) return AeroFileSave.releaseReceive({ tempRef });
       const entry = browserTempFiles.get(tempRef);
       browserTempFiles.delete(tempRef);
       await entry?.writable?.abort?.().catch(() => {});
@@ -324,7 +219,6 @@ export function createPlatformApi() {
 
     async cleanupReceivedFiles() {
       if (electron?.cleanupIncomingFiles) return electron.cleanupIncomingFiles();
-      if (isAndroid) return AeroFileSave.cleanupReceives();
       const entries = Array.from(browserTempFiles.values());
       browserTempFiles.clear();
       await Promise.all(entries.map((entry) => entry.writable?.abort?.().catch(() => {})));
@@ -341,9 +235,6 @@ export function createPlatformApi() {
       if (electron?.chooseReceivedFileDirectory) {
         return electron.chooseReceivedFileDirectory();
       }
-      if (isAndroid) {
-        return AeroFileSave.chooseDirectory();
-      }
       return { ok: false, unsupported: true };
     },
 
@@ -354,16 +245,6 @@ export function createPlatformApi() {
       if (electron?.saveReceivedFile) {
         return electron.saveReceivedFile({
           ...(tempRef ? { tempRef } : { data: await blob.arrayBuffer() }),
-          name,
-          mimeType,
-          sha256,
-          mode,
-          directory,
-        });
-      }
-      if (isAndroid) {
-        return AeroFileSave.saveFile({
-          ...(tempRef ? { tempRef } : { data: await blobToBase64(blob) }),
           name,
           mimeType,
           sha256,
@@ -555,14 +436,6 @@ export function createPlatformApi() {
         }
       }
 
-      if (isNativeCapacitor()) {
-        const response = await CapacitorHttp.get({ url: parsedUrl.toString() });
-        if (response.status < 200 || response.status >= 300) {
-          throw new Error(`Theme request failed (${response.status}).`);
-        }
-        return assertRemoteThemeSize(response.data);
-      }
-
       const response = await fetch(parsedUrl.toString(), { cache: "no-store" });
       if (!response.ok) throw new Error(`Theme request failed (${response.status}).`);
       return assertRemoteThemeSize(await response.text());
@@ -571,11 +444,6 @@ export function createPlatformApi() {
     async writeClipboard(text) {
       if (electron?.writeClipboard) {
         return electron.writeClipboard(text);
-      }
-
-      if (isNativeCapacitor()) {
-        await Clipboard.write({ string: String(text || "") });
-        return { ok: true };
       }
 
       await navigator.clipboard.writeText(String(text || ""));
@@ -613,16 +481,6 @@ export function createPlatformApi() {
         return response.text;
       }
 
-      if (isNativeCapacitor()) {
-        const response = await CapacitorHttp.get({ url });
-        if (response.status < 200 || response.status >= 300) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        return typeof response.data === "string"
-          ? response.data
-          : String(response.data || "");
-      }
-
       const response = await fetch(url, { cache: "no-store" });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -635,52 +493,12 @@ export function createPlatformApi() {
         return electron.showNotification(details);
       }
 
-      if (isNativeCapacitor()) {
-        const permitted = await requestLocalNotificationPermission();
-        if (!permitted) {
-          return { ok: false, denied: true };
-        }
-
-        const notificationKey =
-          details.id ||
-          `${details.kind || "notification"}-${Date.now()}-${Math.random()}`;
-        await LocalNotifications.schedule({
-          notifications: [
-            {
-              id: getAndroidNotificationId(notificationKey),
-              title: details.title || "Aero P2P Chat",
-              body: details.body || "",
-              // Android requires a monochrome small icon in the status bar.
-              // This resource is our Aero chat mark, not Capacitor's info icon.
-              smallIcon: "ic_stat_aero",
-              schedule: { at: new Date(Date.now() + 100) },
-              sound: details.silent ? undefined : "default",
-              extra: {
-                ...(details.extra && typeof details.extra === "object"
-                  ? details.extra
-                  : {}),
-                id: details.id || "",
-                kind: details.kind || "",
-                peerId: details.peerId || "",
-                callId: details.callId || "",
-              },
-            },
-          ],
-        });
-        return { ok: true };
-      }
-
       return showWebNotification(details);
     },
 
     async closeNotification(id) {
       if (electron?.closeNotification) {
         return electron.closeNotification(id);
-      }
-      if (isNativeCapacitor() && id) {
-        await LocalNotifications.cancel({
-          notifications: [{ id: getAndroidNotificationId(id) }],
-        });
       }
       return { ok: true };
     },
@@ -744,54 +562,6 @@ export function createPlatformApi() {
         return electron.installUpdate(details);
       }
 
-      if (isAndroid) {
-        if (!details.url) {
-          throw new Error("No download URL provided for Android update.");
-        }
-
-        let progressListener = null;
-        if (androidUpdateProgressCallback) {
-          progressListener = await Filesystem.addListener(
-            "progress",
-            (progress) => {
-              const percent =
-                progress.contentLength > 0
-                  ? Math.round((progress.bytes / progress.contentLength) * 100)
-                  : 0;
-              androidUpdateProgressCallback({ phase: "download", percent });
-            },
-          );
-        }
-
-        try {
-          const downloadResult = await Filesystem.downloadFile({
-            url: details.url,
-            path: "update.apk",
-            directory: Directory.Cache,
-            progress: true,
-          });
-
-          if (androidUpdateProgressCallback) {
-            androidUpdateProgressCallback({ phase: "install" });
-          }
-
-          await FileOpener.open({
-            filePath: downloadResult.path,
-            contentType: "application/vnd.android.package-archive",
-          });
-
-          if (progressListener) {
-            await progressListener.remove();
-          }
-          return { ok: true };
-        } catch (error) {
-          if (progressListener) {
-            await progressListener.remove();
-          }
-          throw error;
-        }
-      }
-
       throw new Error("Native updates are not available here.");
     },
 
@@ -812,15 +582,6 @@ export function createPlatformApi() {
     onUpdateProgress(callback) {
       if (electron?.onUpdateProgress) {
         return electron.onUpdateProgress(callback);
-      }
-
-      if (isAndroid) {
-        androidUpdateProgressCallback = callback;
-        return () => {
-          if (androidUpdateProgressCallback === callback) {
-            androidUpdateProgressCallback = null;
-          }
-        };
       }
 
       return null;
@@ -847,111 +608,33 @@ export function createPlatformApi() {
     },
 
     async vibrate(style = "light") {
-      if (!isNativeCapacitor()) return;
-      const hapticStyle =
-        style === "heavy"
-          ? ImpactStyle.Heavy
-          : style === "medium"
-          ? ImpactStyle.Medium
-          : ImpactStyle.Light;
-      try {
-        await Haptics.impact({ style: hapticStyle });
-      } catch (e) {}
+      void style;
     },
 
     onBackButton(callback) {
-      if (!isNativeCapacitor()) return;
-      App.addListener("backButton", callback);
+      void callback;
     },
 
-    async minimizeApp() {
-      if (!isNativeCapacitor()) return;
-      await App.minimizeApp();
-    },
+    async minimizeApp() {},
 
-    async initMobile() {
-      if (!isNativeCapacitor()) return;
-      try {
-        await applyMobileSystemTheme(
-          document.documentElement.dataset.theme || "light",
-        );
+    async initMobile() {},
 
-        LocalNotifications.addListener(
-          "localNotificationActionPerformed",
-          (notificationAction) => {
-            const extra = notificationAction.notification.extra;
-            if (extra && extra.peerId) {
-              window.dispatchEvent(
-                new CustomEvent("aero:open-chat", {
-                  detail: { peerId: extra.peerId },
-                }),
-              );
-            }
-          },
-        );
-      } catch (e) {}
-    },
-
-    async setSystemTheme(theme) {
-      try {
-        await applyMobileSystemTheme(theme);
-        return { ok: true };
-      } catch (error) {
-        return { ok: false, error: error?.message || String(error) };
-      }
+    async setSystemTheme() {
+      return { ok: true };
     },
 
     async enableBackgroundMode(activeConnections = 0) {
-      if (!isNativeCapacitor()) return { ok: false, unsupported: true };
-      const permitted = await requestLocalNotificationPermission();
-      if (!permitted) {
-        return { ok: false, denied: true };
-      }
-      try {
-        await BackgroundMode.enable({
-          title: "Aero P2P Chat",
-          text:
-            activeConnections === 1
-              ? "1 aktive Verbindung"
-              : `${activeConnections} aktive Verbindungen`,
-          hidden: false,
-          silent: false,
-          icon: "ic_stat_aero",
-          allowClose: true,
-          closeTitle: "Beenden",
-          disableWebViewOptimization: true,
-        });
-        return { ok: true };
-      } catch (error) {
-        return { ok: false, error: error?.message || String(error) };
-      }
+      void activeConnections;
+      return { ok: false, unsupported: true };
     },
 
     async disableBackgroundMode() {
-      if (!isNativeCapacitor()) return { ok: false, unsupported: true };
-      try {
-        await BackgroundMode.disable();
-        return { ok: true };
-      } catch (error) {
-        return { ok: false, error: error?.message || String(error) };
-      }
+      return { ok: false, unsupported: true };
     },
 
     async updateBackgroundNotification(activeConnections = 0) {
-      if (!isNativeCapacitor()) return;
-      try {
-        await BackgroundMode.updateNotification({
-          title: "Aero P2P Chat",
-          text:
-            activeConnections === 1
-              ? "1 aktive Verbindung"
-              : `${activeConnections} aktive Verbindungen`,
-          icon: "ic_stat_aero",
-        });
-        return { ok: true };
-      } catch (error) {
-        return { ok: false, error: error?.message || String(error) };
-      }
+      void activeConnections;
+      return { ok: false, unsupported: true };
     },
   };
 }

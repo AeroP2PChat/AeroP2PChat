@@ -16,7 +16,7 @@ export default defineConfig({
         // Manifest V3 supplies the extension-page CSP. The Electron/web policy
         // contains directives that Chrome extensions are not allowed to use.
         // UserJot loads a remote script. It remains available in the desktop
-        // and Android clients, but Chrome Web Store extensions must ship all
+        // and desktop clients, but Chrome Web Store extensions must ship all
         // executable code in their package.
         return html
           .replace(

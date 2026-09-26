@@ -1,23 +1,4 @@
 {
   "deno.enable": false,
-  "java.configuration.updateBuildConfiguration": "automatic",
-  "java.jdt.ls.java.home": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.12.8-hotspot",
-  "java.import.gradle.java.home": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.12.8-hotspot",
-  "gradle.java.home": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.12.8-hotspot",
-  "gradle.autoDetect": "off",
-  "gradle.nestedProjects": false,
-  "java.gradle.buildServer.enabled": "off",
-  "java.import.gradle.enabled": false,
-  "java.configuration.runtimes": [
-    {
-      "name": "JavaSE-21",
-      "path": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.12.8-hotspot",
-      "default": true
-    }
-  ],
-  "java.import.exclusions": [
-    "**/node_modules/**",
-    "**/dist/**",
-    "**/android/**"
-  ]
+  "files.eol": "\n"
 }

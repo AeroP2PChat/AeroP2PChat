@@ -9,6 +9,7 @@
   },
   "linux": {
     "installDirName": "aero-p2p-chat",
+    "installedAppImageName": "Aero-P2P-Chat.AppImage",
     "commandName": "aero-p2p-chat",
     "autostartDesktopFileName": "aero-p2p-chat.desktop"
   },
@@ -19,10 +20,11 @@
   "release": {
     "windowsSetupBaseName": "Aero-P2P-Chat-Setup",
     "windowsSetupAsset": "Aero-P2P-Chat-Windows-x64-Setup.exe",
-    "windowsOnlineInstallerAsset": "Aero-P2P-Chat-Online-Installer.exe",
+    "windowsLegacyUpdateAsset": "Aero-P2P-Chat-Online-Installer.exe",
     "windowsStoreAppxAsset": "Aero-P2P-Chat-Microsoft-Store-x64.appx",
     "linuxAppImageAsset": "Aero-P2P-Chat-Linux-x64.AppImage",
-    "androidApkAsset": "Aero-P2P-Chat-Android.apk",
+    "linuxRpmAsset": "Aero-P2P-Chat-Linux-x64.rpm",
+    "linuxDebAsset": "Aero-P2P-Chat-Linux-x64.deb",
     "chromeExtensionAsset": "Aero-P2P-Chat-Chrome-Extension.zip"
   }
 }

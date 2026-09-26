@@ -11,7 +11,6 @@ module.exports = {
     "out/**/*",
     "assets/**/*",
     "package.json",
-    "!node_modules/**/android/**/*",
     "!node_modules/**/ios/**/*",
     "!node_modules/**/*.podspec",
   ],
@@ -32,12 +31,24 @@ module.exports = {
     },
   ],
   win: {
-    target: "dir",
+    target: ["nsis"],
     icon: "assets/app.ico",
+    artifactName: "Aero-P2P-Chat-Windows-${arch}-Setup.${ext}",
+  },
+  nsis: {
+    oneClick: false,
+    perMachine: false,
+    allowToChangeInstallationDirectory: false,
+    createDesktopShortcut: "always",
+    createStartMenuShortcut: true,
+    shortcutName: projectConfig.app.name,
+    uninstallDisplayName: projectConfig.app.name,
+    deleteAppDataOnUninstall: false,
   },
   // This identity is assigned to Aero P2P Chat in Microsoft Partner Center.
   // The Store replaces the package signature after certification.
   appx: {
+    artifactName: "Aero-P2P-Chat-Microsoft-Store-${arch}.${ext}",
     identityName: "Zorblock.AeroP2PChat",
     publisher: "CN=9C56695C-1431-40D0-A466-EAE7BFAE9231",
     publisherDisplayName: "Zorblock",
@@ -48,9 +59,10 @@ module.exports = {
   },
 
   linux: {
-    target: ["AppImage"],
+    target: ["AppImage", "rpm", "deb"],
     icon: "assets/linux-icons",
     category: "Network",
+    artifactName: "Aero-P2P-Chat-Linux-x64.${ext}",
     syncDesktopName: true,
     desktop: {
       entry: {

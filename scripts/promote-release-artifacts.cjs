@@ -15,11 +15,11 @@ const renameRetryAttempts = process.platform === "win32" ? 20 : 1;
 
 const requiredFiles = [
   config.release.windowsSetupAsset,
-  config.release.windowsOnlineInstallerAsset,
+  config.release.windowsLegacyUpdateAsset,
   config.release.windowsStoreAppxAsset,
   config.release.linuxAppImageAsset,
-  config.release.androidApkAsset,
-  config.release.chromeExtensionAsset,
+  config.release.linuxRpmAsset,
+  config.release.linuxDebAsset,
   "latest.yml",
   "update_manifest_windows.json",
   "update_manifest_linux.json",

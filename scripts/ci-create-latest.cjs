@@ -1,7 +1,5 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const crypto = require("node:crypto");
-
 const root = path.join(__dirname, "..");
 const artifactsDir = process.argv[2]
   ? path.resolve(root, process.argv[2])
@@ -44,26 +42,17 @@ function main() {
   const tag = `v${version}`;
   const asset = manifest.asset;
   if (!asset) throw new Error("No asset in Windows manifest.");
-  const onlineInstallerPath = path.join(
-    artifactsDir,
-    config.release.windowsOnlineInstallerAsset,
-  );
-  if (!fs.existsSync(onlineInstallerPath)) {
-    throw new Error(`Online installer not found: ${onlineInstallerPath}`);
+  const legacyPath = path.join(artifactsDir, config.release.windowsLegacyUpdateAsset);
+  if (!fs.existsSync(legacyPath)) {
+    throw new Error(`Legacy Windows update bridge not found: ${legacyPath}`);
   }
-  const onlineInstaller = {
-    name: config.release.windowsOnlineInstallerAsset,
-    size: fs.statSync(onlineInstallerPath).size,
-    sha256: crypto
-      .createHash("sha256")
-      .update(fs.readFileSync(onlineInstallerPath))
-      .digest("hex"),
-    sha512: crypto
-      .createHash("sha512")
-      .update(fs.readFileSync(onlineInstallerPath))
-      .digest("base64"),
+  const legacyData = fs.readFileSync(legacyPath);
+  const legacy = {
+    name: config.release.windowsLegacyUpdateAsset,
+    size: legacyData.length,
+    sha256: require("node:crypto").createHash("sha256").update(legacyData).digest("hex"),
+    sha512: require("node:crypto").createHash("sha512").update(legacyData).digest("base64"),
   };
-
   const lines = [
     `version: ${yamlQuote(version)}`,
     ...(minimumVersion
@@ -76,10 +65,12 @@ function main() {
     `sha256: ${yamlQuote(asset.sha256)}`,
     `sha512: ${yamlQuote(asset.sha512)}`,
     `size: ${asset.size}`,
-    `onlineInstallerUrl: ${yamlQuote(releaseUrl(tag, onlineInstaller.name))}`,
-    `onlineInstallerSha256: ${yamlQuote(onlineInstaller.sha256)}`,
-    `onlineInstallerSha512: ${yamlQuote(onlineInstaller.sha512)}`,
-    `onlineInstallerSize: ${onlineInstaller.size}`,
+    // Compatibility bridge for released clients that still expect the old
+    // updater filename. This file is an identical copy of the normal setup.
+    `onlineInstallerUrl: ${yamlQuote(releaseUrl(tag, legacy.name))}`,
+    `onlineInstallerSha256: ${yamlQuote(legacy.sha256)}`,
+    `onlineInstallerSha512: ${yamlQuote(legacy.sha512)}`,
+    `onlineInstallerSize: ${legacy.size}`,
     `productName: ${yamlQuote(config.app.name)}`,
     "",
   ];

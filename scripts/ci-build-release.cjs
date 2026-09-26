@@ -3,218 +3,108 @@ const crypto = require("node:crypto");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const root = path.join(__dirname, "..");
-const distDir = path.join(root, "dist");
-const buildDir = path.join(distDir, "build");
+const root = path.resolve(__dirname, "..");
+const buildDir = path.join(root, "dist", "build");
 const artifactsDir = path.join(buildDir, "artifacts");
-const packagePath = path.join(root, "package.json");
-const lockPath = path.join(root, "package-lock.json");
-const config = JSON.parse(
-  fs.readFileSync(path.join(root, "config.json"), "utf8"),
-);
+const config = require("../config.json");
+const packageInfo = require("../package.json");
 
 function parseArgs() {
-  const options = { platform: "", version: "", preserveBuild: false };
+  const options = { platform: "", version: packageInfo.version };
   for (const arg of process.argv.slice(2)) {
     if (arg.startsWith("--platform=")) options.platform = arg.slice(11);
-    if (arg.startsWith("--version="))
-      options.version = arg.slice(10).replace(/^v/, "");
-    if (arg === "--preserve-build") options.preserveBuild = true;
+    else if (arg.startsWith("--version=")) options.version = arg.slice(10).replace(/^v/, "");
+    else if (arg !== "--preserve-build") throw new Error(`Unknown option: ${arg}`);
   }
-  if (!["linux", "windows"].includes(options.platform)) {
-    throw new Error("Missing --platform=linux|windows");
+  if (!["linux", "windows"].includes(options.platform)) throw new Error("Missing --platform=linux|windows");
+  if (options.version !== packageInfo.version) {
+    throw new Error(`Requested version ${options.version} does not match package.json ${packageInfo.version}.`);
   }
   return options;
 }
 
-function run(command, args, options = {}) {
-  const isWindowsNpm =
-    process.platform === "win32" && (command === "npm" || command === "npx");
-  const executable = isWindowsNpm ? process.env.ComSpec || "cmd.exe" : command;
-  const finalArgs = isWindowsNpm
-    ? ["/d", "/s", "/c", `${command}.cmd`, ...args]
-    : args;
-  const result = spawnSync(executable, finalArgs, {
+function run(command, args) {
+  const windowsNpm = process.platform === "win32" && ["npm", "npx"].includes(command);
+  const result = spawnSync(windowsNpm ? `${command}.cmd` : command, args, {
     cwd: root,
     stdio: "inherit",
-    env: { ...process.env, ...(options.env || {}) },
+    shell: false,
+    env: { ...process.env, ELECTRON_RUN_AS_NODE: "" },
   });
-  if (result.status !== 0) {
-    throw new Error(`${command} ${args.join(" ")} failed`);
-  }
+  if (result.error) throw result.error;
+  if (result.status !== 0) throw new Error(`${command} ${args.join(" ")} failed.`);
 }
 
-function readJson(filePath) {
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
-}
-
-function writeJson(filePath, data) {
-  fs.writeFileSync(filePath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
-}
-
-function setPackageVersion(version) {
-  if (!version) return readJson(packagePath).version;
-
-  const pkg = readJson(packagePath);
-  pkg.version = version;
-  writeJson(packagePath, pkg);
-
-  if (fs.existsSync(lockPath)) {
-    const lock = readJson(lockPath);
-    lock.version = version;
-    if (lock.packages && lock.packages[""]) {
-      lock.packages[""].version = version;
-    }
-    writeJson(lockPath, lock);
-  }
-
-  return version;
-}
-
-function clean(preserveBuild) {
-  fs.rmSync(path.join(root, "out"), { recursive: true, force: true });
-  if (!preserveBuild) {
-    fs.rmSync(buildDir, { recursive: true, force: true });
-  }
-  fs.mkdirSync(artifactsDir, { recursive: true });
-}
-
-function hashFile(filePath, algorithm) {
-  return crypto
-    .createHash(algorithm)
-    .update(fs.readFileSync(filePath))
-    .digest("hex");
-}
-
-function hashFileBase64(filePath, algorithm) {
-  return crypto
-    .createHash(algorithm)
-    .update(fs.readFileSync(filePath))
-    .digest("base64");
-}
-
-function copyAsset(source, name) {
-  if (!source || !fs.existsSync(source)) {
-    throw new Error(`Expected build asset was not found: ${source || name}`);
-  }
-  const target = path.join(artifactsDir, name);
-  fs.copyFileSync(source, target);
+function hashes(filePath) {
+  const data = fs.readFileSync(filePath);
   return {
-    name,
-    size: fs.statSync(target).size,
-    sha256: hashFile(target, "sha256"),
-    sha512: hashFileBase64(target, "sha512"),
+    size: data.length,
+    sha256: crypto.createHash("sha256").update(data).digest("hex"),
+    sha512: crypto.createHash("sha512").update(data).digest("base64"),
   };
 }
 
-function findFile(startDir, predicate) {
-  if (!fs.existsSync(startDir)) return "";
-  const files = findAllFiles(startDir, predicate);
-  files.sort(
-    (left, right) => fs.statSync(right).mtimeMs - fs.statSync(left).mtimeMs,
-  );
-  return files[0] || "";
+function copyArtifact(sourceDir, sourceName, targetName = sourceName) {
+  const source = path.join(sourceDir, sourceName);
+  if (!fs.existsSync(source)) throw new Error(`Build artifact not found: ${source}`);
+  const target = path.join(artifactsDir, targetName);
+  fs.copyFileSync(source, target);
+  return { name: targetName, ...hashes(target) };
 }
 
-function findAllFiles(startDir, predicate) {
-  if (!fs.existsSync(startDir)) return [];
-  return fs.readdirSync(startDir, { withFileTypes: true }).flatMap((entry) => {
-    const fullPath = path.join(startDir, entry.name);
-    if (entry.isDirectory()) return findAllFiles(fullPath, predicate);
-    return predicate(entry.name, fullPath) ? [fullPath] : [];
-  });
+function resetPlatformOutput(platform) {
+  fs.rmSync(path.join(buildDir, platform), { recursive: true, force: true });
+  fs.mkdirSync(artifactsDir, { recursive: true });
 }
 
-function writePlatformManifest(platform, version, asset) {
+function buildLinux(version) {
+  if (process.platform !== "linux") throw new Error("Linux packages require a Linux host.");
+  resetPlatformOutput("linux");
+  run("node", ["scripts/run-electron-vite.cjs", "build"]);
+  run("npx", [
+    "electron-builder", "--config", "electron-builder.config.cjs",
+    "--linux", "AppImage", "rpm", "deb", "--x64", "--publish", "never",
+    "--config.directories.output=dist/build/linux",
+  ]);
+  const output = path.join(buildDir, "linux");
+  const assets = [
+    copyArtifact(output, config.release.linuxAppImageAsset),
+    copyArtifact(output, config.release.linuxRpmAsset),
+    copyArtifact(output, config.release.linuxDebAsset),
+  ];
   fs.writeFileSync(
-    path.join(artifactsDir, `update_manifest_${platform}.json`),
-    `${JSON.stringify({ version, platform, asset }, null, 2)}\n`,
-    "utf8",
+    path.join(artifactsDir, "update_manifest_linux.json"),
+    `${JSON.stringify({ version, platform: "linux", asset: assets[0], assets }, null, 2)}\n`,
   );
 }
 
 function buildWindows(version) {
-  run("npm", ["run", "setup"]);
-
-  const asset = copyAsset(
-    path.join(
-      buildDir,
-      "windows",
-      "installer",
-      `${config.release.windowsSetupBaseName}-${version}.exe`,
-    ),
-    config.release.windowsSetupAsset,
-  );
-  copyAsset(
-    path.join(
-      distDir,
-      "online-installer",
-      config.release.windowsOnlineInstallerAsset,
-    ),
-    config.release.windowsOnlineInstallerAsset,
-  );
-  run("node", [
-    "scripts/build-store.cjs",
-    "--skip-compile",
-    `--output=${path.relative(root, path.join(buildDir, "store"))}`,
-    `--artifact=${path.relative(
-      root,
-      path.join(artifactsDir, config.release.windowsStoreAppxAsset),
-    )}`,
-  ]);
-  writePlatformManifest("windows", version, asset);
-}
-
-function buildLinux(version) {
+  if (process.platform !== "win32") throw new Error("Windows packages require a Windows host.");
+  resetPlatformOutput("windows");
   run("node", ["scripts/run-electron-vite.cjs", "build"]);
   run("npx", [
-    "electron-builder",
-    "--config",
-    "electron-builder.config.cjs",
-    "--linux",
-    "--publish",
-    "never",
-    `--config.directories.output=${path.relative(
-      root,
-      path.join(buildDir, "linux"),
-    )}`,
+    "electron-builder", "--config", "electron-builder.config.cjs",
+    "--win", "nsis", "--x64", "--publish", "never",
+    "--config.directories.output=dist/build/windows/setup",
   ]);
-
-  const extensions = [".AppImage"];
-  const assets = [];
-
-  for (const ext of extensions) {
-    const file = findFile(path.join(buildDir, "linux"), (name) =>
-      name.endsWith(ext),
-    );
-    if (file) {
-      const asset = copyAsset(file, `Aero-P2P-Chat-Linux-x64${ext}`);
-      assets.push(asset);
-    }
-  }
-
-  // AppImage remains the updater-managed Linux format.
-  const appImage = assets.find((a) => a.name.endsWith(".AppImage"));
-  if (appImage) {
-    fs.writeFileSync(
-      path.join(artifactsDir, "update_manifest_linux.json"),
-      `${JSON.stringify(
-        { version, platform: "linux", asset: appImage, assets },
-        null,
-        2,
-      )}\n`,
-      "utf8",
-    );
-  }
+  run("npx", [
+    "electron-builder", "--config", "electron-builder.config.cjs",
+    "--win", "appx", "--x64", "--publish", "never",
+    "--config.directories.output=dist/build/windows/store",
+  ]);
+  const setup = copyArtifact(path.join(buildDir, "windows", "setup"), config.release.windowsSetupAsset);
+  copyArtifact(
+    path.join(buildDir, "windows", "setup"),
+    config.release.windowsSetupAsset,
+    config.release.windowsLegacyUpdateAsset,
+  );
+  copyArtifact(path.join(buildDir, "windows", "store"), config.release.windowsStoreAppxAsset);
+  fs.writeFileSync(
+    path.join(artifactsDir, "update_manifest_windows.json"),
+    `${JSON.stringify({ version, platform: "windows", asset: setup }, null, 2)}\n`,
+  );
 }
 
-function main() {
-  const options = parseArgs();
-  const version = setPackageVersion(options.version);
-  clean(options.preserveBuild);
-
-  if (options.platform === "windows") buildWindows(version);
-  if (options.platform === "linux") buildLinux(version);
-}
-
-main();
+const options = parseArgs();
+if (options.platform === "linux") buildLinux(options.version);
+else buildWindows(options.version);

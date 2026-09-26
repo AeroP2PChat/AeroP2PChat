@@ -4,6 +4,7 @@ contextBridge.exposeInMainWorld("aeroChat", {
   platform: process.platform,
   isPackaged: !process.defaultApp,
   isWindowsStore: Boolean(process.windowsStore),
+  isAppImage: process.platform === "linux" && Boolean(process.env.APPIMAGE),
   installUpdate: (details) => ipcRenderer.invoke("install-update", details),
   downloadUpdate: (details) => ipcRenderer.invoke("download-update", details),
   openMicrosoftStoreUpdates: () =>

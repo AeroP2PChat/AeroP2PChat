@@ -73,10 +73,10 @@ function assertApiKey() {
 
 function artifactPaths(directory) {
   const assets = [
-    config.release.windowsOnlineInstallerAsset,
     config.release.windowsSetupAsset,
-    config.release.androidApkAsset,
     config.release.linuxAppImageAsset,
+    config.release.linuxRpmAsset,
+    config.release.linuxDebAsset,
   ];
   const files = assets.map((name) => path.join(directory, name));
   const missing = files.filter((filePath) => !fs.existsSync(filePath));

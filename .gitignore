@@ -11,13 +11,8 @@
 *.iss.bak
 *.setup.log
 .dev-data
-/.tools/inno
-/.gradle-android
 [Bb]in/
 [Oo]bj/
-/online-installer-rust/target/
 AGENTS.md
 TODO.todo
-android/.kotlin/sessions/
-
 .fake

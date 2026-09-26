@@ -954,13 +954,9 @@ document.querySelectorAll("[data-app-aria-template]").forEach((element) => {
 });
 
 function applyPlatformUi() {
-  const usesMobileLayout =
-    platformApi.isAndroid ||
-    (platform === "web" && mobileWebLayoutQuery.matches);
+  const usesMobileLayout = platform === "web" && mobileWebLayoutQuery.matches;
 
   document.body.dataset.platform = platform;
-  // The class controls only the touch-first layout. Native capabilities still
-  // use platformApi.isAndroid, so a mobile browser remains a web client.
   document.body.classList.toggle("platform-android", usesMobileLayout);
   document.body.classList.toggle(
     "platform-electron",
@@ -1072,7 +1068,7 @@ function stripRetiredIdentityData(config) {
 
 function saveAppConfig() {
   // Serialize immutable snapshots. Rapid UI changes must not let an older
-  // asynchronous write overwrite a newer setting, especially on Android.
+  // asynchronous write overwrite a newer setting on slower devices.
   const snapshot = JSON.parse(JSON.stringify(appConfig));
   configSaveQueue = configSaveQueue
     .catch(() => {})
@@ -1592,19 +1588,10 @@ async function startAeroIdQrScanner() {
     qrScannerStatus.textContent = "Starting secure local scanner...";
     qrScannerDecoder = await loadQrDecoder();
     if (sessionId !== qrScannerSession) return;
-    const stream = platformApi.isAndroid
-      ? await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: {
-            facingMode: { ideal: "environment" },
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-        })
-      : await getUserMediaWithDeviceFallback(
-          () => ({ audio: false, video: createCameraVideoConstraints() }),
-          "cameraDeviceId",
-        );
+    const stream = await getUserMediaWithDeviceFallback(
+      () => ({ audio: false, video: createCameraVideoConstraints() }),
+      "cameraDeviceId",
+    );
     if (sessionId !== qrScannerSession) {
       stream.getTracks().forEach((track) => track.stop());
       return;
@@ -2841,11 +2828,11 @@ function renderAppSettings() {
         ? "Downloads are verified locally; installation always needs confirmation."
         : "Auto-download is available in the packaged Windows app."
       : platform === "linux"
-        ? "Aero checks for releases and shows the update command."
+        ? platformApi.supportsNativeUpdateInstall
+          ? "AppImage updates are downloaded, verified and installed directly."
+          : "Aero checks for releases; RPM and DEB updates open the release page."
         : platform === "darwin"
           ? "Aero checks for releases and opens the macOS download when you choose to update."
-        : platformApi.isAndroid
-          ? "Aero checks for releases and opens Android's installer when you choose to update."
           : platformApi.isChromeExtension
             ? "Chrome manages extension updates automatically."
             : "Updates are managed by this platform.";
@@ -2887,9 +2874,7 @@ function renderAppSettings() {
     "No folder selected";
   fileDownloadPlatformNote.textContent = platformApi.isElectron
     ? "Files stream into private app temporary storage and are limited by free disk space, not RAM. Saving is separate; Microsoft Defender or ClamAV is used when available."
-    : platformApi.isAndroid
-      ? "Files stream into Android's private app cache and are limited by free storage, not RAM. Android saves through protected system storage and never opens them automatically."
-      : platformApi.isChromeExtension
+    : platformApi.isChromeExtension
         ? "Files stream into Chrome's private storage and are limited by its available quota, not RAM. Chrome controls final saving and applies its own download protection."
         : "Files stream into private browser storage and are limited by its available quota, not RAM. Your browser controls saving and files are never opened automatically.";
   syncEnhancedSelect(fileDownloadModeSelect);
@@ -6041,9 +6026,7 @@ function syncAvailableUpdateUi() {
   updateText.textContent = isMandatory
     ? `Version ${availableUpdate.minimumVersion} or later is required to continue.`
     : `Version ${availableUpdate.version} is ready. You are using ${currentVersion}.`;
-  updateButton.textContent = platformApi.isAndroid
-    ? "Download update"
-    : platformApi.supportsNativeUpdateInstall
+  updateButton.textContent = platformApi.supportsNativeUpdateInstall
       ? "Install update"
       : platform === "linux"
         ? "Show command"
@@ -6066,9 +6049,7 @@ function syncAvailableUpdateUi() {
     startupUpdateText.textContent = isMandatory
       ? `Version ${availableUpdate.minimumVersion} or later is required to continue.`
       : `Version ${availableUpdate.version} is ready. You are using ${currentVersion}.`;
-    startupUpdateButton.textContent = platformApi.isAndroid
-      ? "Download update"
-      : platformApi.supportsNativeUpdateInstall
+    startupUpdateButton.textContent = platformApi.supportsNativeUpdateInstall
         ? "Install update"
         : platform === "linux"
           ? "Show command"
@@ -6084,7 +6065,7 @@ function syncAvailableUpdateUi() {
   appMenuUpdate.classList.remove("hidden");
   appMenuUpdate.disabled = false;
   appMenuUpdate.querySelector("i").className =
-    platformApi.supportsNativeUpdateInstall || platformApi.isAndroid
+    platformApi.supportsNativeUpdateInstall
       ? "fa-solid fa-download"
       : platform === "linux"
         ? "fa-solid fa-terminal"
@@ -6092,9 +6073,7 @@ function syncAvailableUpdateUi() {
   appMenuUpdateIgnore.classList.toggle("hidden", isMandatory);
   setTitlebarActionLabel(
     appMenuUpdate,
-    platformApi.isAndroid
-      ? `Download ${availableUpdate.version}`
-      : platformApi.supportsNativeUpdateInstall
+    platformApi.supportsNativeUpdateInstall
         ? `Install ${availableUpdate.version}`
         : `Update ${availableUpdate.version}`,
   );
@@ -6136,14 +6115,8 @@ function openManualUpdateFallback() {
     return;
   }
 
-  const androidUrl = platformApi.isAndroid
-    ? `${githubRepoUrl}/releases/download/v${availableUpdate.version}/${projectConfig.release?.androidApkAsset || "Aero-P2P-Chat-Android.apk"}`
-    : "";
-  window.open(
-    platformApi.isAndroid ? androidUrl : availableUpdate.windowsUrl || latestReleaseUrl,
-    "_blank",
-    "noopener",
-  );
+  const url = platform === "linux" ? availableUpdate.linuxUrl : availableUpdate.windowsUrl;
+  window.open(url || latestReleaseUrl, "_blank", "noopener");
 }
 
 function getAvailableUpdateDownloadDetails() {
@@ -6152,9 +6125,9 @@ function getAvailableUpdateDownloadDetails() {
   }
 
   return {
-    onlineInstallerUrl: availableUpdate.onlineInstallerUrl,
-    onlineInstallerSha256: availableUpdate.onlineInstallerSha256,
-    onlineInstallerSha512: availableUpdate.onlineInstallerSha512,
+    url: availableUpdate.windowsUrl,
+    sha256: availableUpdate.windowsSha256,
+    sha512: availableUpdate.windowsSha512,
   };
 }
 
@@ -6178,7 +6151,7 @@ async function maybeAutoDownloadAvailableUpdate() {
   }
 
   const details = getAvailableUpdateDownloadDetails();
-  if (!details?.onlineInstallerUrl) {
+  if (!details?.url) {
     return;
   }
 
@@ -6291,16 +6264,6 @@ async function checkForUpdates({ manual = false } = {}) {
       manifest.windows_sha512 ||
       manifest.sha512 ||
       "";
-    const onlineInstallerUrl =
-      manifest.onlineInstallerUrl || manifest.online_installer_url || "";
-    const onlineInstallerSha256 =
-      manifest.onlineInstallerSha256 ||
-      manifest.online_installer_sha256 ||
-      "";
-    const onlineInstallerSha512 =
-      manifest.onlineInstallerSha512 ||
-      manifest.online_installer_sha512 ||
-      "";
     if (platform === "win32" && !windowsUrl) {
       clearUpdateAvailableUi();
       if (manual) {
@@ -6312,17 +6275,27 @@ async function checkForUpdates({ manual = false } = {}) {
     }
     if (
       platform === "win32" &&
-      (!windowsSha256 ||
-        !windowsSha512 ||
-        !onlineInstallerUrl ||
-        !onlineInstallerSha256 ||
-        !onlineInstallerSha512)
+      (!windowsSha256 || !windowsSha512)
     ) {
       clearUpdateAvailableUi();
       if (manual) {
         setUpdateMenuStatus("Invalid update");
         setStatus("offline", "Update manifest is missing checksums.");
         renderUpdateSettingsStatus("The update could not be verified.");
+      }
+      return;
+    }
+    const linuxUrl = manifest.linuxUrl || manifest.linuxX64AppImageUrl || "";
+    const linuxSha256 =
+      manifest.linuxSha256 || manifest.linuxX64AppImageSha256 || "";
+    const linuxSha512 =
+      manifest.linuxSha512 || manifest.linuxX64AppImageSha512 || "";
+    if (platform === "linux" && (!linuxUrl || !linuxSha256 || !linuxSha512)) {
+      clearUpdateAvailableUi();
+      if (manual) {
+        setUpdateMenuStatus("Invalid update");
+        setStatus("offline", "Update manifest has no verified Linux AppImage.");
+        renderUpdateSettingsStatus("The Linux update could not be verified.");
       }
       return;
     }
@@ -6344,12 +6317,9 @@ async function checkForUpdates({ manual = false } = {}) {
       windowsUrl,
       windowsSha256,
       windowsSha512,
-      onlineInstallerUrl,
-      onlineInstallerSha256,
-      onlineInstallerSha512,
-      linuxUrl: manifest.linuxUrl || manifest.linuxX64AppImageUrl || "",
-      linuxSha256:
-        manifest.linuxSha256 || manifest.linuxX64AppImageSha256 || "",
+      linuxUrl,
+      linuxSha256,
+      linuxSha512,
       macosUrl,
     };
 
@@ -7741,7 +7711,7 @@ function handleFileTransferStart(peerId, conn, data) {
     !file || !item || item.file.downloadState !== "requested" ||
     item.file.sha256 !== file.sha256 || !item.file.tempRef ||
     incomingFileTransfers.has(transferKey) ||
-    incomingFileTransfers.size >= (platformApi.isAndroid ? 1 : MAX_ACTIVE_FILE_TRANSFERS)
+    incomingFileTransfers.size >= MAX_ACTIVE_FILE_TRANSFERS
   ) {
     sendProtocolMessage(conn, "file-transfer-failed", { fileId: String(data.file?.id || "") });
     return;
@@ -12408,7 +12378,7 @@ function acceptConnection(peerId) {
   const peerLabel = getPeerLabel(peerId, entry.conn);
   entry.acceptRequested = true;
 
-  // On Android, PeerJS can surface the incoming DataConnection before both
+  // PeerJS can surface the incoming DataConnection before both
   // sides have finished their open/request handshake. Keep the request
   // pending until the channel is writable and the explicit request arrived.
   if (!entry.conn.open || !entry.receivedRequest) {
@@ -12418,7 +12388,7 @@ function acceptConnection(peerId) {
   }
 
   // Do not promote the local state unless the remote peer was actually told
-  // about the acceptance. Otherwise Android can appear connected while the
+  // about the acceptance. Otherwise a slow client can appear connected while the
   // sender remains stuck on the request screen.
   sendReceiptSettings(entry.conn);
   if (!sendProtocolMessage(entry.conn, "connection-accepted")) {
@@ -12520,7 +12490,7 @@ function attachConnectionHandlers(conn, peerId, direction) {
     if (pending?.direction === "outgoing") {
       sendProtocolMessage(conn, "connection-request");
       // The transport is ready now. Give the other person enough time to
-      // respond, especially when Android has to be brought to the foreground.
+      // respond, especially when a backgrounded client returns to the foreground.
       startConnectTimeout(peerId, conn, { waitingForAnswer: true });
       setStatus("pending", `Waiting for ${peerLabel()} to accept...`);
       refreshPeers();
@@ -14698,7 +14668,7 @@ async function installAvailableUpdate() {
     return;
   }
 
-  if (platformApi.supportsNativeUpdateInstall || platformApi.isAndroid) {
+  if (platformApi.supportsNativeUpdateInstall) {
     updateButton.disabled = true;
     headerUpdateButton.disabled = true;
     startUpdateProgressListener();
@@ -14706,31 +14676,20 @@ async function installAvailableUpdate() {
     startupUpdateButton.textContent = "Downloading 0%";
 
     try {
-      const androidUrl = platformApi.isAndroid
-        ? `${githubRepoUrl}/releases/download/v${availableUpdate.version}/${projectConfig.release?.androidApkAsset || "Aero-P2P-Chat-Android.apk"}`
-        : "";
-
+      const linuxUpdate = platform === "linux";
       await platformApi.installUpdate({
-        url: platformApi.isAndroid ? androidUrl : availableUpdate.windowsUrl,
+        url: linuxUpdate ? availableUpdate.linuxUrl : availableUpdate.windowsUrl,
         version: availableUpdate.version,
-        sha256: availableUpdate.windowsSha256,
-        sha512: availableUpdate.windowsSha512,
-        onlineInstallerUrl: availableUpdate.onlineInstallerUrl,
-        onlineInstallerSha256: availableUpdate.onlineInstallerSha256,
-        onlineInstallerSha512: availableUpdate.onlineInstallerSha512,
+        sha256: linuxUpdate ? availableUpdate.linuxSha256 : availableUpdate.windowsSha256,
+        sha512: linuxUpdate ? availableUpdate.linuxSha512 : availableUpdate.windowsSha512,
       });
-      if (platformApi.isAndroid) {
-        setUpdateButtonText("Installer opened");
-        startupUpdateButton.textContent = "Installer opened";
-      } else {
-        setUpdateButtonText("Updater started");
-        startupUpdateButton.textContent = "Updater started";
-      }
+      setUpdateButtonText("Updater started");
+      startupUpdateButton.textContent = "Updater started";
     } catch (error) {
       stopUpdateProgressListener();
       updateButton.disabled = false;
       headerUpdateButton.disabled = false;
-      updateButton.textContent = platformApi.isAndroid ? "Download update" : "Install update";
+      updateButton.textContent = "Install update";
       headerUpdateButton.textContent = "Update";
       startupUpdateButton.disabled = false;
       if (!availableUpdate?.mandatory) {
@@ -14775,7 +14734,7 @@ startupUpdateModal.addEventListener("click", (event) => {
     }
   });
 startupUpdateButton.addEventListener("click", () => {
-    if (platformApi.supportsNativeUpdateInstall || platformApi.isAndroid) {
+    if (platformApi.supportsNativeUpdateInstall) {
       startupUpdateButton.disabled = true;
       startupUpdateIgnoreButton.classList.add("hidden");
       startupUpdateClose.classList.add("hidden");
@@ -14802,9 +14761,7 @@ appMenuUpdate.addEventListener("click", () => {
         : `Version ${availableUpdate.version} is ready. You are using ${currentVersion}.`;
       startupUpdateIgnoreButton.classList.toggle("hidden", availableUpdate.mandatory);
       startupUpdateClose.classList.toggle("hidden", availableUpdate.mandatory);
-      startupUpdateButton.textContent = platformApi.isAndroid
-        ? "Download update"
-        : platformApi.supportsNativeUpdateInstall
+      startupUpdateButton.textContent = platformApi.supportsNativeUpdateInstall
           ? "Install update"
           : platform === "linux"
             ? "Show command"
@@ -15777,27 +15734,6 @@ platformApi.onBackButton(() => {
   }
   platformApi.minimizeApp();
 });
-
-let lastBackgroundConnectionCount = -1;
-async function syncBackgroundMode() {
-  if (!platformApi.isAndroid) {
-    return;
-  }
-  const activeCount = Array.from(connections.values()).filter(c => c?.open).length;
-  if (activeCount === lastBackgroundConnectionCount) {
-    return;
-  }
-  lastBackgroundConnectionCount = activeCount;
-  if (activeCount > 0) {
-    await platformApi.enableBackgroundMode(activeCount);
-  } else {
-    await platformApi.disableBackgroundMode();
-  }
-}
-if (platformApi.isAndroid) {
-  syncBackgroundMode();
-  setInterval(syncBackgroundMode, 3000);
-}
 
 window.addEventListener("aero:open-chat", (e) => {
   if (e.detail && e.detail.peerId) {
