@@ -64,6 +64,7 @@ node scripts/ci-build-release.cjs --platform=linux
   confirmation.
 - Windows desktop installations download the normal NSIS setup, verify both
   SHA-256 and SHA-512, and start it silently after closing Aero.
+- Releases never generate or upload a legacy online-installer asset.
 - Microsoft Store installations continue to use Store-managed updates.
 
 ## Releases

@@ -92,6 +92,7 @@ export function createPlatformApi() {
     (isChromeExtension ? "chrome-extension" : "web");
   const isElectron = Boolean(electron);
   const isWindowsStore = Boolean(electron?.isWindowsStore);
+  const isAppImage = Boolean(electron?.isAppImage);
   const browserTempFiles = new Map();
   let browserTempDirectoryPromise = null;
 
@@ -123,6 +124,7 @@ export function createPlatformApi() {
     isElectron,
     isPackaged: Boolean(electron?.isPackaged),
     isWindowsStore,
+    isAppImage,
     isChromeExtension,
     hasNativeWindowControls: isElectron,
     hasDesktopIntegration: isElectron,
@@ -131,7 +133,7 @@ export function createPlatformApi() {
     supportsUpdateChecks: isElectron,
     supportsNativeUpdateInstall:
       (platform === "win32" && !isWindowsStore) ||
-      (platform === "linux" && Boolean(electron?.isAppImage)),
+      (platform === "linux" && isAppImage),
     supportsUpdateDownloads:
       platform === "win32" &&
       !isWindowsStore &&

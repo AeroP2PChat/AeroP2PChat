@@ -15,6 +15,10 @@ import {
   inspectFileMetadata,
   sanitizeTransferFileName,
 } from "./file-security.mjs";
+import {
+  hasValidUpdateChecksums,
+  isValidReleaseAssetUrl,
+} from "./update-security.mjs";
 import "./design.css";
 
 const projectConfig = __PROJECT_CONFIG__;
@@ -5991,35 +5995,6 @@ function compareVersions(left, right) {
   return 0;
 }
 
-function isValidReleaseAssetUrl(value, expectedAssetName) {
-  if (!value || !expectedAssetName) return false;
-  try {
-    const url = new URL(value);
-    const pathParts = url.pathname.split("/").filter(Boolean);
-    const expectedPrefix = [
-      ...githubRepo.split("/"),
-      "releases",
-      "download",
-    ];
-    return (
-      url.protocol === "https:" &&
-      url.hostname === "github.com" &&
-      expectedPrefix.every((part, index) => pathParts[index] === part) &&
-      pathParts.length === expectedPrefix.length + 2 &&
-      decodeURIComponent(pathParts.at(-1)) === expectedAssetName
-    );
-  } catch {
-    return false;
-  }
-}
-
-function hasValidUpdateChecksums(sha256, sha512) {
-  return (
-    /^[a-f0-9]{64}$/i.test(String(sha256 || "")) &&
-    /^[A-Za-z0-9+/]{86}==$/.test(String(sha512 || ""))
-  );
-}
-
 function clearUpdateAvailableUi() {
   availableUpdate = null;
   ignoredUpdateVersion = "";
@@ -6077,7 +6052,7 @@ function syncAvailableUpdateUi() {
     : platformApi.supportsNativeUpdateInstall
       ? "Install update"
       : platform === "linux"
-        ? "Show command"
+        ? "Latest release"
         : "Open release";
   updateButton.disabled = directInstallUnavailable;
   updateFallbackButton.classList.toggle("hidden", !directInstallUnavailable);
@@ -6103,7 +6078,7 @@ function syncAvailableUpdateUi() {
       : platformApi.supportsNativeUpdateInstall
         ? "Install update"
         : platform === "linux"
-          ? "Show command"
+          ? "Latest release"
           : "Open release";
     startupUpdateModal.classList.remove("hidden");
   }
@@ -6125,7 +6100,7 @@ function syncAvailableUpdateUi() {
       : platformApi.supportsNativeUpdateInstall
       ? "fa-solid fa-download"
       : platform === "linux"
-        ? "fa-solid fa-terminal"
+        ? "fa-solid fa-arrow-up-right-from-square"
         : "fa-solid fa-arrow-up-right-from-square";
   appMenuUpdateIgnore.classList.toggle("hidden", isMandatory);
   setTitlebarActionLabel(
@@ -6293,10 +6268,10 @@ async function checkForUpdates({ manual = false } = {}) {
     const mandatory =
       Boolean(minimumVersion) &&
       compareVersions(effectiveCurrentVersion, minimumVersion) < 0;
-    if (
-      !latestVersion ||
-      (!mandatory && compareVersions(latestVersion, effectiveCurrentVersion) <= 0)
-    ) {
+    if (!/^\d+\.\d+\.\d+$/.test(latestVersion || "")) {
+      throw new Error("Update manifest has no valid release version.");
+    }
+    if (!mandatory && compareVersions(latestVersion, effectiveCurrentVersion) <= 0) {
       clearUpdateAvailableUi();
       if (manual) {
         setUpdateMenuStatus("No update found");
@@ -6318,41 +6293,11 @@ async function checkForUpdates({ manual = false } = {}) {
       manifest.windows_sha512 ||
       manifest.sha512 ||
       "";
-    if (platform === "win32" && !windowsUrl) {
-      clearUpdateAvailableUi();
-      if (manual) {
-        setUpdateMenuStatus("No installer found");
-        setStatus("offline", "Update manifest has no Windows installer.");
-        renderUpdateSettingsStatus("No installer is available for this platform.");
-      }
-      return;
-    }
-    if (
-      platform === "win32" &&
-      (!windowsSha256 || !windowsSha512)
-    ) {
-      clearUpdateAvailableUi();
-      if (manual) {
-        setUpdateMenuStatus("Invalid update");
-        setStatus("offline", "Update manifest is missing checksums.");
-        renderUpdateSettingsStatus("The update could not be verified.");
-      }
-      return;
-    }
     const linuxUrl = manifest.linuxUrl || manifest.linuxX64AppImageUrl || "";
     const linuxSha256 =
       manifest.linuxSha256 || manifest.linuxX64AppImageSha256 || "";
     const linuxSha512 =
       manifest.linuxSha512 || manifest.linuxX64AppImageSha512 || "";
-    if (platform === "linux" && (!linuxUrl || !linuxSha256 || !linuxSha512)) {
-      clearUpdateAvailableUi();
-      if (manual) {
-        setUpdateMenuStatus("Invalid update");
-        setStatus("offline", "Update manifest has no verified Linux AppImage.");
-        renderUpdateSettingsStatus("The Linux update could not be verified.");
-      }
-      return;
-    }
     const macosUrl = manifest.macosUniversalDmgUrl || "";
     if (platform === "darwin" && !macosUrl) {
       clearUpdateAvailableUi();
@@ -6362,6 +6307,43 @@ async function checkForUpdates({ manual = false } = {}) {
         renderUpdateSettingsStatus("No installer is available for this platform.");
       }
       return;
+    }
+
+    let directInstallUnavailable = false;
+    let unavailableReason = "";
+    if (platform === "win32" && platformApi.supportsNativeUpdateInstall) {
+      if (
+        !isValidReleaseAssetUrl(
+          windowsUrl,
+          githubRepo,
+          projectConfig.release.windowsSetupAsset,
+        )
+      ) {
+        directInstallUnavailable = true;
+        unavailableReason =
+          "The direct Windows download URL is missing or invalid. Open the latest GitHub release instead.";
+      } else if (!hasValidUpdateChecksums(windowsSha256, windowsSha512)) {
+        directInstallUnavailable = true;
+        unavailableReason =
+          "The Windows download cannot be verified. Open the latest GitHub release instead.";
+      }
+    }
+    if (platform === "linux" && platformApi.isAppImage) {
+      if (
+        !isValidReleaseAssetUrl(
+          linuxUrl,
+          githubRepo,
+          projectConfig.release.linuxAppImageAsset,
+        )
+      ) {
+        directInstallUnavailable = true;
+        unavailableReason =
+          "The direct AppImage download URL is missing or invalid. Open the latest GitHub release instead.";
+      } else if (!hasValidUpdateChecksums(linuxSha256, linuxSha512)) {
+        directInstallUnavailable = true;
+        unavailableReason =
+          "The AppImage download cannot be verified. Open the latest GitHub release instead.";
+      }
     }
 
     availableUpdate = {
@@ -6375,23 +6357,49 @@ async function checkForUpdates({ manual = false } = {}) {
       linuxSha256,
       linuxSha512,
       macosUrl,
+      directInstallUnavailable,
+      unavailableReason,
     };
 
     syncAvailableUpdateUi();
     void maybeAutoDownloadAvailableUpdate();
     if (manual) {
-      setStatus("online", `Update ${availableUpdate.version} available.`);
-      renderUpdateSettingsStatus(`Update ${availableUpdate.version} is available.`);
+      if (directInstallUnavailable) {
+        setStatus(
+          "offline",
+          "Direct update unavailable. Use the latest GitHub release.",
+        );
+        renderUpdateSettingsStatus(
+          "Direct update unavailable. Open the latest GitHub release.",
+        );
+      } else {
+        setStatus("online", `Update ${availableUpdate.version} available.`);
+        renderUpdateSettingsStatus(
+          `Update ${availableUpdate.version} is available.`,
+        );
+      }
     }
   } catch (error) {
     // Keep an existing update hint visible when a periodic check fails.
     if (manual) {
+      availableUpdate = {
+        version: "latest",
+        minimumVersion: "",
+        mandatory: false,
+        directInstallUnavailable: true,
+        unavailableReason:
+          "The automatic update information is missing or invalid. Open the latest GitHub release instead.",
+      };
+      startupUpdateModalShownForVersion = "";
+      syncAvailableUpdateUi();
       setUpdateMenuStatus("Check failed");
       setStatus(
         "offline",
-        `Update check failed${error?.message ? `: ${error.message}` : "."}`,
+        `Update check failed${error?.message ? `: ${error.message}` : "."} Open the latest GitHub release instead.`,
       );
-      renderUpdateSettingsStatus("Update check failed.");
+      renderUpdateSettingsStatus(
+        "Update check failed. Open the latest GitHub release instead.",
+      );
     }
   } finally {
     updateCheckInFlight = false;
@@ -14722,6 +14730,11 @@ async function installAvailableUpdate() {
     return;
   }
 
+  if (availableUpdate.directInstallUnavailable) {
+    openManualUpdateFallback();
+    return;
+  }
+
   if (platformApi.supportsNativeUpdateInstall) {
     updateButton.disabled = true;
     headerUpdateButton.disabled = true;
@@ -14763,7 +14776,7 @@ async function installAvailableUpdate() {
   }
 
   if (platform === "linux") {
-    openLinuxUpdateModal();
+    openManualUpdateFallback();
     return;
   }
 
@@ -14805,21 +14818,36 @@ startupUpdateIgnoreButton.addEventListener("click", () => {
 
 appMenuUpdate.addEventListener("click", () => {
     if (availableUpdate) {
+      const directInstallUnavailable = Boolean(
+        availableUpdate.directInstallUnavailable,
+      );
       startupUpdateModalShownForVersion = availableUpdate.version;
       startupUpdateModal.dataset.required = String(availableUpdate.mandatory);
-      startupUpdateTitle.textContent = availableUpdate.mandatory
-        ? "Update required"
-        : "Update available";
-      startupUpdateText.textContent = availableUpdate.mandatory
-        ? `Version ${availableUpdate.minimumVersion} or later is required to continue.`
-        : `Version ${availableUpdate.version} is ready. You are using ${currentVersion}.`;
+      startupUpdateTitle.textContent = directInstallUnavailable
+        ? "Direct update unavailable"
+        : availableUpdate.mandatory
+          ? "Update required"
+          : "Update available";
+      startupUpdateText.textContent = directInstallUnavailable
+        ? availableUpdate.unavailableReason ||
+          "A verified direct download could not be found. Open the latest GitHub release instead."
+        : availableUpdate.mandatory
+          ? `Version ${availableUpdate.minimumVersion} or later is required to continue.`
+          : `Version ${availableUpdate.version} is ready. You are using ${currentVersion}.`;
       startupUpdateIgnoreButton.classList.toggle("hidden", availableUpdate.mandatory);
       startupUpdateClose.classList.toggle("hidden", availableUpdate.mandatory);
-      startupUpdateButton.textContent = platformApi.supportsNativeUpdateInstall
+      startupUpdateButton.textContent = directInstallUnavailable
+        ? "Direct update unavailable"
+        : platformApi.supportsNativeUpdateInstall
           ? "Install update"
           : platform === "linux"
-            ? "Show command"
+            ? "Latest release"
             : "Open release";
+      startupUpdateButton.disabled = directInstallUnavailable;
+      startupUpdateFallbackButton.classList.toggle(
+        "hidden",
+        !directInstallUnavailable,
+      );
       startupUpdateModal.classList.remove("hidden");
     } else if (!platformApi.supportsUpdateChecks) {
     window.open(latestReleaseUrl, "_blank", "noopener");
@@ -14956,6 +14984,7 @@ stopQrScannerButton?.addEventListener("click", () => {
   scanAeroIdButton?.focus();
 });
 startupUpdateFallbackButton.addEventListener("click", openManualUpdateFallback);
+updateFallbackButton.addEventListener("click", openManualUpdateFallback);
 document.querySelectorAll("[data-close-sidebar-modal]").forEach((button) => {
   button.addEventListener("click", () => {
     const modal = button.closest(".modal-layer");
