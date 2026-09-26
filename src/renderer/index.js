@@ -157,6 +157,7 @@ const offlineBanner = document.querySelector("#offline-banner");
 const updateTitle = document.querySelector("#update-title");
 const updateText = document.querySelector("#update-text");
 const updateButton = document.querySelector("#update-button");
+const updateFallbackButton = document.querySelector("#update-fallback-button");
 const updateIgnoreButton = document.querySelector("#update-ignore-button");
 const updateModal = document.querySelector("#update-modal");
 const startupUpdateModal = document.querySelector("#startup-update-modal");
@@ -5990,6 +5991,35 @@ function compareVersions(left, right) {
   return 0;
 }
 
+function isValidReleaseAssetUrl(value, expectedAssetName) {
+  if (!value || !expectedAssetName) return false;
+  try {
+    const url = new URL(value);
+    const pathParts = url.pathname.split("/").filter(Boolean);
+    const expectedPrefix = [
+      ...githubRepo.split("/"),
+      "releases",
+      "download",
+    ];
+    return (
+      url.protocol === "https:" &&
+      url.hostname === "github.com" &&
+      expectedPrefix.every((part, index) => pathParts[index] === part) &&
+      pathParts.length === expectedPrefix.length + 2 &&
+      decodeURIComponent(pathParts.at(-1)) === expectedAssetName
+    );
+  } catch {
+    return false;
+  }
+}
+
+function hasValidUpdateChecksums(sha256, sha512) {
+  return (
+    /^[a-f0-9]{64}$/i.test(String(sha256 || "")) &&
+    /^[A-Za-z0-9+/]{86}==$/.test(String(sha512 || ""))
+  );
+}
+
 function clearUpdateAvailableUi() {
   availableUpdate = null;
   ignoredUpdateVersion = "";
@@ -5997,6 +6027,10 @@ function clearUpdateAvailableUi() {
   updateModal.dataset.required = "false";
   headerUpdateButton.classList.add("hidden");
   updateCard.classList.add("hidden");
+  updateButton.disabled = false;
+  updateFallbackButton.classList.add("hidden");
+  startupUpdateButton.disabled = false;
+  startupUpdateFallbackButton.classList.add("hidden");
   titlebarLogo.classList.remove("update-available");
   titlebarLogo.removeAttribute("title");
   appMenuUpdate.classList.remove("hidden");
@@ -6022,19 +6056,36 @@ function syncAvailableUpdateUi() {
 
   const isMandatory = Boolean(availableUpdate.mandatory);
   const isIgnored = !isMandatory && ignoredUpdateVersion === availableUpdate.version;
-  updateTitle.textContent = isMandatory ? "Update required" : "Update available";
-  updateText.textContent = isMandatory
-    ? `Version ${availableUpdate.minimumVersion} or later is required to continue.`
-    : `Version ${availableUpdate.version} is ready. You are using ${currentVersion}.`;
-  updateButton.textContent = platformApi.supportsNativeUpdateInstall
+  const directInstallUnavailable = Boolean(
+    availableUpdate.directInstallUnavailable,
+  );
+  const updateHeading = directInstallUnavailable
+    ? "Direct update unavailable"
+    : isMandatory
+      ? "Update required"
+      : "Update available";
+  const updateDescription = directInstallUnavailable
+    ? availableUpdate.unavailableReason ||
+      "A verified direct download could not be found. Open the latest GitHub release instead."
+    : isMandatory
+      ? `Version ${availableUpdate.minimumVersion} or later is required to continue.`
+      : `Version ${availableUpdate.version} is ready. You are using ${currentVersion}.`;
+  updateTitle.textContent = updateHeading;
+  updateText.textContent = updateDescription;
+  updateButton.textContent = directInstallUnavailable
+    ? "Direct update unavailable"
+    : platformApi.supportsNativeUpdateInstall
       ? "Install update"
       : platform === "linux"
         ? "Show command"
         : "Open release";
+  updateButton.disabled = directInstallUnavailable;
+  updateFallbackButton.classList.toggle("hidden", !directInstallUnavailable);
   updateIgnoreButton.textContent = isIgnored ? "Ignored" : "Ignore";
   updateIgnoreButton.disabled = isIgnored;
   updateIgnoreButton.classList.toggle("hidden", isMandatory);
   headerUpdateButton.classList.add("hidden");
+  updateCard.classList.remove("hidden");
   titlebarLogo.classList.add("update-available");
   const shouldOpenModal =
     isMandatory || appConfig.appSettings.showUpdateModal !== false;
@@ -6045,27 +6096,33 @@ function syncAvailableUpdateUi() {
   ) {
     startupUpdateModalShownForVersion = availableUpdate.version;
     startupUpdateModal.dataset.required = String(isMandatory);
-    startupUpdateTitle.textContent = isMandatory ? "Update required" : "Update available";
-    startupUpdateText.textContent = isMandatory
-      ? `Version ${availableUpdate.minimumVersion} or later is required to continue.`
-      : `Version ${availableUpdate.version} is ready. You are using ${currentVersion}.`;
-    startupUpdateButton.textContent = platformApi.supportsNativeUpdateInstall
+    startupUpdateTitle.textContent = updateHeading;
+    startupUpdateText.textContent = updateDescription;
+    startupUpdateButton.textContent = directInstallUnavailable
+      ? "Direct update unavailable"
+      : platformApi.supportsNativeUpdateInstall
         ? "Install update"
         : platform === "linux"
           ? "Show command"
           : "Open release";
     startupUpdateModal.classList.remove("hidden");
   }
+  startupUpdateButton.disabled = directInstallUnavailable;
   startupUpdateClose.classList.toggle("hidden", isMandatory);
   startupUpdateIgnoreButton.classList.toggle("hidden", isMandatory);
-  startupUpdateFallbackButton.classList.add("hidden");
+  startupUpdateFallbackButton.classList.toggle(
+    "hidden",
+    !directInstallUnavailable,
+  );
   titlebarLogo.title = isIgnored
     ? `Update ${availableUpdate.version} available`
     : `Update ${availableUpdate.version} available`;
   appMenuUpdate.classList.remove("hidden");
   appMenuUpdate.disabled = false;
   appMenuUpdate.querySelector("i").className =
-    platformApi.supportsNativeUpdateInstall
+    directInstallUnavailable
+      ? "fa-solid fa-arrow-up-right-from-square"
+      : platformApi.supportsNativeUpdateInstall
       ? "fa-solid fa-download"
       : platform === "linux"
         ? "fa-solid fa-terminal"
@@ -6073,7 +6130,9 @@ function syncAvailableUpdateUi() {
   appMenuUpdateIgnore.classList.toggle("hidden", isMandatory);
   setTitlebarActionLabel(
     appMenuUpdate,
-    platformApi.supportsNativeUpdateInstall
+    directInstallUnavailable
+      ? "Open latest release"
+      : platformApi.supportsNativeUpdateInstall
         ? `Install ${availableUpdate.version}`
         : `Update ${availableUpdate.version}`,
   );
@@ -6110,13 +6169,7 @@ function ignoreAvailableUpdateHint() {
 }
 
 function openManualUpdateFallback() {
-  if (!availableUpdate) {
-    window.open(latestReleaseUrl, "_blank", "noopener");
-    return;
-  }
-
-  const url = platform === "linux" ? availableUpdate.linuxUrl : availableUpdate.windowsUrl;
-  window.open(url || latestReleaseUrl, "_blank", "noopener");
+  window.open(latestReleaseUrl, "_blank", "noopener");
 }
 
 function getAvailableUpdateDownloadDetails() {
@@ -6144,6 +6197,7 @@ async function maybeAutoDownloadAvailableUpdate() {
     !availableUpdate ||
     !appConfig.appSettings.autoDownloadUpdates ||
     !platformApi.supportsUpdateDownloads ||
+    availableUpdate.directInstallUnavailable ||
     updateAutoDownloadInFlight ||
     autoDownloadedUpdateVersion === availableUpdate.version
   ) {

@@ -71,26 +71,25 @@ node scripts/ci-build-release.cjs --platform=linux
 The local Linux machine builds AppImage, RPM, and DEB. GitHub Actions builds
 only the Windows NSIS setup and Microsoft Store APPX on `windows-2022`.
 
-Before releasing, commit all work. Then use one of:
+Before releasing, commit all work. Then start the interactive release UI:
 
 ```sh
-npm run patch
 npm run release
-npm run patch:important
 ```
+
+The Clack interface selects the next patch/minor/major/custom version, update
+importance and minimum-version policy, Chrome extension handling, optional
+release highlights, and whether GitHub should publish automatically or keep a
+draft for review. Nothing is changed until the final confirmation.
 
 The release command:
 
 1. tests the project;
 2. bumps the version;
 3. builds and verifies native Linux packages;
-4. pushes the release commit and tag;
-5. creates a draft GitHub release and uploads the Linux files;
-6. dispatches the Windows workflow;
-7. lets the Windows workflow add the setup and update manifest, retain the
-   APPX as a private workflow artifact, and publish the release.
-
-The legacy `Aero-P2P-Chat-Online-Installer.exe` release asset is temporarily an
-identical copy of the normal NSIS setup. It contains no Rust downloader and is
-not advertised. Its only purpose is to move already released Windows clients
-from the old updater contract to the direct-setup updater.
+4. optionally builds and publishes the Chrome extension;
+5. pushes the release commit and tag;
+6. creates a draft GitHub release and uploads the selected local files;
+7. dispatches the Windows workflow;
+8. lets the Windows workflow add the setup and update manifest, retain the
+   APPX as a private workflow artifact, and either publish or retain the draft.

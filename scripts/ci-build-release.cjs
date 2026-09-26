@@ -93,11 +93,6 @@ function buildWindows(version) {
     "--config.directories.output=dist/build/windows/store",
   ]);
   const setup = copyArtifact(path.join(buildDir, "windows", "setup"), config.release.windowsSetupAsset);
-  copyArtifact(
-    path.join(buildDir, "windows", "setup"),
-    config.release.windowsSetupAsset,
-    config.release.windowsLegacyUpdateAsset,
-  );
   copyArtifact(path.join(buildDir, "windows", "store"), config.release.windowsStoreAppxAsset);
   fs.writeFileSync(
     path.join(artifactsDir, "update_manifest_windows.json"),

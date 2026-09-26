@@ -16,7 +16,7 @@
     "dev:logs": "node scripts/run-logged-command.cjs dev:logs node scripts/dev-one.cjs",
     "dev:2": "node scripts/run-logged-command.cjs dev:2 node scripts/dev-two.cjs",
     "dev:2:logs": "node scripts/run-logged-command.cjs dev:2:logs node scripts/dev-two.cjs --logs",
-    "test": "node scripts/run-logged-command.cjs test --shell \"node --check src/main/index.js && node --check src/main/config-crypto.js && node --check src/preload/index.js && node --check electron-builder.config.cjs && node --check scripts/build-chrome-extension.cjs && node --check scripts/build-linux.cjs && node --check scripts/doctor.cjs && node --check scripts/build-store.cjs && node --check scripts/ci-build-release.cjs && node --check scripts/ci-create-latest.cjs && node --check scripts/ci-append-linux-latest.cjs && node --check scripts/promote-release-artifacts.cjs && node --check scripts/dev-one.cjs && node --check scripts/dev-two.cjs && node --check scripts/runtime-log.cjs && node --check scripts/publish-chrome-extension.cjs && node --check scripts/scan-virustotal.cjs && node --check scripts/release-help.cjs && node --check scripts/release.cjs && node --check scripts/run-electron-vite.cjs && node --check scripts/run-logged-command.cjs && node scripts/test-config-crypto.cjs && node scripts/test-file-security.mjs\"",
+    "test": "node scripts/run-logged-command.cjs test --shell \"node --check src/main/index.js && node --check src/main/config-crypto.js && node --check src/preload/index.js && node --check electron-builder.config.cjs && node --check scripts/build-chrome-extension.cjs && node --check scripts/build-linux.cjs && node --check scripts/doctor.cjs && node --check scripts/build-store.cjs && node --check scripts/ci-build-release.cjs && node --check scripts/ci-create-latest.cjs && node --check scripts/ci-append-linux-latest.cjs && node --check scripts/promote-release-artifacts.cjs && node --check scripts/dev-one.cjs && node --check scripts/dev-two.cjs && node --check scripts/runtime-log.cjs && node --check scripts/publish-chrome-extension.cjs && node --check scripts/scan-virustotal.cjs && node --check scripts/release-help.cjs && node --check scripts/release.cjs && node --check scripts/run-electron-vite.cjs && node --check scripts/run-logged-command.cjs && node scripts/test-config-crypto.cjs && node scripts/test-file-security.mjs && node scripts/test-release.cjs\"",
     "doctor": "node scripts/doctor.cjs",
     "build": "node scripts/run-logged-command.cjs build node scripts/build-linux.cjs",
     "renderer:build": "node scripts/run-logged-command.cjs renderer:build npx vite build",
@@ -30,13 +30,10 @@
     "scan:virustotal": "node scripts/run-logged-command.cjs scan:virustotal node scripts/scan-virustotal.cjs",
     "scan:virustotal:submit": "node scripts/run-logged-command.cjs scan:virustotal:submit node scripts/scan-virustotal.cjs --submit-only",
     "build:store": "node scripts/run-logged-command.cjs build:store node scripts/build-store.cjs",
-    "release": "node scripts/run-logged-command.cjs release node scripts/release-help.cjs --minor",
-    "patch": "node scripts/run-logged-command.cjs patch node scripts/release-help.cjs --patch",
-    "release:important": "node scripts/run-logged-command.cjs release:important node scripts/release-help.cjs --minor --important",
-    "patch:important": "node scripts/run-logged-command.cjs patch:important node scripts/release-help.cjs --patch --important",
-    "release:clear-important": "node scripts/run-logged-command.cjs release:clear-important node scripts/release-help.cjs --minor --clear-important"
+    "release": "node scripts/release.cjs"
   },
   "devDependencies": {
+    "@clack/prompts": "^1.8.1",
     "@fortawesome/fontawesome-free": "^7.2.0",
     "archiver": "^7.0.1",
     "chrome-webstore-upload-cli": "^4.0.1",

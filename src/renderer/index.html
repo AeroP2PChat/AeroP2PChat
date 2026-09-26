@@ -505,6 +505,13 @@
             <div class="update-actions">
               <button id="update-button" type="button">Update</button>
               <button
+                id="update-fallback-button"
+                class="ghost-button hidden"
+                type="button"
+              >
+                Latest release
+              </button>
+              <button
                 id="update-ignore-button"
                 class="ghost-button"
                 type="button"
@@ -967,7 +974,7 @@
               Ignore
             </button>
             <button id="startup-update-fallback" class="ghost-button hidden" type="button" style="flex: 1;">
-              Open download
+              Latest release
             </button>
             <button id="startup-update-button" type="button" style="flex: 1; background: var(--text); color: var(--surface); border: none; border-radius: var(--radius-sm); font-weight: 600;">
               Install update

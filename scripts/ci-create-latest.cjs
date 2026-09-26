@@ -42,17 +42,6 @@ function main() {
   const tag = `v${version}`;
   const asset = manifest.asset;
   if (!asset) throw new Error("No asset in Windows manifest.");
-  const legacyPath = path.join(artifactsDir, config.release.windowsLegacyUpdateAsset);
-  if (!fs.existsSync(legacyPath)) {
-    throw new Error(`Legacy Windows update bridge not found: ${legacyPath}`);
-  }
-  const legacyData = fs.readFileSync(legacyPath);
-  const legacy = {
-    name: config.release.windowsLegacyUpdateAsset,
-    size: legacyData.length,
-    sha256: require("node:crypto").createHash("sha256").update(legacyData).digest("hex"),
-    sha512: require("node:crypto").createHash("sha512").update(legacyData).digest("base64"),
-  };
   const lines = [
     `version: ${yamlQuote(version)}`,
     ...(minimumVersion
@@ -65,12 +54,6 @@ function main() {
     `sha256: ${yamlQuote(asset.sha256)}`,
     `sha512: ${yamlQuote(asset.sha512)}`,
     `size: ${asset.size}`,
-    // Compatibility bridge for released clients that still expect the old
-    // updater filename. This file is an identical copy of the normal setup.
-    `onlineInstallerUrl: ${yamlQuote(releaseUrl(tag, legacy.name))}`,
-    `onlineInstallerSha256: ${yamlQuote(legacy.sha256)}`,
-    `onlineInstallerSha512: ${yamlQuote(legacy.sha512)}`,
-    `onlineInstallerSize: ${legacy.size}`,
     `productName: ${yamlQuote(config.app.name)}`,
     "",
   ];

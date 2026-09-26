@@ -12,6 +12,11 @@ on:
         required: false
         default: ""
         type: string
+      publish_release:
+        description: Publish after the Windows build; otherwise keep the draft
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: write
@@ -74,13 +79,16 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Upload Windows files and publish release
+      - name: Upload Windows files
         shell: pwsh
         run: |
           gh release upload "${{ inputs.tag }}" `
             dist/build/artifacts/Aero-P2P-Chat-Windows-x64-Setup.exe `
-            dist/build/artifacts/Aero-P2P-Chat-Online-Installer.exe `
             dist/build/artifacts/update_manifest_windows.json `
             dist/build/artifacts/latest.yml `
             --clobber
-          gh release edit "${{ inputs.tag }}" --draft=false --latest
+
+      - name: Publish release
+        if: ${{ inputs.publish_release }}
+        shell: pwsh
+        run: gh release edit "${{ inputs.tag }}" --draft=false --latest
