@@ -70,6 +70,7 @@
     "@capacitor/splash-screen": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
     "@noble/hashes": "^2.3.0",
+    "codex": "^0.2.3",
     "country-flag-emoji-polyfill": "^0.1.10",
     "emoji-picker-element": "^1.29.1",
     "emoji-picker-element-data": "^1.8.0",
