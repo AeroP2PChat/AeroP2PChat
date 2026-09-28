@@ -6,6 +6,12 @@ const path = require("node:path");
 const root = path.resolve(__dirname, "..");
 const buildDir = path.join(root, "dist", "build");
 const artifactsDir = path.join(buildDir, "artifacts");
+const electronBuilderCli = path.join(
+  root,
+  "node_modules",
+  "electron-builder",
+  "cli.js",
+);
 const config = require("../config.json");
 const packageInfo = require("../package.json");
 
@@ -25,7 +31,13 @@ function parseArgs() {
 
 function run(command, args) {
   const windowsNpm = process.platform === "win32" && ["npm", "npx"].includes(command);
-  const result = spawnSync(windowsNpm ? `${command}.cmd` : command, args, {
+  const executable = windowsNpm
+    ? process.env.ComSpec || "cmd.exe"
+    : command;
+  const commandArgs = windowsNpm
+    ? ["/d", "/s", "/c", `${command}.cmd`, ...args]
+    : args;
+  const result = spawnSync(executable, commandArgs, {
     cwd: root,
     stdio: "inherit",
     shell: false,
@@ -61,8 +73,8 @@ function buildLinux(version) {
   if (process.platform !== "linux") throw new Error("Linux packages require a Linux host.");
   resetPlatformOutput("linux");
   run("node", ["scripts/run-electron-vite.cjs", "build"]);
-  run("npx", [
-    "electron-builder", "--config", "electron-builder.config.cjs",
+  run(process.execPath, [
+    electronBuilderCli, "--config", "electron-builder.config.cjs",
     "--linux", "AppImage", "rpm", "deb", "--x64", "--publish", "never",
     "--config.directories.output=dist/build/linux",
   ]);
@@ -82,13 +94,13 @@ function buildWindows(version) {
   if (process.platform !== "win32") throw new Error("Windows packages require a Windows host.");
   resetPlatformOutput("windows");
   run("node", ["scripts/run-electron-vite.cjs", "build"]);
-  run("npx", [
-    "electron-builder", "--config", "electron-builder.config.cjs",
+  run(process.execPath, [
+    electronBuilderCli, "--config", "electron-builder.config.cjs",
     "--win", "nsis", "--x64", "--publish", "never",
     "--config.directories.output=dist/build/windows/setup",
   ]);
-  run("npx", [
-    "electron-builder", "--config", "electron-builder.config.cjs",
+  run(process.execPath, [
+    electronBuilderCli, "--config", "electron-builder.config.cjs",
     "--win", "appx", "--x64", "--publish", "never",
     "--config.directories.output=dist/build/windows/store",
   ]);

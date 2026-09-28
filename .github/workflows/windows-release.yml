@@ -44,8 +44,6 @@ jobs:
           }
 
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.tag }}
 
       - uses: actions/setup-node@v4
         with:
