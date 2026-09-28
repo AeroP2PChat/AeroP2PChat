@@ -32,18 +32,39 @@ Check that the publisher and file source are correct before continuing.
 
 ### Linux
 
-The automatic installer is the easiest option. It installs the AppImage for
-your user, adds the application-menu entry and icon, and configures the
-`aerop2p` update command. It does not require `sudo`:
+The automatic installer is the easiest option. It detects your distribution,
+downloads the matching package, verifies its checksum and file size, installs
+the required dependencies, and configures the application menu, icons, and the
+`aerop2p` command:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Zorblock/AeroP2Pchat/main/install.sh | sh -s -- install
 ```
 
-Update an installation created this way with:
+It selects:
+
+- RPM with `dnf` on Nobara, Fedora, RHEL, Rocky Linux, and AlmaLinux;
+- DEB with `apt-get` on Ubuntu, Debian, Linux Mint, and Pop!_OS;
+- AppImage on other distributions or when root/`sudo` is unavailable.
+
+Native RPM and DEB installations ask for `sudo` because the system package
+manager installs Aero and its dependencies. The AppImage remains entirely in
+your user account and does not need `sudo`.
+
+Manage an installation created by the script with:
 
 ```sh
 aerop2p update
+aerop2p status
+aerop2p repair
+aerop2p uninstall
+```
+
+To force a specific format, append `--rpm`, `--deb`, or `--appimage` to the
+installer command. For example:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/Zorblock/AeroP2Pchat/main/install.sh | sh -s -- install --appimage
 ```
 
 For a manual installation, choose the package matching your system:
@@ -81,7 +102,7 @@ chmod +x Aero-P2P-Chat-Linux-x64.AppImage
 ## More information
 
 - [Latest release and release notes](https://github.com/Zorblock/AeroP2Pchat/releases/latest)
-- [Official website](https://popipo.de/app/aero)
+- [Official website](https://zorblock.de/app/aero/)
 - [Help, bug reports, and suggestions](https://github.com/Zorblock/AeroP2Pchat/issues)
 
 ## License
