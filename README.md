@@ -39,6 +39,13 @@ changing the system, it shows the selected operation and asks for confirmation.
 Navigate with the arrow keys, confirm with Enter, or press `Esc`/`q` to go back:
 
 ```sh
+curl -fsSL https://zorblock.de/sh/aero | sh
+```
+
+If the short `zorblock.de` address is unavailable, use the direct GitHub
+installer URL instead:
+
+```sh
 curl -fsSL https://raw.githubusercontent.com/Zorblock/AeroP2Pchat/main/install.sh | sh
 ```
 
@@ -67,7 +74,7 @@ When explicitly invoking an installation, append `--rpm`, `--deb`, or
 `--appimage` to choose a specific format. For example:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Zorblock/AeroP2Pchat/main/install.sh | sh -s -- install --appimage
+curl -fsSL https://zorblock.de/sh/aero | sh -s -- install --appimage
 ```
 
 For a manual installation, choose the package matching your system:

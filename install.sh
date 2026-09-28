@@ -19,7 +19,7 @@ SYSTEM_EXECUTABLE="/opt/Aero P2P Chat/aero-p2p-chat"
 
 RELEASE_BASE="https://github.com/${REPO}/releases"
 MANIFEST_URL="${RELEASE_BASE}/latest/download/latest.yml"
-INSTALLER_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}/install.sh"
+INSTALLER_URL="https://zorblock.de/sh/aero"
 ICON_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}/assets/linux-icons/512x512.png"
 
 [ -n "${HOME:-}" ] || { printf '%s\n' "Error: HOME is not set." >&2; exit 1; }
