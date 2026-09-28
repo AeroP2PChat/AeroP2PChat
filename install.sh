@@ -170,7 +170,7 @@ select_menu() {
       fi
       option_number=$((option_number + 1))
     done
-    printf '%s\n' "$(color 90 '↑/↓ navigate · Enter select · q back')" >/dev/tty
+    printf '%s\n' "$(color 90 '↑/↓ navigate · Enter select · Esc/q back')" >/dev/tty
     menu_rendered=1
 
     menu_key=$(dd bs=1 count=1 2>/dev/null </dev/tty)
@@ -183,8 +183,15 @@ select_menu() {
         if [ "$menu_key" -le "$option_count" ] 2>/dev/null; then MENU_CHOICE=$menu_key; break; fi
         ;;
       "$(printf '\033')")
+        stty min 0 time 1 </dev/tty
         menu_key_2=$(dd bs=1 count=1 2>/dev/null </dev/tty)
+        if [ -z "$menu_key_2" ]; then
+          stty min 1 time 0 </dev/tty
+          MENU_CHOICE=0
+          break
+        fi
         menu_key_3=$(dd bs=1 count=1 2>/dev/null </dev/tty)
+        stty min 1 time 0 </dev/tty
         case "$menu_key_2$menu_key_3" in
           '[A') selected_option=$((selected_option - 1)); [ "$selected_option" -ge 1 ] || selected_option=$option_count ;;
           '[B') selected_option=$((selected_option + 1)); [ "$selected_option" -le "$option_count" ] || selected_option=1 ;;

@@ -36,7 +36,7 @@ The interactive installer lets you choose exactly what should happen. Starting
 it without an action does not install anything automatically: it opens a menu
 for installation, updates, status checks, repairs, and uninstallation. Before
 changing the system, it shows the selected operation and asks for confirmation.
-Navigate with the arrow keys, confirm with Enter, or press `q` to go back:
+Navigate with the arrow keys, confirm with Enter, or press `Esc`/`q` to go back:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Zorblock/AeroP2Pchat/main/install.sh | sh
