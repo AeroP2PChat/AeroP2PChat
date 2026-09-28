@@ -1,13 +1,21 @@
 const {
   bumpVersion,
   compareVersions,
+  downloadStoreAppx,
   executeRelease,
+  findWindowsWorkflowRun,
   getReleaseState,
   parseVersion,
+  watchWindowsWorkflow,
 } = require("./release-help.cjs");
 
 function formatMinimumVersion(value) {
   return value || "keine";
+}
+
+function formatFileSize(bytes) {
+  const megabytes = bytes / (1024 * 1024);
+  return `${megabytes >= 10 ? megabytes.toFixed(1) : megabytes.toFixed(2)} MB`;
 }
 
 async function main() {
@@ -26,6 +34,7 @@ async function main() {
     note,
     outro,
     select,
+    spinner,
     text,
   } = clack;
   const state = getReleaseState();
@@ -210,7 +219,8 @@ async function main() {
     return;
   }
 
-  const result = executeRelease(
+  let uploadSpinner = null;
+  const result = await executeRelease(
     {
       nextVersion,
       updatePolicy,
@@ -221,11 +231,65 @@ async function main() {
     {
       step: (message) => log.step(message),
       info: (message) => log.info(message),
+      uploadStart: ({ index, total, name, size }) => {
+        uploadSpinner = spinner();
+        uploadSpinner.start(
+          `[${index}/${total}] ${name} wird hochgeladen · ${formatFileSize(size)}`,
+        );
+      },
+      uploadSuccess: ({ index, total, name, size }) => {
+        uploadSpinner?.stop(
+          `[${index}/${total}] ${name} hochgeladen · ${formatFileSize(size)}`,
+        );
+        uploadSpinner = null;
+      },
+      uploadError: ({ index, total, name }) => {
+        uploadSpinner?.error(
+          `[${index}/${total}] Upload fehlgeschlagen · ${name}`,
+        );
+        uploadSpinner = null;
+      },
     },
   );
 
+  log.step("Warte auf den Windows-Workflow");
+  const workflowRun = findWindowsWorkflowRun(result);
+  log.info(`Windows-Workflow: ${workflowRun.url}`);
+  watchWindowsWorkflow(workflowRun.databaseId);
+  log.success("Windows-Setup und Microsoft-Store-APPX wurden erfolgreich gebaut.");
+
+  const downloadAppx = unwrap(
+    await confirm({
+      message: "Microsoft-Store-APPX jetzt herunterladen?",
+      active: "Ja",
+      inactive: "Nein",
+      initialValue: true,
+    }),
+  );
+  let appxPath = "";
+  if (downloadAppx) {
+    const downloadSpinner = spinner();
+    downloadSpinner.start("Microsoft-Store-APPX wird heruntergeladen …");
+    try {
+      const downloadedAppx = await downloadStoreAppx(
+        workflowRun.databaseId,
+        result.tag,
+      );
+      appxPath = downloadedAppx.path;
+      downloadSpinner.stop(
+        `APPX heruntergeladen · ${formatFileSize(downloadedAppx.size)}`,
+      );
+      log.info(`Datei: ${appxPath}`);
+    } catch (error) {
+      downloadSpinner.error("APPX-Download fehlgeschlagen.");
+      throw error;
+    }
+  }
+
   outro(
-    `${result.tag} gestartet · Status: gh run list --workflow windows-release.yml`,
+    appxPath
+      ? `${result.tag} fertig · APPX wurde lokal gespeichert.`
+      : `${result.tag} fertig · APPX bleibt als GitHub-Artefakt verfügbar.`,
   );
 }
 

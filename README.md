@@ -46,25 +46,6 @@ written into the system installation directory. To update later, run
 - Fast, direct connections
 - Native packages for Windows and Linux
 
-## Development on Nobara/Fedora
-
-Install the local build tools once:
-
-```sh
-sudo dnf install nodejs dpkg rpm-build fakeroot
-npm ci
-```
-
-Start the app with `npm run dev`. Build all native Linux packages with
-`npm run build:linux`, or use `npm run build:linux:appimage`,
-`npm run build:linux:rpm`, and `npm run build:linux:deb` for one format.
-Artifacts are written below `dist/build/linux/`.
-
-Windows setup and Microsoft Store APPX packages are built by the
-`Windows Release` GitHub Actions workflow on a native Windows runner.
-See [DEVELOPMENT.md](./DEVELOPMENT.md) for the complete setup, build, update,
-and release workflow.
-
 ## Help and feedback
 
 Send questions, bug reports, and suggestions through

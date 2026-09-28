@@ -1,4 +1,4 @@
-const { spawnSync } = require("node:child_process");
+const { spawn, spawnSync } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
 
@@ -25,6 +25,31 @@ function run(command, args, { capture = false } = {}) {
     );
   }
   return capture ? String(result.stdout || "").trim() : "";
+}
+
+function runAsync(command, args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd: root,
+      stdio: ["ignore", "ignore", "pipe"],
+    });
+    let errorOutput = "";
+    child.stderr.on("data", (chunk) => {
+      errorOutput += chunk;
+    });
+    child.on("error", reject);
+    child.on("close", (code) => {
+      if (code === 0) resolve();
+      else {
+        reject(
+          new Error(
+            errorOutput.trim() ||
+              `${command} ${args.join(" ")} failed with exit code ${code}.`,
+          ),
+        );
+      }
+    });
+  });
 }
 
 function readJson(filePath, fallback = {}) {
@@ -125,6 +150,107 @@ function verifyArtifacts(names, platform) {
   }
 }
 
+function wait(milliseconds) {
+  Atomics.wait(
+    new Int32Array(new SharedArrayBuffer(4)),
+    0,
+    0,
+    milliseconds,
+  );
+}
+
+function findWindowsWorkflowRun({ headSha, dispatchedAt, attempts = 20 }) {
+  const earliestCreatedAt = Number(dispatchedAt) - 10000;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    const output = run(
+      "gh",
+      [
+        "run",
+        "list",
+        "--repo",
+        config.repo,
+        "--workflow",
+        "windows-release.yml",
+        "--commit",
+        headSha,
+        "--event",
+        "workflow_dispatch",
+        "--limit",
+        "10",
+        "--json",
+        "databaseId,createdAt,status,url,headSha",
+      ],
+      { capture: true },
+    );
+    const runs = JSON.parse(output || "[]");
+    const workflowRun = runs
+      .filter(
+        (entry) =>
+          entry.headSha === headSha &&
+          Date.parse(entry.createdAt) >= earliestCreatedAt,
+      )
+      .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))[0];
+    if (workflowRun) return workflowRun;
+    if (attempt < attempts) wait(1500);
+  }
+  throw new Error(
+    "The dispatched Windows workflow could not be found. Check GitHub Actions.",
+  );
+}
+
+function watchWindowsWorkflow(runId) {
+  run("gh", [
+    "run",
+    "watch",
+    String(runId),
+    "--repo",
+    config.repo,
+    "--compact",
+    "--exit-status",
+  ]);
+}
+
+async function uploadReleaseAsset(tag, filePath) {
+  const size = fs.statSync(filePath).size;
+  await runAsync("gh", [
+    "release",
+    "upload",
+    tag,
+    filePath,
+    "--repo",
+    config.repo,
+  ]);
+  return { name: path.basename(filePath), size };
+}
+
+async function downloadStoreAppx(runId, tag) {
+  const destination = path.join(
+    root,
+    "dist",
+    "build",
+    "microsoft-store",
+    tag,
+    `run-${runId}`,
+  );
+  fs.mkdirSync(destination, { recursive: true });
+  await runAsync("gh", [
+    "run",
+    "download",
+    String(runId),
+    "--repo",
+    config.repo,
+    "--name",
+    `microsoft-store-appx-${tag}`,
+    "--dir",
+    destination,
+  ]);
+  const appxPath = path.join(destination, config.release.windowsStoreAppxAsset);
+  if (!fs.existsSync(appxPath)) {
+    throw new Error(`Downloaded APPX not found: ${appxPath}`);
+  }
+  return { path: appxPath, size: fs.statSync(appxPath).size };
+}
+
 function releaseNotes(tag, highlights = "") {
   const lines = [`## Aero P2P Chat ${tag}`, ""];
   if (highlights.trim()) {
@@ -143,7 +269,7 @@ function releaseNotes(tag, highlights = "") {
   return lines.join("\n");
 }
 
-function executeRelease(options, reporter = {}) {
+async function executeRelease(options, reporter = {}) {
   if (process.platform !== "linux") {
     throw new Error("Releases are prepared locally on Linux.");
   }
@@ -241,8 +367,22 @@ function executeRelease(options, reporter = {}) {
       "--notes",
       releaseNotes(tag, options.highlights),
     ]);
-    for (const name of releaseAssets) {
-      run("gh", ["release", "upload", tag, path.join(artifactsDir, name)]);
+    for (const [index, name] of releaseAssets.entries()) {
+      const filePath = path.join(artifactsDir, name);
+      const uploadDetails = {
+        index: index + 1,
+        total: releaseAssets.length,
+        name,
+        size: fs.statSync(filePath).size,
+      };
+      reporter.uploadStart?.(uploadDetails);
+      try {
+        await uploadReleaseAsset(tag, filePath);
+        reporter.uploadSuccess?.(uploadDetails);
+      } catch (error) {
+        reporter.uploadError?.(uploadDetails);
+        throw error;
+      }
     }
 
     if (chromeMode === "publish") {
@@ -251,6 +391,8 @@ function executeRelease(options, reporter = {}) {
     }
 
     step("Dispatch Windows release workflow");
+    const headSha = run("git", ["rev-parse", "HEAD"], { capture: true });
+    const dispatchedAt = Date.now();
     run("gh", [
       "workflow",
       "run",
@@ -271,7 +413,15 @@ function executeRelease(options, reporter = {}) {
         ? "The Windows workflow will add Windows files and publish the release."
         : "The Windows workflow will add Windows files and keep the release as a draft.",
     );
-    return { branch, tag, minimumVersion, publishRelease, chromeMode };
+    return {
+      branch,
+      tag,
+      minimumVersion,
+      publishRelease,
+      chromeMode,
+      headSha,
+      dispatchedAt,
+    };
   } catch (error) {
     if (!committed) {
       fs.writeFileSync(packagePath, originalPackage);
@@ -286,9 +436,13 @@ function executeRelease(options, reporter = {}) {
 module.exports = {
   bumpVersion,
   compareVersions,
+  downloadStoreAppx,
   executeRelease,
+  findWindowsWorkflowRun,
   getReleaseState,
   parseVersion,
   releaseNotes,
   resolveMinimumVersion,
+  uploadReleaseAsset,
+  watchWindowsWorkflow,
 };
