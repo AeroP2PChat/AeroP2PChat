@@ -46,8 +46,12 @@ AUTOSTART_PATH="$CONFIG_HOME/autostart/$APP_SLUG.desktop"
 USER_DATA_PATH="$CONFIG_HOME/zorblock/userData/$APP_NAME"
 LOCK_DIR="$INSTALL_DIR/.installer.lock"
 
-ACTION=${1:-install}
-shift 2>/dev/null || true
+if [ "$#" -eq 0 ]; then
+  ACTION=menu
+else
+  ACTION=$1
+  shift
+fi
 PURGE_DATA=0
 FORCE_FORMAT=""
 while [ "$#" -gt 0 ]; do
@@ -67,6 +71,7 @@ TEMP_PAYLOAD_DIR=""
 TEMP_ICON=""
 TEMP_VERSION=""
 LOCK_HELD=0
+TTY_STATE=""
 SELECTED_FORMAT=""
 PACKAGE_MANAGER=""
 CURRENT_FORMAT="none"
@@ -95,7 +100,116 @@ warn() { printf '%s %s\n' "$(color 33 '▲')" "$*" >&2; }
 fail() { printf '%s %s\n' "$(color 31 '■')" "$*" >&2; exit 1; }
 outro() { printf '%s %s\n\n' "$(color '1;32' '└')" "$*"; }
 
+has_interactive_terminal() {
+  (: </dev/tty) 2>/dev/null && (: >/dev/tty) 2>/dev/null
+}
+
+restore_terminal() {
+  if [ -n "$TTY_STATE" ]; then
+    stty "$TTY_STATE" </dev/tty 2>/dev/null || true
+    TTY_STATE=""
+  fi
+  printf '\033[?25h' 2>/dev/null >/dev/tty || true
+}
+
+read_menu_choice() {
+  menu_prompt=$1
+  printf '%s ' "$(color 36 "$menu_prompt")" >/dev/tty
+  IFS= read -r MENU_CHOICE </dev/tty || MENU_CHOICE=""
+}
+
+menu_option_at() {
+  wanted_option=$1
+  shift
+  option_number=1
+  for option_text do
+    if [ "$option_number" -eq "$wanted_option" ]; then
+      printf '%s' "$option_text"
+      return
+    fi
+    option_number=$((option_number + 1))
+  done
+}
+
+select_menu() {
+  menu_title=$1
+  selected_option=$2
+  shift 2
+  option_count=$#
+  [ "$option_count" -gt 0 ] || fail "Menu has no options."
+
+  if ! command -v stty >/dev/null 2>&1 || ! command -v dd >/dev/null 2>&1; then
+    printf '\n%s\n' "$(color '1;36' "$menu_title")"
+    option_number=1
+    for option_text do
+      detail "$option_number  $option_text"
+      option_number=$((option_number + 1))
+    done
+    read_menu_choice "Select [1-$option_count]:"
+    case "$MENU_CHOICE" in *[!0-9]*|'') MENU_CHOICE=0 ;; esac
+    [ "$MENU_CHOICE" -ge 1 ] 2>/dev/null && [ "$MENU_CHOICE" -le "$option_count" ] 2>/dev/null || MENU_CHOICE=0
+    return
+  fi
+
+  TTY_STATE=$(stty -g </dev/tty) || fail "Could not initialize the terminal menu."
+  stty -echo -icanon min 1 time 0 </dev/tty
+  printf '\033[?25l' >/dev/tty
+  menu_rendered=0
+
+  while :; do
+    if [ "$menu_rendered" -eq 1 ]; then
+      printf '\033[%sA\r\033[J' "$((option_count + 2))" >/dev/tty
+    fi
+    printf '%s\n' "$(color '1;36' "$menu_title")" >/dev/tty
+    option_number=1
+    for option_text do
+      if [ "$option_number" -eq "$selected_option" ]; then
+        printf '\033[1;36m›\033[0m \033[7m %s \033[0m\n' "$option_text" >/dev/tty
+      else
+        printf '  %s\n' "$option_text" >/dev/tty
+      fi
+      option_number=$((option_number + 1))
+    done
+    printf '%s\n' "$(color 90 '↑/↓ navigate · Enter select · q back')" >/dev/tty
+    menu_rendered=1
+
+    menu_key=$(dd bs=1 count=1 2>/dev/null </dev/tty)
+    case "$menu_key" in
+      '') MENU_CHOICE=$selected_option; break ;;
+      k|K) selected_option=$((selected_option - 1)); [ "$selected_option" -ge 1 ] || selected_option=$option_count ;;
+      j|J) selected_option=$((selected_option + 1)); [ "$selected_option" -le "$option_count" ] || selected_option=1 ;;
+      q|Q) MENU_CHOICE=0; break ;;
+      [1-9])
+        if [ "$menu_key" -le "$option_count" ] 2>/dev/null; then MENU_CHOICE=$menu_key; break; fi
+        ;;
+      "$(printf '\033')")
+        menu_key_2=$(dd bs=1 count=1 2>/dev/null </dev/tty)
+        menu_key_3=$(dd bs=1 count=1 2>/dev/null </dev/tty)
+        case "$menu_key_2$menu_key_3" in
+          '[A') selected_option=$((selected_option - 1)); [ "$selected_option" -ge 1 ] || selected_option=$option_count ;;
+          '[B') selected_option=$((selected_option + 1)); [ "$selected_option" -le "$option_count" ] || selected_option=1 ;;
+        esac
+        ;;
+    esac
+  done
+
+  printf '\033[%sA\r\033[J' "$((option_count + 2))" >/dev/tty
+  restore_terminal
+  if [ "$MENU_CHOICE" -gt 0 ]; then
+    MENU_LABEL=$(menu_option_at "$MENU_CHOICE" "$@")
+    step "$menu_title"
+    ok "$MENU_LABEL"
+  fi
+}
+
+confirm_action() {
+  confirm_prompt=$1
+  select_menu "$confirm_prompt" 2 "Yes" "No"
+  [ "$MENU_CHOICE" -eq 1 ]
+}
+
 cleanup() {
+  restore_terminal
   [ -z "$TEMP_MANIFEST" ] || rm -f "$TEMP_MANIFEST" || true
   [ -z "$TEMP_PAYLOAD" ] || rm -f "$TEMP_PAYLOAD" || true
   [ -z "$TEMP_PAYLOAD_DIR" ] || rmdir "$TEMP_PAYLOAD_DIR" 2>/dev/null || true
@@ -617,6 +731,7 @@ print_help() {
 $APP_NAME Linux installer
 
 Usage:
+  sh install.sh                       Open the interactive action menu
   sh install.sh install               Detect and install the best package
   sh install.sh update                Update using the same package format
   sh install.sh status                Show installed and latest versions
@@ -630,7 +745,119 @@ Package overrides:
 EOF
 }
 
+choose_install_format_interactively() {
+  while :; do
+    select_menu "Choose package format" 1 \
+      "Automatic detection (recommended)" \
+      "RPM · Nobara/Fedora/RHEL" \
+      "DEB · Debian/Ubuntu" \
+      "AppImage · user-local" \
+      "Back"
+    case "$MENU_CHOICE" in
+      1) FORCE_FORMAT=""; return 0 ;;
+      2) FORCE_FORMAT=rpm; return 0 ;;
+      3) FORCE_FORMAT=deb; return 0 ;;
+      4) FORCE_FORMAT=appimage; return 0 ;;
+      0|5) return 1 ;;
+    esac
+  done
+}
+
+interactive_menu() {
+  if ! has_interactive_terminal; then
+    warn "No action selected and no interactive terminal is available. Nothing was changed."
+    print_help
+    exit 0
+  fi
+
+  while :; do
+    current_menu_format=$(installed_format)
+    current_menu_version=$(installed_version "$current_menu_format")
+    if [ "$current_menu_format" = none ]; then
+      detail "Current state: not installed"
+    else
+      detail "Current state: ${current_menu_version:-unknown} · $current_menu_format"
+    fi
+    select_menu "What would you like to do?" 1 \
+      "Install" \
+      "Update" \
+      "Show status" \
+      "Repair" \
+      "Uninstall" \
+      "Show command help" \
+      "Exit without changes"
+
+    case "$MENU_CHOICE" in
+      1)
+        if [ "$current_menu_format" != none ]; then
+          warn "$APP_NAME is already installed. Choose Update or Repair instead."
+          continue
+        fi
+        choose_install_format_interactively || continue
+        format_label=${FORCE_FORMAT:-automatic detection}
+        if confirm_action "Install $APP_NAME using $format_label?"; then ACTION=install; return; fi
+        detail "Installation cancelled; nothing was changed."
+        ;;
+      2)
+        if [ "$current_menu_format" = none ]; then
+          warn "$APP_NAME is not installed. Choose Install first."
+          continue
+        fi
+        FORCE_FORMAT=$current_menu_format
+        if confirm_action "Update the existing $current_menu_format installation?"; then ACTION=update; return; fi
+        detail "Update cancelled; nothing was changed."
+        ;;
+      3)
+        ACTION=status
+        return
+        ;;
+      4)
+        if [ "$current_menu_format" = none ]; then
+          warn "$APP_NAME is not installed. There is nothing to repair."
+          continue
+        fi
+        FORCE_FORMAT=$current_menu_format
+        if confirm_action "Repair the existing $current_menu_format installation?"; then ACTION=repair; return; fi
+        detail "Repair cancelled; nothing was changed."
+        ;;
+      5)
+        if [ "$current_menu_format" = none ]; then
+          warn "$APP_NAME is not installed. There is nothing to uninstall."
+          continue
+        fi
+        select_menu "Uninstall options" 1 \
+          "Remove the app and keep user data" \
+          "Remove the app and permanently delete user data" \
+          "Back"
+        case "$MENU_CHOICE" in
+          1)
+            PURGE_DATA=0
+            if confirm_action "Uninstall $APP_NAME and keep user data?"; then ACTION=uninstall; return; fi
+            detail "Uninstall cancelled; nothing was changed."
+            ;;
+          2)
+            PURGE_DATA=1
+            warn "User data at $USER_DATA_PATH will be permanently deleted."
+            if confirm_action "Uninstall and permanently delete user data?"; then ACTION=uninstall; return; fi
+            detail "Uninstall cancelled; nothing was changed."
+            ;;
+          0|3) ;;
+        esac
+        ;;
+      6)
+        printf '\n'
+        print_help
+        ;;
+      0|7)
+        outro "No changes made"
+        exit 0
+        ;;
+    esac
+  done
+}
+
 intro
+[ "$ACTION" != menu ] || interactive_menu
 case "$ACTION" in
   install|update) install_or_update ;;
   repair) FORCE_FORMAT=$(installed_format); [ "$FORCE_FORMAT" != none ] || fail "$APP_NAME is not installed."; install_or_update ;;

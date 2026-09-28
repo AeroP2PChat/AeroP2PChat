@@ -32,16 +32,18 @@ Check that the publisher and file source are correct before continuing.
 
 ### Linux
 
-The automatic installer is the easiest option. It detects your distribution,
-downloads the matching package, verifies its checksum and file size, installs
-the required dependencies, and configures the application menu, icons, and the
-`aerop2p` command:
+The interactive installer lets you choose exactly what should happen. Starting
+it without an action does not install anything automatically: it opens a menu
+for installation, updates, status checks, repairs, and uninstallation. Before
+changing the system, it shows the selected operation and asks for confirmation.
+Navigate with the arrow keys, confirm with Enter, or press `q` to go back:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Zorblock/AeroP2Pchat/main/install.sh | sh -s -- install
+curl -fsSL https://raw.githubusercontent.com/Zorblock/AeroP2Pchat/main/install.sh | sh
 ```
 
-It selects:
+During installation you can select a package yourself or use automatic
+detection. Automatic detection selects:
 
 - RPM with `dnf` on Nobara, Fedora, RHEL, Rocky Linux, and AlmaLinux;
 - DEB with `apt-get` on Ubuntu, Debian, Linux Mint, and Pop!_OS;
@@ -51,7 +53,8 @@ Native RPM and DEB installations ask for `sudo` because the system package
 manager installs Aero and its dependencies. The AppImage remains entirely in
 your user account and does not need `sudo`.
 
-Manage an installation created by the script with:
+The installed `aerop2p` command also provides explicit operations for scripts
+or users who do not need the menu:
 
 ```sh
 aerop2p update
@@ -60,8 +63,8 @@ aerop2p repair
 aerop2p uninstall
 ```
 
-To force a specific format, append `--rpm`, `--deb`, or `--appimage` to the
-installer command. For example:
+When explicitly invoking an installation, append `--rpm`, `--deb`, or
+`--appimage` to choose a specific format. For example:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Zorblock/AeroP2Pchat/main/install.sh | sh -s -- install --appimage
