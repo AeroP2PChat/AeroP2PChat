@@ -1,57 +1,89 @@
 # Aero P2P Chat
 
-Aero P2P Chat is a fast, direct chat app for Windows and Linux.
-Connect directly with other people without routing messages through a central
-chat server.
+Aero P2P Chat is a fast desktop chat app for Windows and Linux. Messages,
+images, files, calls, and screen sharing connect directly between peers instead
+of passing through a central chat server.
 
-## Download
+<p align="center">
+  <a href="https://github.com/Zorblock/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Windows-x64-Setup.exe"><img alt="Download for Windows" src="https://img.shields.io/badge/Windows-Download_Setup-0078D4?style=for-the-badge&logo=windows11&logoColor=white"></a>
+  <a href="https://apps.microsoft.com/detail/9MTXC0M7P403"><img alt="Get it from Microsoft Store" src="https://img.shields.io/badge/Microsoft_Store-Get_the_app-5E5E5E?style=for-the-badge&logo=microsoft&logoColor=white"></a>
+</p>
 
-Download the latest version from the
-[SourceForge download page](https://sourceforge.net/projects/aerop2pchat/files/).
+<p align="center">
+  <a href="https://github.com/Zorblock/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Linux-x64.AppImage"><img alt="Download Linux AppImage" src="https://img.shields.io/badge/Linux-AppImage-F9C440?style=for-the-badge&logo=linux&logoColor=black"></a>
+  <a href="https://github.com/Zorblock/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Linux-x64.rpm"><img alt="Download Linux RPM" src="https://img.shields.io/badge/Fedora%20%2F%20Nobara-RPM-51A2DA?style=for-the-badge&logo=fedora&logoColor=white"></a>
+  <a href="https://github.com/Zorblock/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Linux-x64.deb"><img alt="Download Linux DEB" src="https://img.shields.io/badge/Debian%20%2F%20Ubuntu-DEB-A81D33?style=for-the-badge&logo=debian&logoColor=white"></a>
+</p>
 
-You can also find the app and more information on the
-[official website](https://popipo.de/app/aero).
+All downloads above always point to the latest stable release. The desktop
+packages currently support 64-bit Intel/AMD systems (`x86_64`).
 
 ## Installation
 
 ### Windows
 
-Download and open the setup file (`.exe`), then follow the installer steps.
+Choose one of these versions:
+
+- **Windows setup:** [Download the latest `.exe`](https://github.com/Zorblock/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Windows-x64-Setup.exe), open it, and follow the installation steps.
+- **Microsoft Store:** [Open Aero P2P Chat in Microsoft Store](https://apps.microsoft.com/detail/9MTXC0M7P403). Installation and updates are handled by the Store.
+
+Windows may show a security confirmation for apps downloaded from the web.
+Check that the publisher and file source are correct before continuing.
 
 ### Linux
 
-For a normal desktop installation (application-menu entry, icon, update
-command, and AppImage dependencies), run:
+The automatic installer is the easiest option. It installs the AppImage for
+your user, adds the application-menu entry and icon, and configures the
+`aerop2p` update command. It does not require `sudo`:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Zorblock/AeroP2Pchat/main/install.sh | sh -s -- install
 ```
 
-The installer places the app in your user account, so no application files are
-written into the system installation directory. To update later, run
-`aerop2p update`.
+Update an installation created this way with:
+
+```sh
+aerop2p update
+```
+
+For a manual installation, choose the package matching your system:
+
+| System | Package | Installation |
+| --- | --- | --- |
+| Nobara, Fedora, RHEL | [Download RPM](https://github.com/Zorblock/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Linux-x64.rpm) | `sudo dnf install ./Aero-P2P-Chat-Linux-x64.rpm` |
+| Ubuntu, Debian, Linux Mint | [Download DEB](https://github.com/Zorblock/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Linux-x64.deb) | `sudo apt install ./Aero-P2P-Chat-Linux-x64.deb` |
+| Other Linux distributions | [Download AppImage](https://github.com/Zorblock/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Linux-x64.AppImage) | See the commands below |
+
+Run the AppImage manually:
+
+```sh
+chmod +x Aero-P2P-Chat-Linux-x64.AppImage
+./Aero-P2P-Chat-Linux-x64.AppImage
+```
 
 ## Start a chat
 
 1. Open Aero P2P Chat.
-2. Copy your displayed Peer ID and send it to the person you want to chat with.
-3. Paste their Peer ID into the Remote Peer ID field.
-4. Select Connect and start chatting.
+2. Copy your Peer ID and send it to the person you want to chat with.
+3. Paste their Peer ID into the **Remote Peer ID** field.
+4. Select **Connect** and start chatting.
 
 ## Features
 
 - Direct peer-to-peer messaging
-- Consent-based, disk-streamed P2P image and file transfers with integrity and file-type checks
+- Images and large files streamed directly to the chosen destination
+- Transfer consent, integrity checks, and file-type validation
+- Voice and video calls
 - Screen sharing
-- Fast, direct connections
-- Native packages for Windows and Linux
+- Native Windows and Linux packages
+- Built-in update checks
 
-## Help and feedback
+## More information
 
-Send questions, bug reports, and suggestions through
-[GitHub Issues](https://github.com/Zorblock/AeroP2Pchat/issues).
+- [Latest release and release notes](https://github.com/Zorblock/AeroP2Pchat/releases/latest)
+- [Official website](https://popipo.de/app/aero)
+- [Help, bug reports, and suggestions](https://github.com/Zorblock/AeroP2Pchat/issues)
 
-## Source code and license
+## License
 
-The source code is available on [GitHub](https://github.com/Zorblock/AeroP2Pchat).
 Aero P2P Chat is licensed under the [MIT License](./LICENSE).
