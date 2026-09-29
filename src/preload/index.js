@@ -38,7 +38,7 @@ contextBridge.exposeInMainWorld("aeroChat", {
     process.platform === "linux" &&
     (Boolean(process.env.WAYLAND_DISPLAY) ||
       String(process.env.XDG_SESSION_TYPE || "").toLowerCase() === "wayland"),
-  isPackaged: !process.defaultApp,
+  isPackaged: process.env.AERO_CHAT_IS_PACKAGED === "1",
   isWindowsStore: Boolean(process.windowsStore),
   isAppImage: process.platform === "linux" && Boolean(process.env.APPIMAGE),
   installUpdate: (details) => ipcRenderer.invoke("install-update", details),

@@ -481,6 +481,7 @@ function handleFatalMainError(error) {
 
 app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
 app.name = projectConfig.app.name || "Aero P2P Chat";
+process.env.AERO_CHAT_IS_PACKAGED = app.isPackaged ? "1" : "0";
 // Keep the runtime window identity aligned with the installed launcher.
 if (process.platform === "win32") {
   app.setAppUserModelId(projectConfig.app.id);
