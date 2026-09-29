@@ -125,6 +125,9 @@ export function createPlatformApi() {
     isPackaged: Boolean(electron?.isPackaged),
     isWindowsStore,
     isAppImage,
+    usesLinuxSystemScreenPicker: Boolean(
+      electron?.usesLinuxSystemScreenPicker,
+    ),
     isChromeExtension,
     hasNativeWindowControls: isElectron,
     hasDesktopIntegration: isElectron,

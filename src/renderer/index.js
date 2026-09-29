@@ -11784,6 +11784,30 @@ function createStreamSourceEmptyState(tab) {
   return empty;
 }
 
+function renderLinuxSystemScreenPicker() {
+  selectedScreenSource = {
+    id: "linux-system-picker",
+    name: "Screen",
+  };
+  availableScreenSources = [];
+  screenSourceList.classList.add("system-picker");
+  screenSourceList.replaceChildren();
+
+  const hint = document.createElement("div");
+  hint.className = "screen-source-empty system-picker-hint";
+  const icon = document.createElement("i");
+  icon.className = "fa-brands fa-linux";
+  icon.setAttribute("aria-hidden", "true");
+  const title = document.createElement("strong");
+  title.textContent = "Choose in the Linux system dialog";
+  const description = document.createElement("span");
+  description.textContent =
+    "After starting, select a monitor or application in the native sharing dialog.";
+  hint.append(icon, title, description);
+  screenSourceList.append(hint);
+  streamStartButton.disabled = false;
+}
+
 function renderScreenSources(sources = availableScreenSources) {
   availableScreenSources = Array.isArray(sources) ? sources : [];
   const visibleSources = availableScreenSources.filter(
@@ -11855,6 +11879,17 @@ async function openStreamSetup({ reuseCurrent = false } = {}) {
   syncEnhancedSelect(streamFpsSelect);
   streamAudioToggle.checked = Boolean(screenShareState.audioEnabled);
   streamModal.classList.remove("hidden");
+  streamModal.classList.toggle(
+    "linux-system-picker",
+    platformApi.usesLinuxSystemScreenPicker,
+  );
+  screenSourceList.classList.remove("system-picker");
+
+  if (platformApi.usesLinuxSystemScreenPicker) {
+    renderLinuxSystemScreenPicker();
+    return;
+  }
+
   screenSourceList.replaceChildren();
   const loading = document.createElement("div");
   loading.className = "screen-source-empty";
@@ -13943,12 +13978,28 @@ streamStartButton.addEventListener("click", async () => {
     return;
   }
 
-  const source = selectedScreenSource;
+  let source = selectedScreenSource;
   const options = {
     quality: normalizeScreenQuality(streamQualitySelect.value),
     fps: normalizeScreenFps(streamFpsSelect.value),
     audio: streamAudioToggle.checked,
   };
+
+  if (platformApi.usesLinuxSystemScreenPicker) {
+    streamStartButton.disabled = true;
+    try {
+      const sources = (await platformApi.getScreenSources()) || [];
+      source = sources[0] || null;
+    } catch {
+      source = null;
+    } finally {
+      streamStartButton.disabled = false;
+    }
+    if (!source) {
+      return;
+    }
+  }
+
   closeStreamSetup();
   await startLocalScreenShare(source, options);
 });

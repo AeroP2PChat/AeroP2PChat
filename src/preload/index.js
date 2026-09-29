@@ -2,6 +2,10 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("aeroChat", {
   platform: process.platform,
+  usesLinuxSystemScreenPicker:
+    process.platform === "linux" &&
+    (Boolean(process.env.WAYLAND_DISPLAY) ||
+      String(process.env.XDG_SESSION_TYPE || "").toLowerCase() === "wayland"),
   isPackaged: !process.defaultApp,
   isWindowsStore: Boolean(process.windowsStore),
   isAppImage: process.platform === "linux" && Boolean(process.env.APPIMAGE),
