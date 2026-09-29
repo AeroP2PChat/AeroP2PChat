@@ -1000,6 +1000,11 @@ function applyPlatformUi() {
 }
 
 applyPlatformUi();
+writeDiagnosticLog("renderer-started", {
+  platform,
+  electron: platformApi.isElectron,
+  packaged: platformApi.isPackaged,
+});
 if (typeof mobileWebLayoutQuery.addEventListener === "function") {
   mobileWebLayoutQuery.addEventListener("change", applyPlatformUi);
 } else {
@@ -3035,6 +3040,7 @@ function enterNetworkOfflineMode() {
   }
 
   networkOffline = true;
+  writeDiagnosticLog("network-offline", { simulated: debugOfflineMode });
   if (!debugOfflineMode) {
     activateOfflineMode();
   } else {
@@ -3048,6 +3054,7 @@ function restoreNetworkConnection({ force = false } = {}) {
   }
 
   networkOffline = false;
+  writeDiagnosticLog("network-restored", { forced: force });
   updateNetworkAvailabilityUi();
   if (debugOfflineMode) {
     setStatus("offline", "You're offline. Internet connection required.");
@@ -6262,6 +6269,8 @@ async function checkForUpdates({ manual = false } = {}) {
   }
 
   updateCheckInFlight = true;
+  const updateCheckStartedAt = performance.now();
+  writeDiagnosticLog("update-check-started", { manual });
   if (manual) {
     setUpdateMenuStatus("Checking...", { reset: false });
     setStatus("pending", "Checking for updates...");
@@ -6295,6 +6304,11 @@ async function checkForUpdates({ manual = false } = {}) {
     }
     if (!mandatory && compareVersions(latestVersion, effectiveCurrentVersion) <= 0) {
       clearUpdateAvailableUi();
+      writeDiagnosticLog("update-check-complete", {
+        manual,
+        result: "current",
+        durationMs: Math.round(performance.now() - updateCheckStartedAt),
+      });
       if (manual) {
         setUpdateMenuStatus("No update found");
         setStatus("online", "You are up to date.");
@@ -6383,6 +6397,15 @@ async function checkForUpdates({ manual = false } = {}) {
       unavailableReason,
     };
 
+    writeDiagnosticLog("update-check-complete", {
+      manual,
+      result: "available",
+      version: latestVersion,
+      mandatory,
+      directInstallUnavailable,
+      durationMs: Math.round(performance.now() - updateCheckStartedAt),
+    });
+
     syncAvailableUpdateUi();
     void maybeAutoDownloadAvailableUpdate();
     if (manual) {
@@ -6402,6 +6425,12 @@ async function checkForUpdates({ manual = false } = {}) {
       }
     }
   } catch (error) {
+    writeDiagnosticLog("update-check-failed", {
+      manual,
+      name: error?.name || "Error",
+      error: error?.message || "Unknown update error",
+      durationMs: Math.round(performance.now() - updateCheckStartedAt),
+    });
     // Keep an existing update hint visible when a periodic check fails.
     if (manual) {
       availableUpdate = {
@@ -10785,6 +10814,7 @@ function stopLocalScreenShare({ notifyPeer = true, message = "" } = {}) {
   stopScreenQualityMonitor();
   const mediaConn = screenShareState.localMediaConn;
   const stream = screenShareState.localStream;
+  const wasActive = Boolean(stream);
 
   screenShareState.localMediaConn = null;
   screenShareState.localStream = null;
@@ -10806,6 +10836,9 @@ function stopLocalScreenShare({ notifyPeer = true, message = "" } = {}) {
   }
   refreshCallUi();
   refreshCallStage();
+  if (wasActive) {
+    writeDiagnosticLog("screen-share-stopped", { side: "local", notifyPeer });
+  }
 }
 
 function stopRemoteScreenShare({ message = "" } = {}) {
@@ -10912,6 +10945,12 @@ async function startLocalScreenShare(
     screenShareState.fps = normalizeScreenFps(fps);
     screenShareState.audioEnabled = Boolean(stream.getAudioTracks().length);
     screenShareState.remoteViewerWatching = true;
+    writeDiagnosticLog("screen-share-captured", {
+      quality: screenShareState.quality,
+      fps: screenShareState.fps,
+      audio: screenShareState.audioEnabled,
+      videoSettings: videoTrack.getSettings?.() || {},
+    });
 
     const mediaConn = callPeer.call(peerId, stream, {
       metadata: {
@@ -10955,6 +10994,13 @@ async function startLocalScreenShare(
     const message = formatScreenCaptureError(error);
     setStatus("offline", message);
     addSystemMessage(message);
+    writeDiagnosticLog("screen-share-failed", {
+      name: error?.name || "Error",
+      error: error?.message || message,
+      quality: normalizeScreenQuality(quality),
+      fps: normalizeScreenFps(fps),
+      audioRequested: Boolean(audio),
+    });
   }
 }
 
@@ -11070,6 +11116,7 @@ async function startVoiceCall() {
   }
 
   const callId = createCallId();
+  writeDiagnosticLog("call-outgoing-started");
   setCallState("outgoing", { peerId: targetPeerId, callId });
   if (!sendProtocolMessage(conn, "call-request", { callId })) {
     resetCallState();
@@ -11119,6 +11166,7 @@ async function acceptVoiceCall() {
   const peerId = callState.peerId;
   const callId = callState.callId;
   const conn = connections.get(peerId);
+  writeDiagnosticLog("call-incoming-accepted");
 
   closeCallNotification(callId);
   setCallState("connecting", { peerId, callId });
@@ -11160,6 +11208,10 @@ async function acceptVoiceCall() {
     closeCallNotification(callId);
     addSystemMessage(`Could not start call: ${error.message}`);
     resetCallState();
+    writeDiagnosticLog("call-start-failed", {
+      name: error?.name || "Error",
+      error: error?.message || "Unknown call error",
+    });
   }
 }
 
@@ -11169,6 +11221,7 @@ function declineVoiceCall() {
   }
 
   closeCallNotification();
+  writeDiagnosticLog("call-incoming-declined");
   const conn = connections.get(callState.peerId);
   sendProtocolMessage(conn, "call-declined", { callId: callState.callId });
   addSystemMessage(
@@ -11262,6 +11315,7 @@ function endVoiceCall({
   const callId = callState.callId;
   const conn = peerId ? connections.get(peerId) : null;
   const wasJoined = callState.joined;
+  const previousState = callState.status;
 
   closeCallNotification(callId);
   if (notifyPeer && conn?.open && callId) {
@@ -11276,6 +11330,9 @@ function endVoiceCall({
     addSystemMessage(message);
   }
   syncPresenceStatusIndicator();
+  if (previousState !== "idle") {
+    writeDiagnosticLog("call-ended", { joined: wasJoined, notifyPeer });
+  }
 }
 
 function handleRemoteCallEnded(peerId, data) {
@@ -12110,10 +12167,12 @@ function sendProtocolMessage(conn, type, extra = {}) {
   }
 }
 
+function writeDiagnosticLog(event, data = {}) {
+  window.aeroChat?.diagnosticEvent?.(event, data);
+}
+
 function writeDevLog(message) {
-  if (location.protocol === "http:") {
-    window.aeroChat?.log(`[Aero] ${message}`);
-  }
+  writeDiagnosticLog("connection", { state: message });
 }
 
 function areReadReceiptsVisibleForPeer(peerId) {
@@ -13015,6 +13074,11 @@ function attachConnectionHandlers(conn, peerId, direction) {
     }
 
     const message = error?.message || "The connection failed.";
+    writeDiagnosticLog("connection-error", {
+      direction,
+      type: error?.type || error?.name || "unknown",
+      error: message,
+    });
     setStatus(
       "offline",
       `Could not connect to ${peerLabel()}. Use Retry to try again.`,
@@ -13027,6 +13091,7 @@ function attachConnectionHandlers(conn, peerId, direction) {
 function registerConnection(conn, options = {}) {
   const peerId = conn.peer;
   const direction = options.incoming ? "incoming" : "outgoing";
+  writeDiagnosticLog("connection-registered", { direction });
   if (isNetworkOffline() || isPresenceOffline()) {
     conn.close();
     return false;
@@ -13610,6 +13675,7 @@ function createPeer() {
   });
 
   nextPeer.on("open", (id) => {
+    writeDiagnosticLog("signaling-ready", { browser: util.browser });
     intentionalPeerDisconnect = false;
     if (isNetworkOffline()) {
       intentionalPeerDisconnect = true;
@@ -13636,6 +13702,10 @@ function createPeer() {
   });
 
   nextPeer.on("disconnected", () => {
+    writeDiagnosticLog("signaling-disconnected", {
+      offline: isNetworkOffline(),
+      intentional: intentionalPeerDisconnect,
+    });
     if (isNetworkOffline()) {
       return;
     }
@@ -13652,6 +13722,10 @@ function createPeer() {
   });
 
   nextPeer.on("error", (error) => {
+    writeDiagnosticLog("signaling-error", {
+      type: error?.type || error?.name || "unknown",
+      error: error?.message || "Unknown signaling error",
+    });
     if (isNetworkOffline()) {
       return;
     }
@@ -13683,6 +13757,7 @@ function createPeer() {
   });
 
   nextPeer.on("close", () => {
+    writeDiagnosticLog("signaling-closed", { offline: isNetworkOffline() });
     if (isNetworkOffline()) {
       return;
     }

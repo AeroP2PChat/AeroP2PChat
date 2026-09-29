@@ -151,6 +151,12 @@ const runtimeLogPath = app.isPackaged
   ? ""
   : String(process.env.AERO_CHAT_RUNTIME_LOG_FILE || "").trim();
 let diagnosticLogPath = "";
+let diagnosticLogBytes = 0;
+let diagnosticLogLimitReached = false;
+const diagnosticSessionId = randomBytes(6).toString("hex");
+const diagnosticBreadcrumbs = [];
+const maxDiagnosticLogBytes = 8 * 1024 * 1024;
+const maxDiagnosticBreadcrumbs = 120;
 const autostartDesktopFileName = projectConfig.linux.autostartDesktopFileName;
 const bootAccentPresets = {
   aero: "#147fa6",
@@ -173,6 +179,19 @@ let delayedQuitStarted = false;
 let delayedQuitTimer = null;
 const activeNotifications = new Map();
 let lastSystemDndCheck = { checkedAt: 0, enabled: false };
+let trayState = {
+  peerId: null,
+  hasActivePeerConnection: false,
+  isMuted: false,
+  isDeafened: false,
+  status: "online",
+  theme: "light",
+  autostart: true,
+  closeToTray: true,
+  debugOfflineMode: false,
+  debugSimulateUpdate: false,
+  debugBootSimulation: false,
+};
 
 function normalizeAccentColor(value) {
   const color = String(value || "").trim().replace(/^#/, "");
@@ -182,29 +201,141 @@ function normalizeAccentColor(value) {
 }
 
 function writeRuntimeLog(level, args) {
-  if (!diagnosticLogPath) return;
+  const critical = ["ERROR", "DETAIL", "SNAPSHOT", "BREADCRUMBS"].includes(
+    level,
+  );
+  if (!diagnosticLogPath || (diagnosticLogLimitReached && !critical)) return;
   try {
+    const line = `[${new Date().toISOString()}] [${level}] ${format(...args)}\n`;
+    const nextBytes = Buffer.byteLength(line);
+    if (!critical && diagnosticLogBytes + nextBytes > maxDiagnosticLogBytes) {
+      appendFileSync(
+        diagnosticLogPath,
+        `[${new Date().toISOString()}] [WARN] Log size limit reached; further routine logging stopped.\n`,
+        "utf8",
+      );
+      diagnosticLogLimitReached = true;
+      return;
+    }
     appendFileSync(
       diagnosticLogPath,
-      `[${new Date().toISOString()}] [${level}] ${format(...args)}\n`,
+      line,
       "utf8",
     );
+    diagnosticLogBytes += nextBytes;
   } catch {
     // Diagnostics must never interfere with the app itself.
   }
+}
+
+function sanitizeDiagnosticText(value, maxLength = 4000) {
+  let text = String(value ?? "");
+  try {
+    const homePath = app.getPath("home");
+    if (homePath) text = text.split(homePath).join("<home>");
+  } catch {
+    // app paths may be unavailable during very early startup failures.
+  }
+  text = text.replace(/aero-(?:[a-f0-9]{16}|[a-f0-9]{32})/gi, "aero-<redacted>");
+  return text.slice(0, maxLength);
+}
+
+function sanitizeDiagnosticData(value, depth = 0) {
+  if (depth > 3) return "[depth limited]";
+  if (value === null || value === undefined) return value;
+  if (["boolean", "number"].includes(typeof value)) return value;
+  if (typeof value === "string") return sanitizeDiagnosticText(value, 1000);
+  if (Array.isArray(value)) {
+    return value.slice(0, 20).map((item) => sanitizeDiagnosticData(item, depth + 1));
+  }
+  if (typeof value === "object") {
+    const result = {};
+    for (const [key, item] of Object.entries(value).slice(0, 30)) {
+      if (/(token|secret|password|private|identity.?id|peer.?id|device.?id|group.?id|message.?text)/i.test(key)) {
+        result[key] = "[redacted]";
+      } else {
+        result[key] = sanitizeDiagnosticData(item, depth + 1);
+      }
+    }
+    return result;
+  }
+  return sanitizeDiagnosticText(value, 1000);
+}
+
+function recordDiagnosticEvent(scope, event, data = {}) {
+  const entry = {
+    at: new Date().toISOString(),
+    scope: sanitizeDiagnosticText(scope, 80),
+    event: sanitizeDiagnosticText(event, 160),
+    data: sanitizeDiagnosticData(data),
+  };
+  diagnosticBreadcrumbs.push(entry);
+  if (diagnosticBreadcrumbs.length > maxDiagnosticBreadcrumbs) {
+    diagnosticBreadcrumbs.shift();
+  }
+  writeRuntimeLog("EVENT", [JSON.stringify(entry)]);
+}
+
+function getDiagnosticSnapshot() {
+  const memory = process.memoryUsage();
+  const win = mainWindow && !mainWindow.isDestroyed() ? mainWindow : null;
+  return sanitizeDiagnosticData({
+    sessionId: diagnosticSessionId,
+    uptimeSeconds: Math.round(process.uptime()),
+    appVersion: app.getVersion(),
+    packaged: app.isPackaged,
+    platform: process.platform,
+    architecture: process.arch,
+    osVersion: process.getSystemVersion?.() || "unknown",
+    linuxSession:
+      process.platform === "linux"
+        ? process.env.XDG_SESSION_TYPE || (process.env.WAYLAND_DISPLAY ? "wayland" : "unknown")
+        : undefined,
+    desktop:
+      process.platform === "linux"
+        ? process.env.XDG_CURRENT_DESKTOP || process.env.DESKTOP_SESSION || "unknown"
+        : undefined,
+    versions: {
+      electron: process.versions.electron,
+      chrome: process.versions.chrome,
+      node: process.versions.node,
+    },
+    memoryMiB: {
+      rss: Math.round(memory.rss / 1048576),
+      heapUsed: Math.round(memory.heapUsed / 1048576),
+      external: Math.round(memory.external / 1048576),
+    },
+    window: win
+      ? {
+          visible: win.isVisible(),
+          focused: win.isFocused(),
+          minimized: win.isMinimized(),
+          maximized: win.isMaximized(),
+          bounds: win.getBounds(),
+        }
+      : null,
+    appState: {
+      connected: Boolean(trayState?.hasActivePeerConnection),
+      muted: Boolean(trayState?.isMuted),
+      deafened: Boolean(trayState?.isDeafened),
+      presence: trayState?.status || "unknown",
+      closeToTray: appConfig.appSettings?.closeToTray !== false,
+    },
+    gpu: app.isReady() ? app.getGPUFeatureStatus() : undefined,
+  });
 }
 
 function normalizeDiagnosticError(error) {
   if (error instanceof Error) {
     return {
       name: String(error.name || "Error").slice(0, 120),
-      message: String(error.message || "Unknown error").slice(0, 2000),
-      stack: String(error.stack || "").slice(0, 12000),
+      message: sanitizeDiagnosticText(error.message || "Unknown error", 2000),
+      stack: sanitizeDiagnosticText(error.stack || "", 12000),
     };
   }
   return {
     name: "Error",
-    message: String(error || "Unknown error").slice(0, 2000),
+    message: sanitizeDiagnosticText(error || "Unknown error", 2000),
     stack: "",
   };
 }
@@ -215,8 +346,10 @@ function writeDiagnosticEvent(kind, error, details = {}) {
     `${kind}: ${normalized.name}: ${normalized.message}\n${normalized.stack}`,
   ]);
   if (Object.keys(details).length) {
-    writeRuntimeLog("DETAIL", [details]);
+    writeRuntimeLog("DETAIL", [JSON.stringify(sanitizeDiagnosticData(details))]);
   }
+  writeRuntimeLog("SNAPSHOT", [JSON.stringify(getDiagnosticSnapshot())]);
+  writeRuntimeLog("BREADCRUMBS", [JSON.stringify(diagnosticBreadcrumbs.slice(-40))]);
   return normalized;
 }
 
@@ -384,11 +517,11 @@ diagnosticLogPath =
     diagnosticLogDirectory,
     `aero-${new Date().toISOString().replace(/[.:]/g, "-")}.log`,
   );
-appendFileSync(
-  diagnosticLogPath,
-  `[${new Date().toISOString()}] ${appDisplayName} ${app.getVersion()} · ${process.platform} ${process.arch}\n`,
-  "utf8",
-);
+const diagnosticHeader =
+  `[${new Date().toISOString()}] ${appDisplayName} ${app.getVersion()} · ` +
+  `${process.platform} ${process.arch}\n`;
+appendFileSync(diagnosticLogPath, diagnosticHeader, "utf8");
+diagnosticLogBytes = Buffer.byteLength(diagnosticHeader);
 
 for (const level of ["debug", "info", "log", "warn", "error"]) {
   const writeToConsole = console[level].bind(console);
@@ -397,6 +530,16 @@ for (const level of ["debug", "info", "log", "warn", "error"]) {
     writeToConsole(...args);
   };
 }
+
+recordDiagnosticEvent("app", "session-start", {
+  sessionId: diagnosticSessionId,
+  version: app.getVersion(),
+  packaged: app.isPackaged,
+  platform: process.platform,
+  architecture: process.arch,
+  electron: process.versions.electron,
+  chrome: process.versions.chrome,
+});
 
 process.on("uncaughtException", handleFatalMainError);
 process.on("unhandledRejection", (reason) => {
@@ -1621,20 +1764,6 @@ function showMainWindow() {
   mainWindow.show();
   mainWindow.focus();
 }
-
-let trayState = {
-  peerId: null,
-  hasActivePeerConnection: false,
-  isMuted: false,
-  isDeafened: false,
-  status: "online",
-  theme: "light",
-  autostart: true,
-  closeToTray: true,
-  debugOfflineMode: false,
-  debugSimulateUpdate: false,
-  debugBootSimulation: false,
-};
 
 function hasTrayStateChanged(nextState) {
   return [
@@ -3037,6 +3166,11 @@ function createWindow({ hidden = false } = {}) {
       nodeIntegration: false,
     },
   });
+  recordDiagnosticEvent("window", "created", {
+    hidden,
+    developmentLayout: devLayout || "none",
+    bounds: win.getBounds(),
+  });
 
   // Apply the icon after native window creation as well. On Windows this also
   // sets the taskbar button identity and relaunch icon instead of inheriting
@@ -3091,6 +3225,12 @@ function createWindow({ hidden = false } = {}) {
     });
   });
 
+  win.webContents.on("did-finish-load", () => {
+    recordDiagnosticEvent("window", "renderer-loaded", {
+      development: Boolean(process.env.ELECTRON_RENDERER_URL),
+    });
+  });
+
   win.on("unresponsive", () => {
     if (forceQuit || systemShutdownStarted) return;
     void showDiagnosticDialog({
@@ -3132,6 +3272,7 @@ function createWindow({ hidden = false } = {}) {
     win.hide();
   });
   win.on("closed", () => {
+    recordDiagnosticEvent("window", "closed");
     if (mainWindow === win) {
       mainWindow = null;
     }
@@ -3144,6 +3285,13 @@ app.whenReady().then(async () => {
   await migratePackagedUserData();
   await cleanupIncomingTempDirectory();
   appConfig = await loadConfig();
+  recordDiagnosticEvent("app", "ready", {
+    locale: app.getLocale(),
+    configLoaded: true,
+    autostart: Boolean(appConfig.appSettings?.autostart),
+    closeToTray: appConfig.appSettings?.closeToTray !== false,
+    theme: appConfig.appSettings?.theme || "system",
+  });
   await applyAutostartSettings();
   createTray();
 
@@ -3153,23 +3301,40 @@ app.whenReady().then(async () => {
       callback(requestingWindow === mainWindow && permission === "media");
     },
   );
-  ipcMain.handle("install-update", (event, details) => {
+  ipcMain.handle("install-update", async (event, details) => {
     const onProgress = (progress) => event.sender.send("update-progress", progress);
-    if (process.platform === "linux") {
-      return installLinuxAppImageUpdate(
-        details.url,
-        details.sha256,
-        details.sha512,
-        details.version,
-        onProgress,
-      );
+    recordDiagnosticEvent("update", "install-started", {
+      platform: process.platform,
+      version: details.version,
+    });
+    try {
+      const result = process.platform === "linux"
+        ? await installLinuxAppImageUpdate(
+            details.url,
+            details.sha256,
+            details.sha512,
+            details.version,
+            onProgress,
+          )
+        : await installWindowsUpdate(
+            details.url,
+            details.sha256,
+            details.sha512,
+            onProgress,
+          );
+      recordDiagnosticEvent("update", "installer-launched", {
+        platform: process.platform,
+        version: details.version,
+      });
+      return result;
+    } catch (error) {
+      recordDiagnosticEvent("update", "install-failed", {
+        platform: process.platform,
+        version: details.version,
+        error: error?.message || "Unknown update error",
+      });
+      throw error;
     }
-    return installWindowsUpdate(
-      details.url,
-      details.sha256,
-      details.sha512,
-      onProgress,
-    );
   });
   ipcMain.on("renderer-error", (event, details = {}) => {
     if (BrowserWindow.fromWebContents(event.sender) !== mainWindow) return;
@@ -3189,6 +3354,14 @@ app.whenReady().then(async () => {
         column: Number(details.column) || 0,
       },
     });
+  });
+  ipcMain.on("diagnostic-event", (event, details = {}) => {
+    if (BrowserWindow.fromWebContents(event.sender) !== mainWindow) return;
+    recordDiagnosticEvent(
+      "renderer",
+      String(details.event || "event").slice(0, 160),
+      details.data && typeof details.data === "object" ? details.data : {},
+    );
   });
   ipcMain.handle("download-update", async (_event, details = {}) => {
     try {
@@ -3463,11 +3636,27 @@ app.whenReady().then(async () => {
       return [];
     }
 
-    const sources = await desktopCapturer.getSources({
-      types: ["screen", "window"],
-      thumbnailSize: { width: 320, height: 180 },
-      fetchWindowIcons: true,
-    });
+    let sources;
+    try {
+      sources = await desktopCapturer.getSources({
+        types: ["screen", "window"],
+        thumbnailSize: { width: 320, height: 180 },
+        fetchWindowIcons: true,
+      });
+      recordDiagnosticEvent("screen-share", "sources-selected", {
+        count: sources.length,
+        linuxSession:
+          process.platform === "linux"
+            ? process.env.XDG_SESSION_TYPE || "unknown"
+            : undefined,
+      });
+    } catch (error) {
+      recordDiagnosticEvent("screen-share", "source-selection-failed", {
+        name: error?.name || "Error",
+        error: error?.message || "Unknown capture error",
+      });
+      throw error;
+    }
     return sources.map((source) => ({
       id: source.id,
       name: source.name,
@@ -3558,6 +3747,10 @@ app.whenReady().then(async () => {
 });
 
 app.on("before-quit", (event) => {
+  recordDiagnosticEvent("app", "before-quit", {
+    forced: forceQuit,
+    shutdown: systemShutdownStarted,
+  });
   if (delayedQuitStarted || systemShutdownStarted) {
     return;
   }
