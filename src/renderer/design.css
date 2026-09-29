@@ -2377,6 +2377,33 @@ select.native-select {
 .call-stage.stream-fullscreen.fullscreen-remote .participant-card.local {
   display: none;
 }
+.call-stage.stream-window-fullscreen {
+  position: fixed;
+  z-index: 550;
+  inset: var(--titlebar-height) 0 0;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  margin: 0;
+  padding: 16px;
+  border: 0;
+  border-radius: 0;
+  background: #000000;
+}
+.call-stage.stream-window-fullscreen .participant-card {
+  width: auto;
+  height: min(
+    calc(100vh - var(--titlebar-height) - 32px),
+    calc(56.25vw - 18px)
+  );
+  max-width: none;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  background: #000000;
+}
+.call-stage.stream-window-fullscreen.fullscreen-local .participant-card.remote,
+.call-stage.stream-window-fullscreen.fullscreen-remote .participant-card.local {
+  display: none;
+}
 
 /* Messages and composer */
 .messages {
@@ -5539,6 +5566,10 @@ input[type="range"]:active::-webkit-slider-thumb {
 .context-menu button:disabled:hover {
   background: transparent;
   color: var(--danger);
+}
+.stream-size-menu {
+  z-index: 850;
+  min-width: 176px;
 }
 .participant-menu-range {
   grid-template-columns: 18px minmax(92px, 1fr) auto;

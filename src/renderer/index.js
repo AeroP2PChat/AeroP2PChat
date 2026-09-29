@@ -459,6 +459,11 @@ const streamMenuAudio = document.querySelector("#stream-menu-audio");
 const streamMenuWatch = document.querySelector("#stream-menu-watch");
 const streamMenuFullscreen = document.querySelector("#stream-menu-fullscreen");
 const streamMenuStop = document.querySelector("#stream-menu-stop");
+const streamSizeMenu = document.querySelector("#stream-size-menu");
+const streamSizeBigger = document.querySelector("#stream-size-bigger");
+const streamSizeFullscreen = document.querySelector(
+  "#stream-size-fullscreen",
+);
 const mobileTabContacts = document.querySelector("#mobile-tab-contacts");
 const mobileTabChat = document.querySelector("#mobile-tab-chat");
 const mobileTabSettings = document.querySelector("#mobile-tab-settings");
@@ -624,6 +629,8 @@ let selectedScreenSource = null;
 let availableScreenSources = [];
 let activeStreamSourceTab = "screens";
 let streamFullscreenTarget = "";
+let streamDisplayMode = "";
+let streamSizeTarget = "";
 let removeUpdateProgressListener = null;
 const remoteAudio = new Audio();
 remoteAudio.autoplay = true;
@@ -6034,12 +6041,19 @@ function syncAvailableUpdateUi() {
   const directInstallUnavailable = Boolean(
     availableUpdate.directInstallUnavailable,
   );
-  const updateHeading = directInstallUnavailable
+  const useLinuxCommand =
+    platform === "linux" &&
+    (!platformApi.supportsNativeUpdateInstall || directInstallUnavailable);
+  const updateHeading = useLinuxCommand
+    ? "Update available"
+    : directInstallUnavailable
     ? "Direct update unavailable"
     : isMandatory
       ? "Update required"
       : "Update available";
-  const updateDescription = directInstallUnavailable
+  const updateDescription = useLinuxCommand
+    ? `Version ${availableUpdate.version} is ready. Copy the Linux update command to install it.`
+    : directInstallUnavailable
     ? availableUpdate.unavailableReason ||
       "A verified direct download could not be found. Open the latest GitHub release instead."
     : isMandatory
@@ -6048,13 +6062,15 @@ function syncAvailableUpdateUi() {
   updateTitle.textContent = updateHeading;
   updateText.textContent = updateDescription;
   updateButton.textContent = directInstallUnavailable
-    ? "Direct update unavailable"
+    ? useLinuxCommand
+      ? "Show update command"
+      : "Direct update unavailable"
     : platformApi.supportsNativeUpdateInstall
       ? "Install update"
       : platform === "linux"
-        ? "Latest release"
+        ? "Show update command"
         : "Open release";
-  updateButton.disabled = directInstallUnavailable;
+  updateButton.disabled = directInstallUnavailable && !useLinuxCommand;
   updateFallbackButton.classList.toggle("hidden", !directInstallUnavailable);
   updateIgnoreButton.textContent = isIgnored ? "Ignored" : "Ignore";
   updateIgnoreButton.disabled = isIgnored;
@@ -6074,15 +6090,17 @@ function syncAvailableUpdateUi() {
     startupUpdateTitle.textContent = updateHeading;
     startupUpdateText.textContent = updateDescription;
     startupUpdateButton.textContent = directInstallUnavailable
-      ? "Direct update unavailable"
+      ? useLinuxCommand
+        ? "Show update command"
+        : "Direct update unavailable"
       : platformApi.supportsNativeUpdateInstall
         ? "Install update"
         : platform === "linux"
-          ? "Latest release"
+          ? "Show update command"
           : "Open release";
     startupUpdateModal.classList.remove("hidden");
   }
-  startupUpdateButton.disabled = directInstallUnavailable;
+  startupUpdateButton.disabled = directInstallUnavailable && !useLinuxCommand;
   startupUpdateClose.classList.toggle("hidden", isMandatory);
   startupUpdateIgnoreButton.classList.toggle("hidden", isMandatory);
   startupUpdateFallbackButton.classList.toggle(
@@ -6095,7 +6113,9 @@ function syncAvailableUpdateUi() {
   appMenuUpdate.classList.remove("hidden");
   appMenuUpdate.disabled = false;
   appMenuUpdate.querySelector("i").className =
-    directInstallUnavailable
+    useLinuxCommand
+      ? "fa-solid fa-terminal"
+      : directInstallUnavailable
       ? "fa-solid fa-arrow-up-right-from-square"
       : platformApi.supportsNativeUpdateInstall
       ? "fa-solid fa-download"
@@ -6106,7 +6126,9 @@ function syncAvailableUpdateUi() {
   setTitlebarActionLabel(
     appMenuUpdate,
     directInstallUnavailable
-      ? "Open latest release"
+      ? useLinuxCommand
+        ? `Update ${availableUpdate.version}`
+        : "Open latest release"
       : platformApi.supportsNativeUpdateInstall
         ? `Install ${availableUpdate.version}`
         : `Update ${availableUpdate.version}`,
@@ -8417,18 +8439,32 @@ function hasStreamForTarget(target) {
       );
 }
 
-function setStreamFullscreenTarget(target = "") {
+function setStreamFullscreenTarget(target = "", mode = "bigger") {
   const nextTarget = hasStreamForTarget(target) ? target : "";
   streamFullscreenTarget = nextTarget;
-  callStage?.classList.toggle("stream-fullscreen", Boolean(nextTarget));
+  streamDisplayMode = nextTarget
+    ? mode === "window"
+      ? "window"
+      : "bigger"
+    : "";
+  callStage?.classList.toggle(
+    "stream-fullscreen",
+    Boolean(nextTarget) && streamDisplayMode === "bigger",
+  );
+  callStage?.classList.toggle(
+    "stream-window-fullscreen",
+    Boolean(nextTarget) && streamDisplayMode === "window",
+  );
   callStage?.classList.toggle("fullscreen-local", nextTarget === "local");
   callStage?.classList.toggle("fullscreen-remote", nextTarget === "remote");
   appShell?.classList.toggle("stream-fullscreen-active", Boolean(nextTarget));
   refreshCallStage();
 }
 
-function toggleStreamFullscreen(target) {
-  setStreamFullscreenTarget(streamFullscreenTarget === target ? "" : target);
+function toggleStreamDisplayMode(target, mode) {
+  const alreadyActive =
+    streamFullscreenTarget === target && streamDisplayMode === mode;
+  setStreamFullscreenTarget(alreadyActive ? "" : target, mode);
 }
 
 function updateStreamFullscreenControl(button, target) {
@@ -8443,7 +8479,7 @@ function updateStreamFullscreenControl(button, target) {
   if (icon) {
     icon.className = active ? "fa-solid fa-compress" : "fa-solid fa-expand";
   }
-  button.title = active ? "Shrink stream" : "Expand stream";
+  button.title = active ? "Change stream size" : "Enlarge stream";
   button.setAttribute("aria-label", button.title);
 }
 
@@ -8492,11 +8528,13 @@ function refreshCallStage() {
     callStage?.classList.add("hidden");
     callStage?.classList.remove(
       "stream-fullscreen",
+      "stream-window-fullscreen",
       "fullscreen-local",
       "fullscreen-remote",
     );
     appShell?.classList.remove("stream-fullscreen-active");
     streamFullscreenTarget = "";
+    streamDisplayMode = "";
     setVideoElementStream(localVideo, null);
     setVideoElementStream(remoteVideo, null);
     setVideoElementStream(localPipVideo, null);
@@ -8552,10 +8590,12 @@ function refreshCallStage() {
     streamFullscreenTarget = "";
     callStage?.classList.remove(
       "stream-fullscreen",
+      "stream-window-fullscreen",
       "fullscreen-local",
       "fullscreen-remote",
     );
     appShell?.classList.remove("stream-fullscreen-active");
+    streamDisplayMode = "";
   }
 
   callStage?.classList.remove("hidden");
@@ -8592,7 +8632,11 @@ function refreshCallStage() {
   remoteParticipantCard?.classList.toggle("has-pip", showRemotePip);
   callStage?.classList.toggle(
     "stream-fullscreen",
-    Boolean(streamFullscreenTarget),
+    Boolean(streamFullscreenTarget) && streamDisplayMode === "bigger",
+  );
+  callStage?.classList.toggle(
+    "stream-window-fullscreen",
+    Boolean(streamFullscreenTarget) && streamDisplayMode === "window",
   );
   callStage?.classList.toggle(
     "fullscreen-local",
@@ -11677,6 +11721,50 @@ function closeStreamMenu() {
   contextStreamTarget = "";
 }
 
+function closeStreamSizeMenu() {
+  streamSizeMenu.classList.add("hidden");
+  streamSizeTarget = "";
+}
+
+function openStreamSizeMenu(anchor, target) {
+  if (!anchor || !hasStreamForTarget(target)) {
+    return;
+  }
+
+  const bounds = anchor.getBoundingClientRect();
+  closeQrCodeMenu();
+  closeContactMenu();
+  closeAppMenu();
+  closeMessageMenu();
+  closeParticipantMenu();
+  closeStreamMenu();
+  streamSizeTarget = target;
+
+  streamSizeBigger.setAttribute(
+    "aria-checked",
+    String(streamFullscreenTarget === target && streamDisplayMode === "bigger"),
+  );
+  streamSizeFullscreen.setAttribute(
+    "aria-checked",
+    String(streamFullscreenTarget === target && streamDisplayMode === "window"),
+  );
+
+  const menuWidth = 176;
+  const menuHeight = 84;
+  const left = Math.max(
+    8,
+    Math.min(bounds.right - menuWidth, window.innerWidth - menuWidth - 8),
+  );
+  const top =
+    bounds.bottom + menuHeight + 8 <= window.innerHeight
+      ? bounds.bottom + 6
+      : Math.max(8, bounds.top - menuHeight - 6);
+  streamSizeMenu.style.left = `${left}px`;
+  streamSizeMenu.style.top = `${top}px`;
+  streamSizeMenu.classList.remove("hidden");
+  streamSizeBigger.focus();
+}
+
 function openStreamMenu(event, target) {
   event.preventDefault();
   if (callState.status === "idle") {
@@ -11703,17 +11791,8 @@ function openStreamMenu(event, target) {
   );
   const fullscreenIcon = streamMenuFullscreen.querySelector("i");
   const fullscreenLabel = streamMenuFullscreen.querySelector("span");
-  const fullscreenActive = streamFullscreenTarget === target;
-  if (fullscreenIcon) {
-    fullscreenIcon.className = fullscreenActive
-      ? "fa-solid fa-compress"
-      : "fa-solid fa-expand";
-  }
-  if (fullscreenLabel) {
-    fullscreenLabel.textContent = fullscreenActive
-      ? "Shrink stream"
-      : "Expand stream";
-  }
+  if (fullscreenIcon) fullscreenIcon.className = "fa-solid fa-expand";
+  if (fullscreenLabel) fullscreenLabel.textContent = "Stream size";
   if (!isLocal) {
     const hidden =
       !screenShareState.viewerWatching || screenShareState.hiddenByViewer;
@@ -13947,12 +14026,12 @@ remoteParticipantCard?.addEventListener("contextmenu", (event) => {
 
 localStreamFullscreen?.addEventListener("click", (event) => {
   event.stopPropagation();
-  toggleStreamFullscreen("local");
+  openStreamSizeMenu(event.currentTarget, "local");
 });
 
 remoteStreamFullscreen?.addEventListener("click", (event) => {
   event.stopPropagation();
-  toggleStreamFullscreen("remote");
+  openStreamSizeMenu(event.currentTarget, "remote");
 });
 
 streamModalClose.addEventListener("click", closeStreamSetup);
@@ -14023,11 +14102,26 @@ streamMenuWatch.addEventListener("click", () => {
   closeStreamMenu();
 });
 
-streamMenuFullscreen.addEventListener("click", () => {
-  if (contextStreamTarget) {
-    toggleStreamFullscreen(contextStreamTarget);
+streamMenuFullscreen.addEventListener("click", (event) => {
+  event.stopPropagation();
+  const target = contextStreamTarget;
+  if (target) {
+    openStreamSizeMenu(event.currentTarget, target);
   }
-  closeStreamMenu();
+});
+
+streamSizeBigger.addEventListener("click", () => {
+  if (streamSizeTarget) {
+    toggleStreamDisplayMode(streamSizeTarget, "bigger");
+  }
+  closeStreamSizeMenu();
+});
+
+streamSizeFullscreen.addEventListener("click", () => {
+  if (streamSizeTarget) {
+    toggleStreamDisplayMode(streamSizeTarget, "window");
+  }
+  closeStreamSizeMenu();
 });
 
 streamMenuStop.addEventListener("click", () => {
@@ -14782,6 +14876,11 @@ async function installAvailableUpdate() {
   }
 
   if (availableUpdate.directInstallUnavailable) {
+    if (platform === "linux") {
+      startupUpdateModal.classList.add("hidden");
+      openLinuxUpdateModal();
+      return;
+    }
     openManualUpdateFallback();
     return;
   }
@@ -14827,7 +14926,8 @@ async function installAvailableUpdate() {
   }
 
   if (platform === "linux") {
-    openManualUpdateFallback();
+    startupUpdateModal.classList.add("hidden");
+    openLinuxUpdateModal();
     return;
   }
 
@@ -14852,7 +14952,10 @@ startupUpdateModal.addEventListener("click", (event) => {
     }
   });
 startupUpdateButton.addEventListener("click", () => {
-    if (platformApi.supportsNativeUpdateInstall) {
+    if (
+      platformApi.supportsNativeUpdateInstall &&
+      !availableUpdate?.directInstallUnavailable
+    ) {
       startupUpdateButton.disabled = true;
       startupUpdateIgnoreButton.classList.add("hidden");
       startupUpdateClose.classList.add("hidden");
@@ -14872,14 +14975,21 @@ appMenuUpdate.addEventListener("click", () => {
       const directInstallUnavailable = Boolean(
         availableUpdate.directInstallUnavailable,
       );
+      const useLinuxCommand =
+        platform === "linux" &&
+        (!platformApi.supportsNativeUpdateInstall || directInstallUnavailable);
       startupUpdateModalShownForVersion = availableUpdate.version;
       startupUpdateModal.dataset.required = String(availableUpdate.mandatory);
-      startupUpdateTitle.textContent = directInstallUnavailable
+      startupUpdateTitle.textContent = useLinuxCommand
+        ? "Update available"
+        : directInstallUnavailable
         ? "Direct update unavailable"
         : availableUpdate.mandatory
           ? "Update required"
           : "Update available";
-      startupUpdateText.textContent = directInstallUnavailable
+      startupUpdateText.textContent = useLinuxCommand
+        ? `Version ${availableUpdate.version} is ready. Copy the Linux update command to install it.`
+        : directInstallUnavailable
         ? availableUpdate.unavailableReason ||
           "A verified direct download could not be found. Open the latest GitHub release instead."
         : availableUpdate.mandatory
@@ -14888,13 +14998,15 @@ appMenuUpdate.addEventListener("click", () => {
       startupUpdateIgnoreButton.classList.toggle("hidden", availableUpdate.mandatory);
       startupUpdateClose.classList.toggle("hidden", availableUpdate.mandatory);
       startupUpdateButton.textContent = directInstallUnavailable
-        ? "Direct update unavailable"
+        ? useLinuxCommand
+          ? "Show update command"
+          : "Direct update unavailable"
         : platformApi.supportsNativeUpdateInstall
           ? "Install update"
           : platform === "linux"
-            ? "Latest release"
+            ? "Show update command"
             : "Open release";
-      startupUpdateButton.disabled = directInstallUnavailable;
+      startupUpdateButton.disabled = directInstallUnavailable && !useLinuxCommand;
       startupUpdateFallbackButton.classList.toggle(
         "hidden",
         !directInstallUnavailable,
@@ -15606,6 +15718,9 @@ document.addEventListener("click", (event) => {
   if (!streamMenu.contains(event.target)) {
     closeStreamMenu();
   }
+  if (!streamSizeMenu.contains(event.target)) {
+    closeStreamSizeMenu();
+  }
 });
 
 document.addEventListener("keydown", (event) => {
@@ -15616,6 +15731,10 @@ document.addEventListener("keydown", (event) => {
     closeMessageMenu();
     closeParticipantMenu();
     closeStreamMenu();
+    closeStreamSizeMenu();
+    if (streamFullscreenTarget) {
+      setStreamFullscreenTarget("");
+    }
     if (!availableUpdate?.mandatory) {
       updateModal.classList.add("hidden");
     }
@@ -15849,6 +15968,7 @@ platformApi.onBackButton(() => {
     messageMenu,
     participantMenu,
     streamMenu,
+    streamSizeMenu,
   ].some((menu) => !menu.classList.contains("hidden"));
   if (openMenu) {
     closeAppMenu();
@@ -15856,6 +15976,7 @@ platformApi.onBackButton(() => {
     closeMessageMenu();
     closeParticipantMenu();
     closeStreamMenu();
+    closeStreamSizeMenu();
     return;
   }
   if (streamFullscreenTarget) {
