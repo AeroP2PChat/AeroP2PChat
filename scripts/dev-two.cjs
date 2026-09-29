@@ -2,6 +2,10 @@ const { spawn } = require("node:child_process");
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
+const {
+  attachFilteredDevStderr,
+  shouldShowRawChromiumLogs,
+} = require("./filter-dev-stderr.cjs");
 const { createRuntimeLog } = require("./runtime-log.cjs");
 
 const root = path.join(__dirname, "..");
@@ -14,19 +18,23 @@ function electronPath() {
   return require("electron");
 }
 
-function spawnChild(command, args, env) {
+function spawnChild(command, args, env, filterChromiumStderr = false) {
   const childEnv = {
     ...process.env,
     ...env,
   };
   delete childEnv.ELECTRON_RUN_AS_NODE;
+  const filterDevStderr =
+    filterChromiumStderr && !shouldShowRawChromiumLogs();
 
   const child = spawn(command, args, {
     cwd: root,
     env: childEnv,
-    stdio: "inherit",
+    stdio: filterDevStderr ? ["inherit", "inherit", "pipe"] : "inherit",
     shell: false,
   });
+
+  if (filterDevStderr) attachFilteredDevStderr(child);
 
   children.add(child);
   child.on("exit", () => {
@@ -138,6 +146,7 @@ async function main() {
           }
         : {}),
     },
+    true,
   );
 }
 

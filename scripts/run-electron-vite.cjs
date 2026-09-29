@@ -1,5 +1,9 @@
 const { spawn } = require("node:child_process");
 const { join } = require("node:path");
+const {
+  attachFilteredDevStderr,
+  shouldShowRawChromiumLogs,
+} = require("./filter-dev-stderr.cjs");
 
 const command = process.argv[2] || "dev";
 const electronVitePackage = require("electron-vite/package.json");
@@ -13,6 +17,7 @@ const bin = join(
 
 const env = { ...process.env };
 delete env.ELECTRON_RUN_AS_NODE;
+const filterDevStderr = command === "dev" && !shouldShowRawChromiumLogs();
 
 const child = spawn(
   process.execPath,
@@ -20,10 +25,12 @@ const child = spawn(
   {
     cwd: join(__dirname, ".."),
     env,
-    stdio: "inherit",
+    stdio: filterDevStderr ? ["inherit", "inherit", "pipe"] : "inherit",
     shell: false,
   },
 );
+
+if (filterDevStderr) attachFilteredDevStderr(child);
 
 child.on("exit", (code, signal) => {
   if (signal) {

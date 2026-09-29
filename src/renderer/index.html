@@ -622,7 +622,7 @@
             <i class="fa-solid fa-wifi" aria-hidden="true"></i>
             <div>
               <strong>You're offline</strong>
-              <span>Chat, calls and connections need an internet connection. Settings and local data are still available.</span>
+              <span>Reconnect to chat or call.</span>
             </div>
           </div>
 
@@ -1198,7 +1198,6 @@
       <section class="modal-panel">
         <header class="modal-header">
           <div class="settings-modal-title">
-            <span>Preferences</span>
             <h2 id="settings-title">Settings</h2>
           </div>
           <div class="settings-search" role="search">
@@ -1223,7 +1222,6 @@
         </header>
         <div class="settings-layout">
           <nav class="settings-nav" aria-label="Settings categories">
-            <span class="settings-nav-label">Settings</span>
             <button type="button" class="settings-nav-item" data-settings-nav="profile">
               <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
               Profile
@@ -1252,7 +1250,7 @@
               <i class="fa-solid fa-rotate" aria-hidden="true"></i>
               Updates
             </button>
-            <span class="settings-nav-label">Chat</span>
+            <span class="settings-nav-divider"></span>
             <button type="button" class="settings-nav-item" data-settings-nav="chat">
               <i class="fa-solid fa-comment" aria-hidden="true"></i>
               Chat
@@ -1279,11 +1277,11 @@
           <section id="settings-search-results" class="settings-search-results hidden" aria-live="polite" aria-label="Settings search results"></section>
           <div class="settings-column">
             <section class="settings-section" data-settings-page="profile">
-              <div class="settings-page-heading"><div><h3>Profile</h3><p>Choose how you appear to your contacts.</p></div></div>
+              <div class="settings-page-heading"><h3>Profile</h3></div>
               <div id="profile-settings-mount"></div>
             </section>
             <section class="settings-section" data-settings-page="appearance">
-              <div class="settings-page-heading"><div><h3>Appearance</h3><p>Personalize Aero and make conversations easier to read.</p></div></div>
+              <div class="settings-page-heading"><h3>Appearance</h3></div>
               <div class="appearance-settings-stack">
                 <div class="appearance-settings-group">
                   <div class="appearance-settings-heading"><h4>Theme</h4></div>
@@ -1331,7 +1329,7 @@
             </section>
 
             <section class="settings-section" data-settings-page="themes">
-              <div class="settings-page-heading"><div><h3>Themes</h3><p>Manage local styles and themes from trusted online sources.</p></div></div>
+              <div class="settings-page-heading"><h3>Themes</h3></div>
               <div class="theme-tabs" role="tablist" aria-label="Theme source">
                 <button class="theme-tab active" type="button" role="tab" aria-selected="true" data-theme-tab="local">Installed</button>
                 <button class="theme-tab" type="button" role="tab" aria-selected="false" data-theme-tab="online">Online</button>
@@ -1351,13 +1349,6 @@
                   </div>
                 </div>
                 <div id="local-theme-list" class="local-theme-list"></div>
-                <details class="theme-help">
-                  <summary><i class="fa-solid fa-chevron-right" aria-hidden="true"></i><span>Notes</span></summary>
-                  <div>
-                    <p>Disable a theme if it causes problems.</p>
-                    <p>Use trusted sources only.</p>
-                  </div>
-                </details>
               </div>
               <div class="theme-panel hidden" data-theme-panel="online">
                 <label class="settings-field online-theme-field">
@@ -1376,7 +1367,7 @@
             </section>
 
             <section class="settings-section" data-settings-page="general">
-              <div class="settings-page-heading"><div><h3>System</h3><p>Control how Aero starts, closes, and integrates with your device.</p></div></div>
+              <div class="settings-page-heading"><h3>System</h3></div>
               <div class="general-settings-stack">
                 <div class="general-settings-group">
                   <div class="general-settings-heading"><h4>Startup</h4></div>
@@ -1413,7 +1404,7 @@
             </section>
 
             <section class="settings-section" data-settings-page="updates">
-              <div class="settings-page-heading"><div><h3>Updates</h3><p>Keep Aero current and choose how new versions are delivered.</p></div></div>
+              <div class="settings-page-heading"><h3>Updates</h3></div>
               <div class="update-settings-stack">
                 <p id="update-platform-note" class="settings-help update-platform-note"></p>
                 <div class="update-settings-group">
@@ -1444,7 +1435,7 @@
             </section>
 
             <section class="settings-section" data-settings-page="notifications">
-              <div class="settings-page-heading"><div><h3>Notifications</h3><p>Decide when Aero may get your attention and what it reveals.</p></div></div>
+              <div class="settings-page-heading"><h3>Notifications</h3></div>
               <div class="notification-settings-stack">
                 <div class="notification-settings-group">
                   <div class="notification-settings-heading"><h4>Desktop notifications</h4></div>
@@ -1482,7 +1473,7 @@
             </section>
 
             <section class="settings-section" data-settings-page="sounds">
-              <div class="settings-page-heading"><div><h3>Sounds</h3><p>Configure alerts, call tones, and your own sound files.</p></div></div>
+              <div class="settings-page-heading"><h3>Sounds</h3></div>
               <div class="sound-settings-stack">
                 <div class="sound-settings-group">
                   <div class="sound-settings-heading"><h4>Playback</h4></div>
@@ -1567,7 +1558,7 @@
             </section>
 
             <section class="settings-section" data-settings-page="chat">
-              <div class="settings-page-heading"><div><h3>Chat</h3><p>Control media downloads, voice messages, and trusted links.</p></div></div>
+              <div class="settings-page-heading"><h3>Chat</h3></div>
               <div class="chat-settings-stack">
                 <div class="chat-settings-group">
                   <div class="chat-settings-heading"><h4>Voice messages</h4></div>
@@ -1624,7 +1615,7 @@
 
           <div class="settings-column">
             <section class="settings-section" data-settings-page="voice">
-              <div class="settings-page-heading"><div><h3>Voice &amp; Video</h3><p>Select your devices and fine-tune call audio.</p></div></div>
+              <div class="settings-page-heading"><h3>Voice &amp; Video</h3></div>
               <div class="voice-settings-stack">
                 <div class="voice-settings-group">
                   <div class="voice-settings-heading"><h4>Devices</h4></div>
@@ -1682,7 +1673,7 @@
           </div>
 
           <section class="settings-section" data-settings-page="contacts">
-            <div class="settings-page-heading"><div><h3>Contacts</h3><p>Manage nicknames and people you have blocked.</p></div></div>
+            <div class="settings-page-heading"><h3>Contacts</h3></div>
             <div class="contacts-settings-group">
               <div class="contacts-settings-heading">
                 <div>
@@ -1702,7 +1693,7 @@
           </section>
 
           <section class="settings-section mobile-feedback-section" data-settings-page="feedback">
-            <div class="settings-page-heading"><div><h3>Feedback</h3><p>Tell us what works and what Aero should improve.</p></div></div>
+            <div class="settings-page-heading"><h3>Feedback</h3></div>
             <button
               id="feedback-button-mobile"
               class="sidebar-feedback-button hidden"
@@ -1830,7 +1821,6 @@
           <i class="fa-solid fa-xmark" aria-hidden="true"></i>
         </button>
         <header class="profile-header">
-          <span class="profile-eyebrow">Aero profile</span>
           <h2 id="profile-title">Profile</h2>
         </header>
         <div class="profile-identity">

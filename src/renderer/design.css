@@ -1373,13 +1373,6 @@ select.native-select {
   gap: 5px;
   padding-right: 42px;
 }
-.profile-eyebrow {
-  color: var(--accent);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-}
 .profile-header h2 {
   font-size: 21px;
   line-height: 1.15;
@@ -3858,7 +3851,7 @@ body.reduce-motion *::after {
   display: grid;
   /* The overlay already has padding, so use its available width instead of
      viewport units. This keeps the dialog genuinely centered at every size. */
-  width: min(1040px, 100%);
+  width: min(960px, 100%);
   max-width: 100%;
   height: min(760px, calc(100dvh - var(--titlebar-height) - 32px));
   max-height: min(760px, calc(100dvh - var(--titlebar-height) - 32px));
@@ -3866,21 +3859,12 @@ body.reduce-motion *::after {
   min-width: 0;
 }
 #settings-modal .modal-header {
-  min-height: 52px;
+  min-height: 48px;
   margin-bottom: 0;
-  padding: 0 2px 15px;
+  padding: 0 2px 12px;
 }
 .settings-modal-title {
-  display: grid;
-  min-width: 128px;
-  gap: 1px;
-}
-.settings-modal-title > span {
-  color: var(--accent);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  min-width: 100px;
 }
 .settings-modal-title h2 {
   margin: 0;
@@ -3895,7 +3879,7 @@ body.reduce-motion *::after {
 }
 .settings-layout {
   display: grid;
-  grid-template-columns: 204px minmax(0, 1fr);
+  grid-template-columns: 188px minmax(0, 1fr);
   min-height: 0;
   min-width: 0;
   overflow: hidden;
@@ -3907,19 +3891,8 @@ body.reduce-motion *::after {
   flex-direction: column;
   gap: 4px;
   overflow-y: auto;
-  padding: 14px 14px 4px 1px;
+  padding: 8px 12px 4px 0;
   border-right: 1px solid var(--line);
-}
-.settings-nav-label {
-  margin: 12px 9px 4px;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.045em;
-  text-transform: uppercase;
-}
-.settings-nav-label:first-child {
-  margin-top: 3px;
 }
 .settings-nav-item {
   display: flex;
@@ -3990,7 +3963,7 @@ body:not(.platform-android) [data-settings-nav="feedback"] {
   gap: 12px;
   min-height: 0;
   min-width: 0;
-  padding: 16px 6px 6px 20px;
+  padding: 14px 4px 4px 18px;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -4134,7 +4107,6 @@ body:not(.platform-android) [data-settings-nav="feedback"] {
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
-  .settings-nav-label,
   .settings-nav-divider {
     display: none;
   }
@@ -4198,7 +4170,7 @@ body:not(.platform-android) [data-settings-nav="feedback"] {
 .settings-section h3 {
   margin: 0;
   color: var(--text);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 780;
   letter-spacing: -0.025em;
 }
@@ -4207,7 +4179,7 @@ body:not(.platform-android) [data-settings-nav="feedback"] {
   align-items: flex-start;
   justify-content: space-between;
   gap: 14px;
-  margin: 0 1px 18px;
+  margin: 0 1px 14px;
 }
 .settings-page-heading > div {
   display: grid;
@@ -4355,47 +4327,8 @@ body:not(.platform-android) [data-settings-nav="feedback"] {
   font-size: 11px;
   white-space: nowrap;
 }
-.theme-help {
-  color: var(--muted);
-  font-size: 10px;
-}
-.theme-help summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  width: fit-content;
-  cursor: pointer;
-  color: var(--muted);
-  font-weight: 700;
-  list-style: none;
-}
-.theme-help summary::-webkit-details-marker {
-  display: none;
-}
-.theme-help summary > i {
-  width: 10px;
-  color: var(--accent);
-  font-size: 9px;
-  text-align: center;
-  transition: transform 120ms ease;
-}
-.theme-help[open] summary > i {
-  transform: rotate(90deg);
-}
-.theme-help > div {
-  display: grid;
-  gap: 3px;
-  margin-top: 7px;
-  padding: 8px 10px;
-  border-left: 2px solid var(--line-accent);
-  background: color-mix(in srgb, var(--accent) 5%, transparent);
-  line-height: 1.4;
-}
-.theme-help p,
 .theme-inline-note {
   margin: 0;
-}
-.theme-inline-note {
   color: var(--muted);
   font-size: 10px;
 }

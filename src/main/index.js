@@ -1922,6 +1922,7 @@ function createToastWindow() {
     skipTaskbar: true,
     resizable: false,
     focusable: false,
+    ...(process.platform === "linux" ? { type: "notification" } : {}),
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       contextIsolation: true,
@@ -2096,6 +2097,60 @@ function sendNotificationAction(action) {
   mainWindow?.webContents.send("notification-action", action);
 }
 
+function showLinuxSystemNotification(payload) {
+  if (process.platform !== "linux" || !Notification.isSupported()) {
+    return false;
+  }
+
+  const notification = new Notification({
+    title: payload.title,
+    body: payload.body,
+    icon: windowIcon.isEmpty() ? undefined : windowIcon,
+    silent: payload.silent,
+    urgency: payload.kind === "call" ? "critical" : "normal",
+    timeoutType: payload.kind === "call" ? "never" : "default",
+  });
+  const entry = {
+    type: "native",
+    notification,
+    cleanupTimer: null,
+  };
+  const forget = () => {
+    const current = activeNotifications.get(payload.id);
+    if (current?.notification !== notification) return;
+    if (current.cleanupTimer) clearTimeout(current.cleanupTimer);
+    activeNotifications.delete(payload.id);
+  };
+
+  notification.on("click", () => {
+    sendNotificationAction({
+      type: "open",
+      openWindow: true,
+      id: payload.id,
+      kind: payload.kind,
+      peerId: payload.peerId,
+      callId: payload.callId,
+    });
+    notification.close();
+    forget();
+  });
+  notification.on("close", forget);
+
+  if (payload.kind !== "call") {
+    entry.cleanupTimer = setTimeout(forget, 60_000);
+  }
+  activeNotifications.set(payload.id, entry);
+
+  try {
+    notification.show();
+    return true;
+  } catch (error) {
+    forget();
+    console.warn("Native Linux notification failed; using app toast.", error);
+    return false;
+  }
+}
+
 function showAppNotification(details = {}) {
   if (
     shouldSuppressNotification({
@@ -2140,7 +2195,11 @@ function showAppNotification(details = {}) {
     silent: Boolean(details.silent),
   };
 
-  activeNotifications.set(notificationId, true);
+  if (showLinuxSystemNotification(toastPayload)) {
+    return { ok: true, id: notificationId, native: true };
+  }
+
+  activeNotifications.set(notificationId, { type: "toast" });
 
   if (!toastWindow) {
     createToastWindow();
@@ -2158,11 +2217,16 @@ function showAppNotification(details = {}) {
 }
 
 function closeAppNotification(id) {
-  if (activeNotifications.has(String(id))) {
-    activeNotifications.delete(String(id));
-    if (toastWindow) {
-      toastWindow.webContents.send("close-toast", String(id));
-    }
+  const notificationId = String(id);
+  const active = activeNotifications.get(notificationId);
+  if (!active) return { ok: true };
+
+  activeNotifications.delete(notificationId);
+  if (active.cleanupTimer) clearTimeout(active.cleanupTimer);
+  if (active.type === "native") {
+    active.notification.close();
+  } else if (toastWindow) {
+    toastWindow.webContents.send("close-toast", notificationId);
   }
   return { ok: true };
 }
