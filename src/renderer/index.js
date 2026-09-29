@@ -367,6 +367,8 @@ const soundsToggle = document.querySelector("#sounds-toggle");
 const messageSoundToggle = document.querySelector("#message-sound-toggle");
 const ringtoneSoundToggle = document.querySelector("#ringtone-sound-toggle");
 const ringtoneLoopToggle = document.querySelector("#ringtone-loop-toggle");
+const ringtonePresetSelect = document.querySelector("#ringtone-preset-select");
+const ringtonePreviewButton = document.querySelector("#ringtone-preview-button");
 const callEventSoundToggle = document.querySelector("#call-event-sound-toggle");
 const connectedSoundToggle = document.querySelector("#connected-sound-toggle");
 const customSoundList = document.querySelector("#custom-sound-list");
@@ -645,7 +647,19 @@ const callJoinAudio = new Audio("sound/call-join.ogg");
 const callLeaveAudio = new Audio("sound/call-leave.ogg");
 const connectedAudio = new Audio("sound/connected.ogg");
 const messageAudio = new Audio("sound/message.ogg");
-const ringtoneAudio = new Audio("sound/ringtone.ogg");
+const ringtonePresets = Array.isArray(__RINGTONE_PRESETS__)
+  ? __RINGTONE_PRESETS__.filter((preset) =>
+      preset && typeof preset.id === "string" && typeof preset.name === "string" &&
+      typeof preset.author === "string" && typeof preset.isDefault === "boolean" &&
+      typeof preset.source === "string",
+    )
+  : [];
+const defaultRingtonePreset =
+  ringtonePresets.find((preset) => preset.isDefault) ||
+  ringtonePresets[0] ||
+  { id: "", author: "", name: "Unavailable", source: "", isDefault: true };
+const ringtoneAudio = new Audio(defaultRingtonePreset.source);
+const ringtonePreviewAudio = new Audio();
 const CUSTOM_SOUND_MAX_SOURCE_BYTES = 25 * 1024 * 1024;
 const CUSTOM_SOUND_MAX_DURATION_SECONDS = 300;
 const CUSTOM_SOUND_BITRATE = 160_000;
@@ -656,7 +670,11 @@ const CUSTOM_WALLPAPER_MAX_PIXELS = 4_194_304;
 const CUSTOM_WALLPAPER_MAX_DIMENSION = 2560;
 const customSoundDefinitions = {
   message: { label: "Message", audio: messageAudio, source: "sound/message.ogg" },
-  ringtone: { label: "Incoming call ringtone", audio: ringtoneAudio, source: "sound/ringtone.ogg" },
+  ringtone: {
+    label: "Incoming call ringtone",
+    audio: ringtoneAudio,
+    source: defaultRingtonePreset.source,
+  },
   "call-join": { label: "Call joined", audio: callJoinAudio, source: "sound/call-join.ogg" },
   "call-leave": { label: "Call ended", audio: callLeaveAudio, source: "sound/call-leave.ogg" },
   connected: { label: "Peer connected", audio: connectedAudio, source: "sound/connected.ogg" },
@@ -679,6 +697,98 @@ connectedAudio.preload = "auto";
 messageAudio.preload = "auto";
 ringtoneAudio.preload = "auto";
 ringtoneAudio.loop = true;
+ringtonePreviewAudio.preload = "auto";
+
+function setRingtonePreviewPlaying(playing) {
+  ringtonePreviewButton?.classList.toggle("is-playing", playing);
+  const icon = ringtonePreviewButton?.querySelector("i");
+  if (icon) icon.className = playing ? "fa-solid fa-stop" : "fa-solid fa-play";
+  const accessibleLabel = playing ? "Stop ringtone preview" : "Preview ringtone";
+  ringtonePreviewButton?.setAttribute("aria-label", accessibleLabel);
+  if (ringtonePreviewButton) ringtonePreviewButton.title = accessibleLabel;
+}
+
+function stopRingtonePreview() {
+  ringtonePreviewAudio.pause();
+  ringtonePreviewAudio.currentTime = 0;
+  setRingtonePreviewPlaying(false);
+}
+
+new MutationObserver(() => {
+  if (settingsModal.classList.contains("hidden")) {
+    stopRingtonePreview();
+  }
+}).observe(settingsModal, {
+  attributes: true,
+  attributeFilter: ["class"],
+});
+
+async function toggleRingtonePreview() {
+  if (!ringtonePreviewAudio.paused) {
+    stopRingtonePreview();
+    return;
+  }
+  const preset = getSelectedRingtonePreset();
+  if (!preset.source) return;
+  ringtonePreviewAudio.src = preset.source;
+  ringtonePreviewAudio.currentTime = 0;
+  try {
+    await ringtonePreviewAudio.play();
+    setRingtonePreviewPlaying(true);
+  } catch {
+    setRingtonePreviewPlaying(false);
+  }
+}
+
+function normalizeRingtonePresetId(value) {
+  const requestedId = typeof value === "string" ? value : "";
+  return ringtonePresets.some((preset) => preset.id === requestedId)
+    ? requestedId
+    : defaultRingtonePreset.id;
+}
+
+function getSelectedRingtonePreset() {
+  const presetId = normalizeRingtonePresetId(
+    appConfig?.soundSettings?.ringtonePreset,
+  );
+  return ringtonePresets.find((preset) => preset.id === presetId) ||
+    defaultRingtonePreset;
+}
+
+function applyBuiltInRingtonePreset() {
+  const preset = getSelectedRingtonePreset();
+  customSoundDefinitions.ringtone.source = preset.source;
+  if (!preset.source || customSoundObjectUrls.has("ringtone")) return;
+  if (ringtoneAudio.getAttribute("src") === preset.source) return;
+  ringtoneAudio.pause();
+  ringtoneAudio.currentTime = 0;
+  ringtoneAudio.src = preset.source;
+  ringtoneAudio.load();
+}
+
+function renderRingtonePresetSetting() {
+  if (!ringtonePresetSelect) return;
+  const selectedPreset = getSelectedRingtonePreset();
+  ringtonePresetSelect.replaceChildren(
+    ...ringtonePresets.map((preset) => {
+      const option = document.createElement("option");
+      option.value = preset.id;
+      option.textContent = preset.name;
+      option.dataset.author = preset.author;
+      return option;
+    }),
+  );
+  ringtonePresetSelect.value = selectedPreset.id;
+  ringtonePresetSelect.disabled =
+    !appConfig.soundSettings.enabled ||
+    !appConfig.soundSettings.ringtone ||
+    ringtonePresets.length === 0;
+  ringtonePreviewButton.disabled = ringtonePresetSelect.disabled;
+  if (ringtonePreviewButton.disabled) stopRingtonePreview();
+  applyBuiltInRingtonePreset();
+  syncEnhancedSelect(ringtonePresetSelect);
+}
+
 for (const [soundId, definition] of Object.entries(customSoundDefinitions)) {
   definition.audio.addEventListener("error", () => {
     if (customSoundObjectUrls.has(soundId)) {
@@ -1102,6 +1212,22 @@ function enhanceNativeSelects() {
   }
 }
 
+function renderEnhancedSelectOptionContent(container, option) {
+  const author = option?.dataset.author || "";
+  container.classList.toggle("has-author", Boolean(author));
+  if (!author) {
+    container.textContent = option?.textContent || "Select an option";
+    return;
+  }
+  const title = document.createElement("span");
+  title.className = "aero-select-option-title";
+  title.textContent = option.textContent;
+  const authorPill = document.createElement("span");
+  authorPill.className = "aero-select-author-pill";
+  authorPill.textContent = author;
+  container.replaceChildren(title, authorPill);
+}
+
 function enhanceNativeSelect(select) {
   const wrapper = document.createElement("div");
   wrapper.className = "aero-select";
@@ -1169,13 +1295,13 @@ function enhanceNativeSelect(select) {
   };
   const render = () => {
     const selected = select.selectedOptions[0];
-    label.textContent = selected?.textContent || "Select an option";
+    renderEnhancedSelectOptionContent(label, selected);
     toggle.disabled = select.disabled || select.options.length === 0;
     options.replaceChildren(
       ...Array.from(select.options, (option) => {
         const button = document.createElement("button");
         button.type = "button";
-        button.textContent = option.textContent;
+        renderEnhancedSelectOptionContent(button, option);
         button.disabled = option.disabled;
         button.setAttribute("role", "option");
         button.setAttribute(
@@ -2359,6 +2485,9 @@ function normalizeAppSettings() {
     messages: appConfig.soundSettings.messages !== false,
     ringtone: appConfig.soundSettings.ringtone !== false,
     ringtoneLoop: appConfig.soundSettings.ringtoneLoop !== false,
+    ringtonePreset: normalizeRingtonePresetId(
+      appConfig.soundSettings.ringtonePreset,
+    ),
     callEvents: appConfig.soundSettings.callEvents !== false,
     connected: appConfig.soundSettings.connected !== false,
     custom: normalizeCustomSounds(appConfig.soundSettings.custom),
@@ -2959,6 +3088,7 @@ function renderAppSettings() {
   ringtoneLoopToggle
     .closest(".settings-check")
     ?.classList.toggle("disabled", ringtoneLoopToggle.disabled);
+  renderRingtonePresetSetting();
   renderCustomSoundList();
   renderCustomWallpaperList();
 
@@ -14700,6 +14830,19 @@ ringtoneLoopToggle.addEventListener("change", () => {
   saveSoundSettings({ ringtoneLoop: ringtoneLoopToggle.checked });
 });
 
+ringtonePresetSelect.addEventListener("change", () => {
+  stopRingtonePreview();
+  saveSoundSettings({
+    ringtonePreset: normalizeRingtonePresetId(ringtonePresetSelect.value),
+  });
+});
+
+ringtonePreviewButton.addEventListener("click", () => {
+  void toggleRingtonePreview();
+});
+ringtonePreviewAudio.addEventListener("ended", stopRingtonePreview);
+ringtonePreviewAudio.addEventListener("error", stopRingtonePreview);
+
 callEventSoundToggle.addEventListener("change", () => {
   saveSoundSettings({ callEvents: callEventSoundToggle.checked });
 });
@@ -15906,6 +16049,7 @@ platformApi.onSystemShutdown(() => {
 });
 
 window.addEventListener("beforeunload", () => {
+  stopRingtonePreview();
   stopAeroIdQrScanner();
   cleanupRealtimeConnections();
 });
