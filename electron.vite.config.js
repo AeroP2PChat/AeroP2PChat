@@ -2,11 +2,13 @@ const { defineConfig } = require("electron-vite");
 const { resolve } = require("node:path");
 const projectConfig = require("./config.json");
 const { getRingtonePresets } = require("./scripts/ringtone-presets.cjs");
+const { getLegalInformation } = require("./scripts/legal-notices.cjs");
 
 const defineProjectConfig = {
   __PROJECT_CONFIG__: JSON.stringify(projectConfig),
 };
 const ringtonePresets = getRingtonePresets(__dirname);
+const legalInformation = getLegalInformation(__dirname);
 
 module.exports = defineConfig({
   main: {
@@ -32,6 +34,7 @@ module.exports = defineConfig({
     define: {
       ...defineProjectConfig,
       __RINGTONE_PRESETS__: JSON.stringify(ringtonePresets),
+      __LEGAL_INFORMATION__: JSON.stringify(legalInformation),
     },
     root: resolve(__dirname, "src/renderer"),
     publicDir: resolve(__dirname, "public"),

@@ -22,6 +22,7 @@ import {
 import "./design.css";
 
 const projectConfig = __PROJECT_CONFIG__;
+const legalInformation = __LEGAL_INFORMATION__;
 
 const titlebarLogo = document.querySelector("#titlebar-logo");
 const titlebarUsername = document.querySelector("#titlebar-username");
@@ -389,6 +390,11 @@ const customSoundProgressSelection = document.querySelector(
   "#custom-sound-progress-selection",
 );
 const customSoundProgressFill = document.querySelector("#custom-sound-progress-fill");
+const legalAppLicense = document.querySelector("#legal-app-license");
+const legalAudioLicense = document.querySelector("#legal-audio-license");
+const legalDependencyCount = document.querySelector("#legal-dependency-count");
+const legalLicenseSearch = document.querySelector("#legal-license-search");
+const legalLicenseList = document.querySelector("#legal-license-list");
 const customSoundStartValue = document.querySelector("#custom-sound-start-value");
 const customSoundEndValue = document.querySelector("#custom-sound-end-value");
 const customSoundWaveform = document.querySelector("#custom-sound-waveform");
@@ -1205,6 +1211,66 @@ function saveAppConfig() {
   return configSaveQueue.catch(() => {});
 }
 
+function renderLegalLicenses(query = "") {
+  if (!legalLicenseList) return;
+  const licenses = Array.isArray(legalInformation?.thirdParty)
+    ? legalInformation.thirdParty
+    : [];
+  const normalizedQuery = String(query).trim().toLocaleLowerCase();
+  const visibleLicenses = normalizedQuery
+    ? licenses.filter((entry) =>
+        `${entry.name} ${entry.version} ${entry.license}`
+          .toLocaleLowerCase()
+          .includes(normalizedQuery),
+      )
+    : licenses;
+
+  if (legalAppLicense) {
+    legalAppLicense.textContent = legalInformation?.appLicense || "";
+  }
+  if (legalAudioLicense) {
+    legalAudioLicense.textContent = legalInformation?.audioLicense || "";
+  }
+  if (legalDependencyCount) {
+    legalDependencyCount.textContent = normalizedQuery
+      ? `${visibleLicenses.length} of ${licenses.length} packages`
+      : `${licenses.length} packages and their complete license texts`;
+  }
+
+  if (!visibleLicenses.length) {
+    const empty = document.createElement("div");
+    empty.className = "legal-license-empty";
+    empty.textContent = "No matching license found.";
+    legalLicenseList.replaceChildren(empty);
+    return;
+  }
+
+  legalLicenseList.replaceChildren(
+    ...visibleLicenses.map((entry) => {
+      const details = document.createElement("details");
+      details.className = "legal-license-entry";
+      const summary = document.createElement("summary");
+      const packageLabel = document.createElement("span");
+      packageLabel.className = "legal-license-package";
+      const name = document.createElement("strong");
+      name.textContent = entry.name;
+      const version = document.createElement("span");
+      version.textContent = entry.version ? `v${entry.version}` : "";
+      packageLabel.append(name, version);
+      const license = document.createElement("span");
+      license.className = "legal-license-pill";
+      license.textContent = entry.license;
+      summary.append(packageLabel, license);
+      const text = document.createElement("pre");
+      details.append(summary, text);
+      details.addEventListener("toggle", () => {
+        if (details.open && !text.textContent) text.textContent = entry.text;
+      });
+      return details;
+    }),
+  );
+}
+
 function enhanceNativeSelects() {
   for (const select of document.querySelectorAll("select")) {
     if (select.id === "profile-avatar-template" || enhancedSelects.has(select)) {
@@ -1499,6 +1565,10 @@ function migrateLocalStorageConfig() {
 }
 
 enhanceNativeSelects();
+renderLegalLicenses();
+legalLicenseSearch?.addEventListener("input", () => {
+  renderLegalLicenses(legalLicenseSearch.value);
+});
 appConfig = await loadAppConfig();
 if (stripRetiredIdentityData(appConfig)) {
   await saveAppConfig();

@@ -4837,6 +4837,189 @@ body:not(.platform-android) [data-settings-nav="feedback"] {
 .notification-suboption {
   margin: -2px 0 0 38px;
 }
+.legal-stack {
+  display: grid;
+  gap: 10px;
+}
+.legal-card,
+.legal-license-entry {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+}
+.legal-card {
+  padding: 11px;
+}
+.legal-card-heading {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+}
+.legal-card-heading > div:nth-child(2),
+.legal-third-party-heading > div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.legal-card-heading strong,
+.legal-third-party-heading strong {
+  color: var(--text);
+  font-size: 11px;
+}
+.legal-card-heading span:not(.legal-license-pill),
+.legal-third-party-heading span {
+  color: var(--muted);
+  font-size: 9px;
+}
+.legal-card-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--line-accent);
+  border-radius: var(--radius-sm);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+}
+.legal-license-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 7px;
+  border: 1px solid var(--line-accent);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--text-soft);
+  font-size: 9px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+.legal-license-pill.owned {
+  border-color: color-mix(in srgb, var(--success) 35%, var(--line));
+  background: var(--success-soft);
+  color: var(--success);
+}
+.legal-rights-copy {
+  margin: 9px 0 0 39px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.legal-rights-copy code {
+  color: var(--text-soft);
+  font-size: 9px;
+}
+.legal-license-details {
+  margin: 9px 0 0 39px;
+}
+.legal-license-details summary,
+.legal-license-entry summary {
+  color: var(--text-soft);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  list-style: none;
+}
+.legal-license-details summary::-webkit-details-marker,
+.legal-license-entry summary::-webkit-details-marker {
+  display: none;
+}
+.legal-license-details summary::before {
+  display: inline-block;
+  margin-right: 6px;
+  color: var(--muted);
+  content: "›";
+  transition: transform 120ms ease;
+}
+.legal-license-details[open] summary::before {
+  transform: rotate(90deg);
+}
+.legal-license-details pre,
+.legal-license-entry pre {
+  max-height: 260px;
+  margin: 9px 0 0;
+  padding: 10px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: "Cascadia Mono", Consolas, monospace;
+  font-size: 9px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+.legal-third-party-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+.legal-search {
+  position: relative;
+  width: min(210px, 48%);
+}
+.legal-search i {
+  position: absolute;
+  top: 50%;
+  left: 9px;
+  color: var(--muted);
+  font-size: 9px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.legal-search input {
+  height: 30px;
+  padding-left: 27px;
+  font-size: 11px;
+}
+.legal-license-list {
+  display: grid;
+  gap: 6px;
+}
+.legal-license-entry summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  padding: 7px 9px;
+}
+.legal-license-entry[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+.legal-license-package {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 6px;
+}
+.legal-license-package strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.legal-license-package span {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 9px;
+}
+.legal-license-entry pre {
+  max-height: 320px;
+  margin: 9px;
+}
+.legal-license-empty {
+  padding: 16px;
+  color: var(--muted);
+  font-size: 10px;
+  text-align: center;
+}
 .general-settings-stack,
 .update-settings-stack {
   display: grid;

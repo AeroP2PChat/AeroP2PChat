@@ -1267,6 +1267,10 @@
               <i class="fa-solid fa-comment-dots" aria-hidden="true"></i>
               Feedback
             </button>
+            <button type="button" class="settings-nav-item" data-settings-nav="legal">
+              <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
+              Legal
+            </button>
             <span class="settings-nav-divider"></span>
             <button type="button" class="settings-nav-item danger" data-settings-nav="reset">
               <i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>
@@ -1711,6 +1715,56 @@
               <i class="fa-solid fa-comment-dots" aria-hidden="true"></i>
               <span>Send feedback</span>
             </button>
+          </section>
+
+          <section class="settings-section" data-settings-page="legal">
+            <div class="settings-page-heading">
+              <div>
+                <h3>Legal</h3>
+                <p>Licenses and rights for Aero P2P Chat and its bundled components.</p>
+              </div>
+            </div>
+            <div class="legal-stack">
+              <article class="legal-card">
+                <div class="legal-card-heading">
+                  <div class="legal-card-icon"><i class="fa-solid fa-code" aria-hidden="true"></i></div>
+                  <div><strong>Aero P2P Chat</strong><span>Application source code</span></div>
+                  <span class="legal-license-pill">MIT</span>
+                </div>
+                <details class="legal-license-details">
+                  <summary>View license</summary>
+                  <pre id="legal-app-license"></pre>
+                </details>
+              </article>
+              <article class="legal-card">
+                <div class="legal-card-heading">
+                  <div class="legal-card-icon"><i class="fa-solid fa-music" aria-hidden="true"></i></div>
+                  <div><strong>Audio assets</strong><span>Ringtones, notifications, calls and streams</span></div>
+                  <span class="legal-license-pill owned">Owned</span>
+                </div>
+                <p class="legal-rights-copy">Copyright © 2026 Jonas Grimm (Zorblock). All rights reserved. Bundled audio assets are not covered by the software's MIT license.</p>
+                <details class="legal-license-details">
+                  <summary>View audio license</summary>
+                  <pre id="legal-audio-license"></pre>
+                </details>
+              </article>
+              <article class="legal-card legal-runtime-card">
+                <div class="legal-card-heading">
+                  <div class="legal-card-icon"><i class="fa-brands fa-chrome" aria-hidden="true"></i></div>
+                  <div><strong>Electron, Chromium &amp; Node.js</strong><span>Desktop runtime</span></div>
+                  <span class="legal-license-pill">Various</span>
+                </div>
+                <p class="legal-rights-copy">Electron's license is listed below. Complete Chromium, Node.js and bundled component notices are shipped with every desktop package as <code>LICENSES.chromium.html</code> and <code>LICENSE.electron.txt</code>.</p>
+              </article>
+              <div class="legal-third-party-heading">
+                <div><strong>Third-party software</strong><span id="legal-dependency-count"></span></div>
+                <label class="legal-search">
+                  <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                  <input id="legal-license-search" type="search" placeholder="Search licenses" aria-label="Search third-party licenses" />
+                </label>
+              </div>
+              <div id="legal-license-list" class="legal-license-list"></div>
+            </div>
           </section>
 
           <section class="settings-section settings-reset-section" data-settings-page="reset">
