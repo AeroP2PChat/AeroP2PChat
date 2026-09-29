@@ -1,5 +1,37 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
+function serializeRendererError(value, extra = {}) {
+  const error = value instanceof Error ? value : null;
+  return {
+    name: String(error?.name || "RendererError").slice(0, 120),
+    message: String(error?.message || value || "Unknown renderer error").slice(
+      0,
+      2000,
+    ),
+    stack: String(error?.stack || "").slice(0, 12000),
+    ...extra,
+  };
+}
+
+window.addEventListener("error", (event) => {
+  if (!event.error && !event.message) return;
+  ipcRenderer.send(
+    "renderer-error",
+    serializeRendererError(event.error || event.message, {
+      source: String(event.filename || "").slice(0, 500),
+      line: Number(event.lineno) || 0,
+      column: Number(event.colno) || 0,
+    }),
+  );
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  ipcRenderer.send(
+    "renderer-error",
+    serializeRendererError(event.reason, { unhandledRejection: true }),
+  );
+});
+
 contextBridge.exposeInMainWorld("aeroChat", {
   platform: process.platform,
   usesLinuxSystemScreenPicker:

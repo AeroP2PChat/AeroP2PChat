@@ -22,7 +22,9 @@ const {
 const {
   appendFileSync,
   constants: fsConstants,
+  copyFileSync,
   createWriteStream,
+  mkdirSync,
   readFileSync,
 } = require("node:fs");
 const {
@@ -148,6 +150,7 @@ const allowMultipleInstances =
 const runtimeLogPath = app.isPackaged
   ? ""
   : String(process.env.AERO_CHAT_RUNTIME_LOG_FILE || "").trim();
+let diagnosticLogPath = "";
 const autostartDesktopFileName = projectConfig.linux.autostartDesktopFileName;
 const bootAccentPresets = {
   aero: "#147fa6",
@@ -179,26 +182,168 @@ function normalizeAccentColor(value) {
 }
 
 function writeRuntimeLog(level, args) {
-  if (!runtimeLogPath) return;
+  if (!diagnosticLogPath) return;
   try {
     appendFileSync(
-      runtimeLogPath,
+      diagnosticLogPath,
       `[${new Date().toISOString()}] [${level}] ${format(...args)}\n`,
       "utf8",
     );
   } catch {
-    // Development diagnostics must never interfere with the app itself.
+    // Diagnostics must never interfere with the app itself.
   }
 }
 
-if (runtimeLogPath) {
-  for (const level of ["debug", "info", "log", "warn", "error"]) {
-    const writeToConsole = console[level].bind(console);
-    console[level] = (...args) => {
-      writeRuntimeLog(level, args);
-      writeToConsole(...args);
+function normalizeDiagnosticError(error) {
+  if (error instanceof Error) {
+    return {
+      name: String(error.name || "Error").slice(0, 120),
+      message: String(error.message || "Unknown error").slice(0, 2000),
+      stack: String(error.stack || "").slice(0, 12000),
     };
   }
+  return {
+    name: "Error",
+    message: String(error || "Unknown error").slice(0, 2000),
+    stack: "",
+  };
+}
+
+function writeDiagnosticEvent(kind, error, details = {}) {
+  const normalized = normalizeDiagnosticError(error);
+  writeRuntimeLog("ERROR", [
+    `${kind}: ${normalized.name}: ${normalized.message}\n${normalized.stack}`,
+  ]);
+  if (Object.keys(details).length) {
+    writeRuntimeLog("DETAIL", [details]);
+  }
+  return normalized;
+}
+
+let diagnosticDialogOpen = false;
+let fatalErrorHandling = false;
+let lastDiagnosticFingerprint = "";
+let lastDiagnosticAt = 0;
+
+function isDuplicateDiagnostic(kind, message) {
+  const fingerprint = `${kind}:${message}`;
+  const now = Date.now();
+  const duplicate =
+    fingerprint === lastDiagnosticFingerprint && now - lastDiagnosticAt < 5000;
+  lastDiagnosticFingerprint = fingerprint;
+  lastDiagnosticAt = now;
+  return duplicate;
+}
+
+async function saveDiagnosticLogCopy(parent = null) {
+  if (!diagnosticLogPath) return;
+  const options = {
+    title: "Save Aero diagnostic log",
+    defaultPath: join(
+      app.getPath("documents"),
+      `Aero-diagnostic-${new Date().toISOString().replace(/[.:]/g, "-")}.log`,
+    ),
+    filters: [{ name: "Log file", extensions: ["log"] }],
+  };
+  const result = parent
+    ? await dialog.showSaveDialog(parent, options)
+    : await dialog.showSaveDialog(options);
+  if (!result.canceled && result.filePath) {
+    await copyFile(diagnosticLogPath, result.filePath);
+  }
+}
+
+async function showDiagnosticDialog({ kind, error, details = {}, canReload = false }) {
+  const normalized = writeDiagnosticEvent(kind, error, details);
+  if (
+    diagnosticDialogOpen ||
+    isDuplicateDiagnostic(kind, normalized.message) ||
+    !app.isReady()
+  ) {
+    return;
+  }
+
+  diagnosticDialogOpen = true;
+  const parent = mainWindow && !mainWindow.isDestroyed() ? mainWindow : null;
+  try {
+    const options = {
+      type: "error",
+      title: `${appDisplayName} encountered a problem`,
+      message: `${appDisplayName} encountered an unexpected problem.`,
+      detail: `${normalized.message}\n\nA diagnostic log was created at:\n${diagnosticLogPath}`,
+      buttons: [canReload ? "Reload Aero" : "Continue", "Open log", "Save log", "Close Aero"],
+      defaultId: 0,
+      cancelId: 3,
+      noLink: true,
+    };
+    const result = parent
+      ? await dialog.showMessageBox(parent, options)
+      : await dialog.showMessageBox(options);
+
+    if (result.response === 0 && canReload && parent && !parent.isDestroyed()) {
+      parent.reload();
+    } else if (result.response === 1) {
+      const openError = await shell.openPath(diagnosticLogPath);
+      if (openError) shell.showItemInFolder(diagnosticLogPath);
+    } else if (result.response === 2) {
+      await saveDiagnosticLogCopy(parent);
+    } else if (result.response === 3) {
+      forceQuit = true;
+      app.quit();
+    }
+  } catch (dialogError) {
+    writeDiagnosticEvent("Diagnostic dialog failed", dialogError);
+  } finally {
+    diagnosticDialogOpen = false;
+  }
+}
+
+function handleFatalMainError(error) {
+  if (fatalErrorHandling) {
+    app.exit(1);
+    return;
+  }
+  fatalErrorHandling = true;
+  const normalized = writeDiagnosticEvent("Main process crash", error);
+  let response = 3;
+  if (app.isReady()) {
+    response = dialog.showMessageBoxSync({
+      type: "error",
+      title: `${appDisplayName} crashed`,
+      message: `${appDisplayName} must close after an unexpected error.`,
+      detail: `${normalized.message}\n\nDiagnostic log:\n${diagnosticLogPath}`,
+      buttons: ["Restart Aero", "Open log", "Save log", "Close"],
+      defaultId: 0,
+      cancelId: 3,
+      noLink: true,
+    });
+  } else {
+    dialog.showErrorBox(
+      `${appDisplayName} crashed`,
+      `${normalized.message}\n\nDiagnostic log:\n${diagnosticLogPath}`,
+    );
+  }
+
+  if (response === 0) {
+    app.relaunch();
+  } else if (response === 1) {
+    void shell.openPath(diagnosticLogPath);
+  } else if (response === 2) {
+    const destination = dialog.showSaveDialogSync({
+      title: "Save Aero diagnostic log",
+      defaultPath: join(app.getPath("documents"), `Aero-diagnostic-${Date.now()}.log`),
+      filters: [{ name: "Log file", extensions: ["log"] }],
+    });
+    if (destination) {
+      try {
+        copyFileSync(diagnosticLogPath, destination);
+      } catch {
+        // The original log remains available in userData.
+      }
+    }
+  }
+  forceQuit = true;
+  app.exit(1);
 }
 
 app.commandLine.appendSwitch("autoplay-policy", "no-user-gesture-required");
@@ -228,6 +373,64 @@ if (process.env.AERO_CHAT_USER_DATA_DIR) {
 
   if (resolve(legacyPackagedUserDataPath) === resolve(vendorUserDataPath)) {
     legacyPackagedUserDataPath = "";
+  }
+}
+
+const diagnosticLogDirectory = join(app.getPath("userData"), "Logs");
+mkdirSync(diagnosticLogDirectory, { recursive: true });
+diagnosticLogPath =
+  runtimeLogPath ||
+  join(
+    diagnosticLogDirectory,
+    `aero-${new Date().toISOString().replace(/[.:]/g, "-")}.log`,
+  );
+appendFileSync(
+  diagnosticLogPath,
+  `[${new Date().toISOString()}] ${appDisplayName} ${app.getVersion()} · ${process.platform} ${process.arch}\n`,
+  "utf8",
+);
+
+for (const level of ["debug", "info", "log", "warn", "error"]) {
+  const writeToConsole = console[level].bind(console);
+  console[level] = (...args) => {
+    writeRuntimeLog(level, args);
+    writeToConsole(...args);
+  };
+}
+
+process.on("uncaughtException", handleFatalMainError);
+process.on("unhandledRejection", (reason) => {
+  const showError = () =>
+    showDiagnosticDialog({
+      kind: "Unhandled main-process promise rejection",
+      error: reason,
+    });
+  if (app.isReady()) {
+    void showError();
+  } else {
+    void app.whenReady().then(showError);
+  }
+});
+
+async function cleanupOldDiagnosticLogs() {
+  try {
+    const entries = await readdir(diagnosticLogDirectory, {
+      withFileTypes: true,
+    });
+    const logs = await Promise.all(
+      entries
+        .filter((entry) => entry.isFile() && /^aero-.*\.log$/i.test(entry.name))
+        .map(async (entry) => {
+          const path = join(diagnosticLogDirectory, entry.name);
+          return { path, modified: (await stat(path)).mtimeMs };
+        }),
+    );
+    logs.sort((left, right) => right.modified - left.modified);
+    await Promise.all(
+      logs.slice(12).map((entry) => rm(entry.path, { force: true })),
+    );
+  } catch {
+    // Log cleanup is best effort only.
   }
 }
 
@@ -1759,6 +1962,30 @@ function updateTrayMenu() {
             },
           },
           {
+            label: "Trigger Real Crash…",
+            click: () => {
+              const response = dialog.showMessageBoxSync({
+                type: "warning",
+                buttons: ["Crash now", "Cancel"],
+                defaultId: 1,
+                cancelId: 1,
+                title: "Trigger a real crash?",
+                message:
+                  "This intentionally throws an unhandled Main Process error to test Aero's real crash handler.",
+                detail:
+                  "Unsaved activity and active calls will be interrupted. The normal crash log and recovery dialog should appear.",
+                noLink: true,
+              });
+              if (response !== 0) return;
+
+              setImmediate(() => {
+                throw new Error(
+                  "Intentional developer-triggered Main Process crash.",
+                );
+              });
+            },
+          },
+          {
             label: "Clear App Data & Restart",
             click: () => {
               const { dialog } = require("electron");
@@ -2828,20 +3055,50 @@ function createWindow({ hidden = false } = {}) {
     return { action: "deny" };
   });
 
-  if (runtimeLogPath) {
-    win.webContents.on("console-message", (details) => {
-      const sourceId = String(details.sourceId || "");
-      if (
-        sourceId.includes("/@vite/") ||
-        sourceId.includes("cdn.userjot.com") ||
-        sourceId.startsWith("node:electron/")
-      ) {
-        return;
-      }
-      const method = details.level === "warning" ? "warn" : details.level;
-      console[method](`[Renderer ${sourceId}:${details.lineNumber || 0}] ${details.message}`);
+  win.webContents.on("console-message", (details) => {
+    const sourceId = String(details.sourceId || "");
+    if (
+      sourceId.includes("/@vite/") ||
+      sourceId.includes("cdn.userjot.com") ||
+      sourceId.startsWith("node:electron/")
+    ) {
+      return;
+    }
+    const method = details.level === "warning" ? "warn" : details.level;
+    if (typeof console[method] === "function") {
+      console[method](
+        `[Renderer ${sourceId}:${details.lineNumber || 0}] ${details.message}`,
+      );
+    }
+  });
+
+  win.webContents.on("render-process-gone", (_event, details) => {
+    if (
+      forceQuit ||
+      systemShutdownStarted ||
+      details.reason === "clean-exit"
+    ) {
+      return;
+    }
+    void showDiagnosticDialog({
+      kind: "Renderer process stopped",
+      error: new Error(`Renderer stopped: ${details.reason}`),
+      details: {
+        reason: details.reason,
+        exitCode: details.exitCode,
+      },
+      canReload: true,
     });
-  }
+  });
+
+  win.on("unresponsive", () => {
+    if (forceQuit || systemShutdownStarted) return;
+    void showDiagnosticDialog({
+      kind: "Renderer became unresponsive",
+      error: new Error("The application window stopped responding."),
+      canReload: true,
+    });
+  });
 
   if (process.env.ELECTRON_RENDERER_URL) {
     const rendererUrl = new URL(process.env.ELECTRON_RENDERER_URL);
@@ -2882,6 +3139,7 @@ function createWindow({ hidden = false } = {}) {
 }
 
 app.whenReady().then(async () => {
+  await cleanupOldDiagnosticLogs();
   await cleanupCompletedUpdateSetups();
   await migratePackagedUserData();
   await cleanupIncomingTempDirectory();
@@ -2912,6 +3170,25 @@ app.whenReady().then(async () => {
       details.sha512,
       onProgress,
     );
+  });
+  ipcMain.on("renderer-error", (event, details = {}) => {
+    if (BrowserWindow.fromWebContents(event.sender) !== mainWindow) return;
+    const error = new Error(
+      String(details.message || "Unknown renderer error").slice(0, 2000),
+    );
+    error.name = String(details.name || "RendererError").slice(0, 120);
+    if (details.stack) error.stack = String(details.stack).slice(0, 12000);
+    void showDiagnosticDialog({
+      kind: details.unhandledRejection
+        ? "Unhandled renderer promise rejection"
+        : "Unhandled renderer error",
+      error,
+      details: {
+        source: String(details.source || "").slice(0, 500),
+        line: Number(details.line) || 0,
+        column: Number(details.column) || 0,
+      },
+    });
   });
   ipcMain.handle("download-update", async (_event, details = {}) => {
     try {
@@ -3299,4 +3576,30 @@ app.on("window-all-closed", () => {
   ) {
     app.quit();
   }
+});
+
+app.on("child-process-gone", (_event, details) => {
+  if (
+    forceQuit ||
+    systemShutdownStarted ||
+    !["crashed", "oom", "launch-failed", "integrity-failure"].includes(
+      details.reason,
+    )
+  ) {
+    return;
+  }
+  void showDiagnosticDialog({
+    kind: "Electron child process stopped",
+    error: new Error(
+      `${details.type || "Child process"} stopped: ${details.reason}`,
+    ),
+    details: {
+      type: details.type,
+      reason: details.reason,
+      exitCode: details.exitCode,
+      serviceName: details.serviceName,
+      name: details.name,
+    },
+    canReload: details.type === "GPU",
+  });
 });
