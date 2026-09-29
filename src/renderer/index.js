@@ -698,6 +698,7 @@ messageAudio.preload = "auto";
 ringtoneAudio.preload = "auto";
 ringtoneAudio.loop = true;
 ringtonePreviewAudio.preload = "auto";
+ringtonePreviewAudio.loop = true;
 
 function setRingtonePreviewPlaying(playing) {
   ringtonePreviewButton?.classList.toggle("is-playing", playing);
@@ -730,6 +731,7 @@ async function toggleRingtonePreview() {
   }
   const preset = getSelectedRingtonePreset();
   if (!preset.source) return;
+  ringtonePreviewAudio.loop = appConfig.soundSettings.ringtoneLoop;
   ringtonePreviewAudio.src = preset.source;
   ringtonePreviewAudio.currentTime = 0;
   try {
@@ -3070,6 +3072,7 @@ function renderAppSettings() {
   ringtoneSoundToggle.checked = appConfig.soundSettings.ringtone;
   ringtoneLoopToggle.checked = appConfig.soundSettings.ringtoneLoop;
   ringtoneAudio.loop = appConfig.soundSettings.ringtoneLoop;
+  ringtonePreviewAudio.loop = appConfig.soundSettings.ringtoneLoop;
   callEventSoundToggle.checked = appConfig.soundSettings.callEvents;
   connectedSoundToggle.checked = appConfig.soundSettings.connected;
   for (const toggle of [
@@ -14827,6 +14830,7 @@ ringtoneSoundToggle.addEventListener("change", () => {
 
 ringtoneLoopToggle.addEventListener("change", () => {
   ringtoneAudio.loop = ringtoneLoopToggle.checked;
+  ringtonePreviewAudio.loop = ringtoneLoopToggle.checked;
   saveSoundSettings({ ringtoneLoop: ringtoneLoopToggle.checked });
 });
 
