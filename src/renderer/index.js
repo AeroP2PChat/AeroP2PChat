@@ -4,6 +4,7 @@ import emojiShortcodeDataUrl from "../../node_modules/emoji-picker-element-data/
 import countryFlagEmojiFontUrl from "../../node_modules/country-flag-emoji-polyfill/dist/TwemojiCountryFlags.woff2?url";
 import { getDomain } from "tldts";
 import { sha256 } from "@noble/hashes/sha2.js";
+import { blobatarUri } from "blobatar/uri";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import appLogo from "../../assets/app.png";
 import packageInfo from "../../package.json" with { type: "json" };
@@ -263,18 +264,6 @@ const profileClose = document.querySelector("#profile-close");
 const profileAvatarPreview = document.querySelector("#profile-avatar-preview");
 const profileId = document.querySelector("#profile-id");
 const profileNickname = document.querySelector("#profile-nickname");
-const profileAvatarTemplate = document.querySelector("#profile-avatar-template");
-const profileTemplateToggle = document.querySelector("#profile-template-toggle");
-const profileTemplateLabel = document.querySelector("#profile-template-label");
-const profileTemplateOptions = document.querySelector("#profile-template-options");
-const profileTemplateOptionButtons = Array.from(
-  document.querySelectorAll("[data-avatar-template]"),
-);
-const profileAvatarColor = document.querySelector("#profile-avatar-color");
-const profileAvatarColorValue = document.querySelector("#profile-avatar-color-value");
-const profileColorField = profileAvatarColor.closest(".profile-color-field");
-const profileAvatarDecoration = document.querySelector("#profile-avatar-decoration");
-const profileAvatarInitial = document.querySelector("#profile-avatar-initial");
 const profileNameFont = document.querySelector("#profile-name-font");
 const profileNameThemeColor = document.querySelector("#profile-name-theme-color");
 const profileNameColor = document.querySelector("#profile-name-color");
@@ -506,8 +495,6 @@ const activeOutgoingFileTransfers = new Map();
 const CHAT_LABEL = "aero-p2p-chat";
 const PROTOCOL_VERSION = 1;
 const AERO_ID_PATTERN = /^aero-(?:[a-f0-9]{16}|[a-f0-9]{32})$/;
-const AVATAR_TEMPLATES = new Set(["unique", "solid", "gradient", "rings"]);
-const AVATAR_DECORATIONS = new Set(["none", "sparkle", "crown", "orbit"]);
 const PROFILE_NAME_FONTS = new Set(["modern", "rounded", "mono", "serif"]);
 const IDENTITY_STORAGE_KEY = "aero-p2p-chat.identity.v1";
 const CONTACTS_STORAGE_KEY = "aero-p2p-chat.contacts.v1";
@@ -1185,11 +1172,12 @@ function stripRetiredIdentityData(config) {
     }
   };
 
-  for (const key of ["loggedIn", "accountUserId", "authToken", "role"]) {
+  for (const key of ["loggedIn", "accountUserId", "authToken", "role", "avatar"]) {
     remove(config?.identity, key);
   }
   for (const contact of config?.contacts || []) {
     remove(contact, "accountUserId");
+    remove(contact, "avatar");
   }
   for (const key of [
     "pendingTokenRevocation",
@@ -1273,7 +1261,7 @@ function renderLegalLicenses(query = "") {
 
 function enhanceNativeSelects() {
   for (const select of document.querySelectorAll("select")) {
-    if (select.id === "profile-avatar-template" || enhancedSelects.has(select)) {
+    if (enhancedSelects.has(select)) {
       continue;
     }
     enhanceNativeSelect(select);
@@ -1469,24 +1457,6 @@ function createMessageId() {
   return `msg-${Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
 }
 
-function normalizeAvatarConfig(value) {
-  const template = AVATAR_TEMPLATES.has(value?.template)
-    ? value.template
-    : "unique";
-  const color = /^#[a-f0-9]{6}$/i.test(String(value?.color || ""))
-    ? String(value.color).toLowerCase()
-    : "#4f46e5";
-  const decoration = AVATAR_DECORATIONS.has(value?.decoration)
-    ? value.decoration
-    : "none";
-  return {
-    template,
-    color,
-    decoration: "none",
-    showInitial: true,
-  };
-}
-
 function normalizeNameStyle(value) {
   const font = PROFILE_NAME_FONTS.has(value?.font) ? value.font : "modern";
   const providedColor = /^#[a-f0-9]{6}$/i.test(String(value?.color || ""))
@@ -1506,7 +1476,7 @@ function normalizeNameStyle(value) {
 function loadIdentity() {
   if (appConfig.identity?.id && isValidAeroId(appConfig.identity.id)) {
     appConfig.identity.nickname = sanitizeNickname(appConfig.identity.nickname);
-    appConfig.identity.avatar = normalizeAvatarConfig(appConfig.identity.avatar);
+    delete appConfig.identity.avatar;
     appConfig.identity.nameStyle = normalizeNameStyle(appConfig.identity.nameStyle);
     appConfig.identity.previousIds = getKnownPreviousIdentityIds(
       appConfig.identity.previousIds,
@@ -1518,7 +1488,6 @@ function loadIdentity() {
   const identity = {
     id: createIdentityId(),
     nickname: "",
-    avatar: normalizeAvatarConfig(),
     nameStyle: normalizeNameStyle(),
     previousIds: [],
     createdAt: new Date().toISOString(),
@@ -1957,7 +1926,6 @@ function loadContacts() {
         : 100,
       showVideoName: contact.showVideoName !== false,
       pinnedAt: contact.pinnedAt || new Date().toISOString(),
-      avatar: normalizeAvatarConfig(contact.avatar),
       nameStyle: normalizeNameStyle(contact.nameStyle),
     }));
 }
@@ -4507,7 +4475,6 @@ function upsertContact(id, updates = {}) {
         : 100,
       showVideoName: updates.showVideoName !== false,
       pinnedAt: new Date().toISOString(),
-      avatar: normalizeAvatarConfig(updates.avatar),
       nameStyle: normalizeNameStyle(updates.nameStyle),
     });
   }
@@ -4573,7 +4540,6 @@ function migrateContactIdentity(previousIds, nextId, nickname = "") {
       existingTarget?.playbackVolume ?? preferred.playbackVolume ?? 100,
     showVideoName:
       existingTarget?.showVideoName ?? preferred.showVideoName ?? true,
-    avatar: existingTarget?.avatar || preferred.avatar,
     nameStyle: existingTarget?.nameStyle || preferred.nameStyle,
   };
 
@@ -4583,7 +4549,7 @@ function migrateContactIdentity(previousIds, nextId, nickname = "") {
   return migrated;
 }
 
-function rememberRemoteIdentity(id, nickname, avatar, nameStyle) {
+function rememberRemoteIdentity(id, nickname, nameStyle) {
   const remoteNickname = sanitizeNickname(nickname);
   if (!isValidAeroId(id) || !remoteNickname) {
     return;
@@ -4594,7 +4560,6 @@ function rememberRemoteIdentity(id, nickname, avatar, nameStyle) {
       remoteNickname,
       label: existing?.customLabel ? existing.label : remoteNickname,
       pinned: existing?.pinned ?? true,
-      avatar: normalizeAvatarConfig(avatar),
       nameStyle: normalizeNameStyle(nameStyle),
     });
 }
@@ -4806,76 +4771,20 @@ function updateTitlebarLogo() {
   updateTitlebarPresenceIndicator();
 }
 
-function createAvatar(label, id, config) {
+function createAvatar(label, id) {
   const avatar = document.createElement("div");
   avatar.className = "contact-avatar";
-  applyAvatarAppearance(avatar, id, config);
-  const avatarConfig = normalizeAvatarConfig(config);
-  avatar.textContent = avatarConfig.showInitial
-    ? (label || id || "?").charAt(0).toUpperCase()
-    : "";
+  avatar.setAttribute("role", "img");
+  avatar.setAttribute("aria-label", `${label || "Contact"} avatar`);
+  applyAvatarAppearance(avatar, id);
   return avatar;
 }
 
-function applyAvatarAppearance(element, id, config) {
-  const avatar = normalizeAvatarConfig(config);
-  element.dataset.decoration = avatar.decoration;
-  element.classList.toggle("avatar-without-initial", !avatar.showInitial);
-  const seed = createAvatarSeed(id);
-  const uniquePalette = [
-    ["#315b73", "#5d8ca3"], ["#4c5b8a", "#7887b4"], ["#6a4f7c", "#9675a8"],
-    ["#755052", "#a97676"], ["#6a5a3e", "#9a855f"], ["#3e685d", "#6f978b"],
-    ["#465f75", "#7894a8"], ["#654e63", "#987892"],
-  ];
-  const [uniqueBase, uniqueAccent] = uniquePalette[
-    Math.floor(seed() * uniquePalette.length)
-  ];
-  const angle = Math.floor(seed() * 360);
-  const baseColor = avatar.template === "unique" ? uniqueBase : avatar.color;
-  const accentColor =
-    avatar.template === "unique" ? uniqueAccent : getAccentColor(avatar.color, 22);
-
-  if (avatar.template === "solid") {
-    element.style.background = baseColor;
-  } else if (avatar.template === "rings") {
-    element.style.background = `radial-gradient(circle at 30% 25%, ${accentColor} 0 16%, transparent 17%), radial-gradient(circle at 70% 72%, ${accentColor} 0 23%, ${baseColor} 24% 100%)`;
-  } else {
-    element.style.background = `linear-gradient(${angle}deg, ${baseColor}, ${accentColor})`;
-  }
-}
-
-function getAccentColor(hex, hueOffset) {
-  const value = hex.slice(1);
-  const red = Number.parseInt(value.slice(0, 2), 16) / 255;
-  const green = Number.parseInt(value.slice(2, 4), 16) / 255;
-  const blue = Number.parseInt(value.slice(4, 6), 16) / 255;
-  const max = Math.max(red, green, blue);
-  const min = Math.min(red, green, blue);
-  const lightness = (max + min) / 2;
-  const delta = max - min;
-  const saturation = delta === 0 ? 0 : delta / (1 - Math.abs(2 * lightness - 1));
-  let hue = 0;
-  if (delta !== 0) {
-    if (max === red) hue = 60 * (((green - blue) / delta) % 6);
-    else if (max === green) hue = 60 * ((blue - red) / delta + 2);
-    else hue = 60 * ((red - green) / delta + 4);
-  }
-  return `hsl(${(hue + hueOffset + 360) % 360} ${Math.round(saturation * 100)}% ${Math.min(72, Math.round(lightness * 100 + 16))}%)`;
-}
-
-function createAvatarSeed(value) {
-  let state = 2166136261;
-  for (const char of String(value || "")) {
-    state ^= char.charCodeAt(0);
-    state = Math.imul(state, 16777619);
-  }
-  return () => {
-    state += 0x6d2b79f5;
-    let value = state;
-    value = Math.imul(value ^ (value >>> 15), value | 1);
-    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
-    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-  };
+function applyAvatarAppearance(element, id) {
+  element.textContent = "";
+  element.style.backgroundImage = `url("${blobatarUri(String(id || "unknown"), {
+    background: "circle",
+  })}")`;
 }
 
 function createContactBadges({
@@ -6876,12 +6785,10 @@ function notifyIncomingMessage(peerId, text, { variant = "chat" } = {}) {
   }
 
   const conn = connections.get(peerId);
-  const identityId = getPeerIdentityId(peerId, conn);
 
   const shown = showAppNotification({
     kind: "message",
     peerId,
-    avatar: getPeerAvatar(peerId, identityId),
     title: getPeerLabel(peerId, conn),
     body:
       variant === "voice" || variant === "file"
@@ -6919,13 +6826,11 @@ function notifyIncomingCall(peerId, callId) {
   }
 
   const conn = connections.get(peerId);
-  const identityId = getPeerIdentityId(peerId, conn);
 
   showAppNotification({
     id: getCallNotificationId(callId),
     kind: "call",
     peerId,
-    avatar: getPeerAvatar(peerId, identityId),
     callId,
     title: getPeerLabel(peerId, conn),
     body: "Incoming voice call",
@@ -9308,10 +9213,9 @@ function refreshCallUi() {
       getPeerNameStyle(callState.peerId, identityId),
     );
     if (incomingCallAvatar) {
-      applyAvatarAppearance(incomingCallAvatar, identityId, getPeerAvatar(callState.peerId, identityId));
-      incomingCallAvatar.textContent = normalizeAvatarConfig(getPeerAvatar(callState.peerId, identityId)).showInitial
-        ? label.charAt(0).toUpperCase()
-        : "";
+      applyAvatarAppearance(incomingCallAvatar, identityId);
+      incomingCallAvatar.setAttribute("role", "img");
+      incomingCallAvatar.setAttribute("aria-label", `${label} avatar`);
     }
   }
 
@@ -11718,7 +11622,6 @@ function createChatMetadata() {
       identity.id,
     ),
     nickname: identity.nickname || "",
-    avatar: normalizeAvatarConfig(identity.avatar),
     nameStyle: normalizeNameStyle(identity.nameStyle),
     protocol: PROTOCOL_VERSION,
     version: currentVersion,
@@ -11737,24 +11640,22 @@ function rememberConnectionIdentity(peerId, metadata = {}) {
 
   const identityId = peerId;
   const nickname = sanitizeNickname(metadata.nickname);
-  const avatar = normalizeAvatarConfig(metadata.avatar);
   const nameStyle = normalizeNameStyle(metadata.nameStyle);
   migrateContactIdentity(metadata.previousIdentityIds, identityId, nickname);
   remoteIdentities.set(peerId, {
     identityId,
     nickname,
-    avatar,
     nameStyle,
   });
 
   if (nickname) {
-    rememberRemoteIdentity(identityId, nickname, avatar, nameStyle);
+    rememberRemoteIdentity(identityId, nickname, nameStyle);
     return;
   }
 
   const existing = findContact(identityId);
   if (existing) {
-    const updates = { avatar, nameStyle };
+    const updates = { nameStyle };
     if (!existing.customLabel && existing.label === identity.nickname) {
       updates.label = identityId;
       updates.pinned = existing.pinned;
@@ -11773,14 +11674,6 @@ function getPeerLabel(peerId, conn) {
 
 function getPeerIdentityId(peerId, conn) {
   return remoteIdentities.get(peerId)?.identityId || peerId;
-}
-
-function getPeerAvatar(peerId, identityId) {
-  return (
-    remoteIdentities.get(peerId)?.avatar ||
-    findContact(identityId)?.avatar ||
-    normalizeAvatarConfig()
-  );
 }
 
 function getPeerNameStyle(peerId, identityId) {
@@ -12359,7 +12252,6 @@ function sendProtocolMessage(conn, type, extra = {}) {
       protocol: PROTOCOL_VERSION,
       identityId: identity.id,
       nickname: identity.nickname || "",
-      avatar: normalizeAvatarConfig(identity.avatar),
       nameStyle: normalizeNameStyle(identity.nameStyle),
       time: formatTime(),
       ...extra,
@@ -12568,7 +12460,7 @@ function refreshPeers() {
     const name = document.createElement("button");
     name.type = "button";
     name.className = "contact-name";
-    name.append(createAvatar(contact.label, contact.id, contact.avatar));
+    name.append(createAvatar(contact.label, contact.id));
     name.append(createContactBadges(contact));
     
     name.append(
@@ -12619,7 +12511,7 @@ function refreshPeers() {
       const identityId = getPeerIdentityId(peerId, entry.conn);
       const contact = findContact(identityId);
       name.append(
-        createAvatar(peerLabel, identityId, getPeerAvatar(peerId, identityId)),
+        createAvatar(peerLabel, identityId),
       );
         name.append(
           createContactBadges({
@@ -12674,7 +12566,7 @@ function refreshPeers() {
     const identityId = getPeerIdentityId(peerId, entry.conn);
     const contact = findContact(identityId);
     waiting.append(
-      createAvatar(peerLabel, identityId, getPeerAvatar(peerId, identityId)),
+      createAvatar(peerLabel, identityId),
     );
       waiting.append(
         createContactBadges({
@@ -12709,7 +12601,7 @@ function refreshPeers() {
       const identityId = getPeerIdentityId(peerId, conn);
       const contact = findContact(identityId);
       button.append(
-        createAvatar(peerLabel, identityId, getPeerAvatar(peerId, identityId)),
+        createAvatar(peerLabel, identityId),
       );
       button.append(
         createContactBadges({
@@ -12784,11 +12676,9 @@ function refreshPeers() {
   if (chatAvatar) {
     chatAvatar.classList.toggle("hidden", !activePeerId);
     if (activePeerId) {
-      const avatar = getPeerAvatar(activePeerId, activeIdentityId);
-      applyAvatarAppearance(chatAvatar, activeIdentityId, avatar);
-      chatAvatar.textContent = normalizeAvatarConfig(avatar).showInitial
-        ? (activeLabel || activeIdentityId || "?").charAt(0).toUpperCase()
-        : "";
+      chatAvatar.setAttribute("role", "img");
+      chatAvatar.setAttribute("aria-label", `${activeLabel} avatar`);
+      applyAvatarAppearance(chatAvatar, activeIdentityId);
     } else {
       chatAvatar.textContent = "";
     }
@@ -15459,20 +15349,13 @@ titlebarLogo.addEventListener("keydown", (event) => {
 
 function populateProfileSettings() {
   profileNickname.value = identity.nickname || "";
-  const avatar = normalizeAvatarConfig(identity.avatar);
-  setProfileAvatarTemplate(avatar.template);
-  profileAvatarColor.value = avatar.color;
-  profileAvatarDecoration.value = avatar.decoration;
-  profileAvatarInitial.checked = avatar.showInitial;
   const nameStyle = normalizeNameStyle(identity.nameStyle);
   profileNameFont.value = nameStyle.font;
   profileNameThemeColor.checked = nameStyle.useThemeColor;
   profileNameColor.value = nameStyle.color || getThemeNameColor();
-  syncProfileAvatarColor();
   syncProfileNameColor();
   syncProfileNameColorMode();
   renderProfileNamePreviews();
-  syncEnhancedSelect(profileAvatarDecoration);
   syncEnhancedSelect(profileNameFont);
   profileId.replaceChildren(createAeroIdReveal(identity.id));
   renderProfileAvatarPreview();
@@ -15488,45 +15371,13 @@ appMenuProfile.addEventListener("click", () => {
 
 profileClose.addEventListener("click", () => {
   profileModal.classList.add("hidden");
-  closeProfileTemplatePicker();
 });
 
 profileModal.addEventListener("click", (event) => {
   if (event.target === profileModal) {
     profileModal.classList.add("hidden");
-    closeProfileTemplatePicker();
   }
 });
-
-const PROFILE_TEMPLATE_LABELS = {
-  unique: "Unique",
-  solid: "Solid",
-  gradient: "Gradient",
-  rings: "Rings",
-};
-
-function setProfileAvatarTemplate(value) {
-  const template = normalizeAvatarConfig({ template: value }).template;
-  profileAvatarTemplate.value = template;
-  profileTemplateLabel.textContent = PROFILE_TEMPLATE_LABELS[template];
-  profileColorField.classList.toggle("hidden", template === "unique");
-  for (const option of profileTemplateOptionButtons) {
-    option.setAttribute(
-      "aria-selected",
-      option.dataset.avatarTemplate === template ? "true" : "false",
-    );
-  }
-}
-
-function closeProfileTemplatePicker() {
-  profileTemplateOptions.classList.add("hidden");
-  profileTemplateToggle.setAttribute("aria-expanded", "false");
-}
-
-function syncProfileAvatarColor() {
-  profileAvatarColorValue.value = profileAvatarColor.value.toLowerCase();
-  profileAvatarColorValue.textContent = profileAvatarColor.value.toLowerCase();
-}
 
 function syncProfileNameColor() {
   profileNameColorValue.value = profileNameColor.value.toLowerCase();
@@ -15555,15 +15406,6 @@ function renderProfileNamePreviews() {
   }
 }
 
-function getProfileAvatarDraft() {
-  return normalizeAvatarConfig({
-    template: profileAvatarTemplate.value,
-    color: profileAvatarColor.value,
-    decoration: profileAvatarDecoration.value,
-    showInitial: profileAvatarInitial.checked,
-  });
-}
-
 function getProfileNameStyleDraft() {
   return normalizeNameStyle({
     font: profileNameFont.value,
@@ -15573,11 +15415,9 @@ function getProfileNameStyleDraft() {
 }
 
 function renderProfileAvatarPreview() {
-  const avatar = getProfileAvatarDraft();
-  applyAvatarAppearance(profileAvatarPreview, identity.id, avatar);
-  profileAvatarPreview.textContent = avatar.showInitial
-    ? (profileNickname.value || identity.id).charAt(0).toUpperCase()
-    : "";
+  profileAvatarPreview.setAttribute("role", "img");
+  profileAvatarPreview.setAttribute("aria-label", "Your Blobatar");
+  applyAvatarAppearance(profileAvatarPreview, identity.id);
 }
 
 function broadcastProfileUpdate() {
@@ -15591,7 +15431,6 @@ function broadcastProfileUpdate() {
 
 function saveProfile() {
   identity.nickname = sanitizeNickname(profileNickname.value);
-  identity.avatar = getProfileAvatarDraft();
   identity.nameStyle = getProfileNameStyleDraft();
   appConfig.identity = identity;
   saveAppConfig();
@@ -15605,7 +15444,6 @@ function saveProfile() {
 
 function resetProfileToDefault() {
   identity.nickname = "";
-  identity.avatar = normalizeAvatarConfig();
   identity.nameStyle = normalizeNameStyle();
   appConfig.identity = identity;
   saveAppConfig();
@@ -15618,40 +15456,8 @@ function resetProfileToDefault() {
 }
 
 profileNickname.addEventListener("input", () => {
-  renderProfileAvatarPreview();
   renderProfileNamePreviews();
 });
-profileTemplateToggle.addEventListener("click", () => {
-  const willOpen = profileTemplateOptions.classList.contains("hidden");
-  profileTemplateOptions.classList.toggle("hidden", !willOpen);
-  profileTemplateToggle.setAttribute("aria-expanded", willOpen ? "true" : "false");
-});
-profileTemplateOptionButtons.forEach((option) => {
-  option.addEventListener("click", () => {
-    setProfileAvatarTemplate(option.dataset.avatarTemplate);
-    closeProfileTemplatePicker();
-    renderProfileAvatarPreview();
-    profileTemplateToggle.focus();
-  });
-});
-document.addEventListener("pointerdown", (event) => {
-  if (!event.target.closest(".profile-template-picker")) {
-    closeProfileTemplatePicker();
-  }
-});
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !profileTemplateOptions.classList.contains("hidden")) {
-    event.preventDefault();
-    closeProfileTemplatePicker();
-    profileTemplateToggle.focus();
-  }
-});
-profileAvatarColor.addEventListener("input", () => {
-  syncProfileAvatarColor();
-  renderProfileAvatarPreview();
-});
-profileAvatarDecoration.addEventListener("change", renderProfileAvatarPreview);
-profileAvatarInitial.addEventListener("change", renderProfileAvatarPreview);
 profileNameColor.addEventListener("input", () => {
   syncProfileNameColor();
   renderProfileNamePreviews();

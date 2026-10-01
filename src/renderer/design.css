@@ -4581,8 +4581,6 @@ body:not(.platform-android) [data-settings-nav="feedback"] {
 .settings-section[data-settings-page="profile"] .profile-actions {
   padding-top: 2px;
 }
-.settings-section[data-settings-page="profile"] label:has(#profile-avatar-decoration),
-.settings-section[data-settings-page="profile"] label:has(#profile-avatar-initial),
 .settings-section[data-settings-page="profile"] .profile-avatar-settings:has(#profile-name-font) {
   display: none;
 }
@@ -6629,51 +6627,13 @@ body.platform-android .incoming-call-screen {
   color: #fff;
   text-transform: uppercase;
   user-select: none;
-  background-color: var(--surface-hover);
+  background-color: transparent;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
   object-fit: cover;
-  overflow: visible;
+  overflow: hidden;
   border: 1px solid var(--border-color);
-}
-.contact-avatar[data-decoration="sparkle"]::after,
-.contact-avatar[data-decoration="crown"]::after {
-  position: absolute;
-  z-index: 2;
-  top: -8px;
-  right: -7px;
-  display: grid;
-  width: 18px;
-  height: 18px;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, #fff 40%, transparent);
-  border-radius: 50%;
-  background: color-mix(in srgb, #10131a 70%, transparent);
-  color: #fff;
-  font-size: 11px;
-  line-height: 1;
-  text-shadow: 0 1px 2px rgb(0 0 0 / 45%);
-}
-.contact-avatar[data-decoration="sparkle"]::after {
-  content: "✦";
-}
-.contact-avatar[data-decoration="crown"]::after {
-  content: "♛";
-  color: #ffd35a;
-  font-size: 12px;
-}
-.contact-avatar[data-decoration="orbit"]::before {
-  position: absolute;
-  z-index: 1;
-  width: 47px;
-  height: 18px;
-  border: 1px solid rgb(255 255 255 / 72%);
-  border-radius: 50%;
-  content: "";
-  transform: rotate(-28deg);
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 14%);
-  pointer-events: none;
-}
-.contact-avatar.avatar-without-initial {
-  color: transparent;
 }
 .contact-label[data-name-font="rounded"],
 [data-name-font="rounded"] {

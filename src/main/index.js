@@ -2545,7 +2545,6 @@ function showAppNotification(details = {}) {
     kind,
     variant,
     peerId,
-    avatar: details.avatar,
     callId,
     theme: details.theme,
     accent,

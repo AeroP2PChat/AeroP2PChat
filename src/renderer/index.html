@@ -1890,6 +1890,7 @@
           <div id="profile-avatar-preview" class="contact-avatar profile-avatar-preview"></div>
           <div class="profile-identity-copy">
             <strong id="profile-id"></strong>
+            <span>Blobatar generated locally from your Aero ID</span>
           </div>
         </div>
         <div class="profile-content">
@@ -1897,55 +1898,6 @@
             <span>Name</span>
             <input id="profile-nickname" type="text" maxlength="32" autocomplete="nickname" placeholder="Optional" />
           </label>
-          <label class="welcome-field profile-native-template hidden" for="profile-avatar-template">
-            <span>Avatar template</span>
-            <select id="profile-avatar-template">
-              <option value="unique">Unique — color from your Aero ID</option>
-              <option value="solid">Solid color</option>
-              <option value="gradient">Color gradient</option>
-              <option value="rings">Color rings</option>
-            </select>
-          </label>
-          <section class="profile-avatar-settings" aria-labelledby="profile-avatar-settings-title">
-            <div class="profile-section-heading">
-              <span id="profile-avatar-settings-title">Avatar design</span>
-            </div>
-            <div class="profile-template-picker">
-              <button id="profile-template-toggle" class="profile-template-toggle" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="profile-template-options">
-                <span id="profile-template-label">Unique</span>
-                <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
-              </button>
-              <div id="profile-template-options" class="profile-template-options hidden" role="listbox" aria-label="Avatar template">
-                <button type="button" role="option" data-avatar-template="unique" aria-selected="true"><strong>Unique</strong></button>
-                <button type="button" role="option" data-avatar-template="solid" aria-selected="false"><strong>Solid</strong></button>
-                <button type="button" role="option" data-avatar-template="gradient" aria-selected="false"><strong>Gradient</strong></button>
-                <button type="button" role="option" data-avatar-template="rings" aria-selected="false"><strong>Rings</strong></button>
-              </div>
-            </div>
-          </section>
-          <label class="profile-color-field" for="profile-avatar-color">
-            <span>Accent color</span>
-            <input id="profile-avatar-color" type="color" value="#4f46e5" />
-            <output id="profile-avatar-color-value">#4f46e5</output>
-          </label>
-          <section class="profile-avatar-settings" aria-labelledby="profile-decoration-title">
-            <div class="profile-section-heading">
-              <span id="profile-decoration-title">Details</span>
-            </div>
-            <label class="profile-field" for="profile-avatar-decoration">
-              <span>Decoration</span>
-              <select id="profile-avatar-decoration">
-                <option value="none">None</option>
-                <option value="sparkle">Sparkle</option>
-                <option value="crown">Crown</option>
-                <option value="orbit">Orbit</option>
-              </select>
-            </label>
-            <label class="profile-toggle" for="profile-avatar-initial">
-              <input id="profile-avatar-initial" type="checkbox" checked />
-              <span>Letter</span>
-            </label>
-          </section>
           <section class="profile-avatar-settings" aria-labelledby="profile-name-style-title">
             <div class="profile-section-heading">
               <span id="profile-name-style-title">Name style</span>
