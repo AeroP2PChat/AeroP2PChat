@@ -7,9 +7,7 @@ function createToastAvatar(label, id) {
   avatar.className = "toast-avatar";
   avatar.setAttribute("role", "img");
   avatar.setAttribute("aria-label", `${label || "Contact"} avatar`);
-  avatar.style.backgroundImage = `url("${blobatarUri(String(id || "unknown"), {
-    background: "circle",
-  })}")`;
+  avatar.style.backgroundImage = `url("${blobatarUri(String(id || "unknown"))}")`;
   return avatar;
 }
 

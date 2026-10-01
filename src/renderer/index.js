@@ -4,7 +4,8 @@ import emojiShortcodeDataUrl from "../../node_modules/emoji-picker-element-data/
 import countryFlagEmojiFontUrl from "../../node_modules/country-flag-emoji-polyfill/dist/TwemojiCountryFlags.woff2?url";
 import { getDomain } from "tldts";
 import { sha256 } from "@noble/hashes/sha2.js";
-import { blobatarUri } from "blobatar/uri";
+import { _parts as getBlobatarParts } from "blobatar/internal";
+import "blobatar/motion.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import appLogo from "../../assets/app.png";
 import packageInfo from "../../package.json" with { type: "json" };
@@ -4771,20 +4772,45 @@ function updateTitlebarLogo() {
   updateTitlebarPresenceIndicator();
 }
 
-function createAvatar(label, id) {
+function createAvatar(label, id, animate = "hover") {
   const avatar = document.createElement("div");
   avatar.className = "contact-avatar";
   avatar.setAttribute("role", "img");
   avatar.setAttribute("aria-label", `${label || "Contact"} avatar`);
-  applyAvatarAppearance(avatar, id);
+  applyAvatarAppearance(avatar, id, animate);
   return avatar;
 }
 
-function applyAvatarAppearance(element, id) {
-  element.textContent = "";
-  element.style.backgroundImage = `url("${blobatarUri(String(id || "unknown"), {
-    background: "circle",
-  })}")`;
+function applyAvatarAppearance(element, id, animate) {
+  const namespace = "http://www.w3.org/2000/svg";
+  const mode = animate === "always" ? "always" : "hover";
+  const parts = getBlobatarParts(String(id || "unknown"), { animate: mode });
+  const svg = document.createElementNS(namespace, "svg");
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.setAttribute("aria-hidden", "true");
+  for (const [property, value] of Object.entries(parts.vars || {})) {
+    svg.style.setProperty(property, value);
+  }
+  if (parts.bg) {
+    const background = document.createElementNS(namespace, "path");
+    background.setAttribute("d", parts.bg.d);
+    background.setAttribute("fill", parts.bg.fill);
+    svg.append(background);
+  }
+  const animatedRoot = document.createElementNS(namespace, "g");
+  animatedRoot.setAttribute("class", parts.cls || "");
+  const parsedParts = new DOMParser().parseFromString(
+    `<svg xmlns="${namespace}">${parts.inner}</svg>`,
+    "image/svg+xml",
+  );
+  animatedRoot.append(
+    ...Array.from(parsedParts.documentElement.children, (child) =>
+      document.importNode(child, true),
+    ),
+  );
+  svg.append(animatedRoot);
+  element.style.backgroundImage = "none";
+  element.replaceChildren(svg);
 }
 
 function createContactBadges({
@@ -9213,7 +9239,7 @@ function refreshCallUi() {
       getPeerNameStyle(callState.peerId, identityId),
     );
     if (incomingCallAvatar) {
-      applyAvatarAppearance(incomingCallAvatar, identityId);
+      applyAvatarAppearance(incomingCallAvatar, identityId, "always");
       incomingCallAvatar.setAttribute("role", "img");
       incomingCallAvatar.setAttribute("aria-label", `${label} avatar`);
     }
@@ -12601,7 +12627,11 @@ function refreshPeers() {
       const identityId = getPeerIdentityId(peerId, conn);
       const contact = findContact(identityId);
       button.append(
-        createAvatar(peerLabel, identityId),
+        createAvatar(
+          peerLabel,
+          identityId,
+          peerId === activePeerId ? "always" : "hover",
+        ),
       );
       button.append(
         createContactBadges({
@@ -12678,7 +12708,7 @@ function refreshPeers() {
     if (activePeerId) {
       chatAvatar.setAttribute("role", "img");
       chatAvatar.setAttribute("aria-label", `${activeLabel} avatar`);
-      applyAvatarAppearance(chatAvatar, activeIdentityId);
+      applyAvatarAppearance(chatAvatar, activeIdentityId, "always");
     } else {
       chatAvatar.textContent = "";
     }
@@ -15417,7 +15447,7 @@ function getProfileNameStyleDraft() {
 function renderProfileAvatarPreview() {
   profileAvatarPreview.setAttribute("role", "img");
   profileAvatarPreview.setAttribute("aria-label", "Your Blobatar");
-  applyAvatarAppearance(profileAvatarPreview, identity.id);
+  applyAvatarAppearance(profileAvatarPreview, identity.id, "always");
 }
 
 function broadcastProfileUpdate() {
