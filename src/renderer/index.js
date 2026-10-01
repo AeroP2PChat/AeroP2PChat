@@ -4784,7 +4784,10 @@ function createAvatar(label, id, animate = "hover") {
 function applyAvatarAppearance(element, id, animate) {
   const namespace = "http://www.w3.org/2000/svg";
   const mode = animate === "always" ? "always" : "hover";
-  const parts = getBlobatarParts(String(id || "unknown"), { animate: mode });
+  const parts = getBlobatarParts(String(id || "unknown"), {
+    animate: mode,
+    traits: { "body.r": 0.999 },
+  });
   const svg = document.createElementNS(namespace, "svg");
   svg.setAttribute("viewBox", "0 0 100 100");
   svg.setAttribute("aria-hidden", "true");
