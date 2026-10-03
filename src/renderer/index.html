@@ -606,14 +606,16 @@
                 <i class="fa-solid fa-plug-circle-xmark" aria-hidden="true"></i>
               </button>
               <button
-                id="clear-chat"
+                id="chat-more-button"
                 class="ghost-button icon-only-button"
                 type="button"
                 disabled
-                title="Clear chat"
-                aria-label="Clear chat"
+                title="More chat options"
+                aria-label="More chat options"
+                aria-haspopup="menu"
+                aria-expanded="false"
               >
-                <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
+                <i class="fa-solid fa-ellipsis-vertical" aria-hidden="true"></i>
               </button>
             </div>
           </header>
@@ -814,6 +816,20 @@
               </div>
             </article>
           </section>
+
+          <div id="chat-search-bar" class="chat-search-bar hidden" role="search">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input id="chat-search-input" type="search" placeholder="Search this chat" aria-label="Search this chat" />
+            <span id="chat-search-count" aria-live="polite"></span>
+            <button id="chat-search-close" class="icon-only-button" type="button" aria-label="Close search"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+          </div>
+
+          <div id="message-selection-bar" class="message-selection-bar hidden" role="toolbar" aria-label="Selected messages">
+            <strong id="message-selection-count">0 selected</strong>
+            <button id="selection-copy" class="ghost-button" type="button"><i class="fa-solid fa-copy" aria-hidden="true"></i> Copy</button>
+            <button id="selection-delete" class="ghost-button danger" type="button"><i class="fa-solid fa-trash" aria-hidden="true"></i> Delete</button>
+            <button id="selection-close" class="icon-only-button" type="button" aria-label="Cancel selection"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+          </div>
 
           <div
             id="messages"
@@ -2010,6 +2026,25 @@
     </div>
 
     <div id="message-menu" class="context-menu hidden" role="menu">
+      <button id="menu-message-info" type="button" role="menuitem">
+        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+        <span>Message info</span>
+      </button>
+      <button id="menu-reply" type="button" role="menuitem">
+        <i class="fa-solid fa-reply" aria-hidden="true"></i>
+        <span>Reply</span>
+      </button>
+      <div class="context-menu-group reaction-menu" aria-label="React with emoji">
+        <span class="context-menu-label">React</span>
+        <div id="message-reaction-options" class="reaction-options">
+          <button type="button" data-reaction="👍" aria-label="React with thumbs up">👍</button>
+          <button type="button" data-reaction="❤️" aria-label="React with heart">❤️</button>
+          <button type="button" data-reaction="😂" aria-label="React with laughing face">😂</button>
+          <button type="button" data-reaction="😮" aria-label="React with surprised face">😮</button>
+          <button type="button" data-reaction="😢" aria-label="React with sad face">😢</button>
+          <button type="button" data-reaction="🙏" aria-label="React with folded hands">🙏</button>
+        </div>
+      </div>
       <button id="menu-save-file" class="hidden" type="button" role="menuitem">
         <i class="fa-solid fa-download" aria-hidden="true"></i>
         <span>Save file</span>
@@ -2035,6 +2070,31 @@
         <i class="fa-solid fa-users-slash" aria-hidden="true"></i>
         <span>Delete for everyone</span>
       </button>
+    </div>
+
+    <div id="chat-more-menu" class="context-menu chat-more-menu hidden" role="menu" aria-label="Chat options">
+      <button id="chat-menu-contact-info" type="button" role="menuitem"><i class="fa-solid fa-user-shield" aria-hidden="true"></i><span>Contact info</span></button>
+      <button id="chat-menu-search" type="button" role="menuitem"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span>Search</span></button>
+      <button id="chat-menu-select" type="button" role="menuitem"><i class="fa-solid fa-check-double" aria-hidden="true"></i><span>Select messages</span></button>
+      <button id="chat-menu-mute" type="button" role="menuitem"><i class="fa-solid fa-bell-slash" aria-hidden="true"></i><span>Mute notifications</span></button>
+      <button id="chat-menu-export" type="button" role="menuitem"><i class="fa-solid fa-file-export" aria-hidden="true"></i><span>Export chat</span></button>
+      <div class="context-menu-group">
+        <span class="context-menu-label">Safety</span>
+        <button id="chat-menu-trust" type="button" role="menuitem"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>Trust</span></button>
+        <button id="chat-menu-block" type="button" role="menuitem" class="danger"><i class="fa-solid fa-ban" aria-hidden="true"></i><span>Block</span></button>
+      </div>
+      <button id="clear-chat" type="button" role="menuitem" class="danger"><i class="fa-regular fa-trash-can" aria-hidden="true"></i><span>Clear chat for me</span></button>
+      <button id="clear-chat-everyone" type="button" role="menuitem" class="danger"><i class="fa-solid fa-users-slash" aria-hidden="true"></i><span>Clear chat for everyone</span></button>
+    </div>
+
+    <div id="details-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="details-modal-title">
+      <section class="modal-panel details-modal-panel">
+        <header class="modal-header">
+          <div><span id="details-modal-kicker" class="details-modal-kicker">Details</span><h2 id="details-modal-title">Information</h2></div>
+          <button id="details-modal-close" class="ghost-button icon-only-button" type="button" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </header>
+        <div id="details-modal-content" class="details-modal-content"></div>
+      </section>
     </div>
 
     <div id="qr-code-menu" class="context-menu hidden" role="menu" aria-label="QR code actions">

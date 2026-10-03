@@ -87,7 +87,17 @@ const chatTitle = document.querySelector("#chat-title");
 const chatActions = document.querySelector(".chat-actions");
 const callChat = document.querySelector("#call-chat");
 const clearChat = document.querySelector("#clear-chat");
+const clearChatEveryone = document.querySelector("#clear-chat-everyone");
 const disconnectChat = document.querySelector("#disconnect-chat");
+const chatMoreButton = document.querySelector("#chat-more-button");
+const chatMoreMenu = document.querySelector("#chat-more-menu");
+const chatMenuContactInfo = document.querySelector("#chat-menu-contact-info");
+const chatMenuSearch = document.querySelector("#chat-menu-search");
+const chatMenuSelect = document.querySelector("#chat-menu-select");
+const chatMenuMute = document.querySelector("#chat-menu-mute");
+const chatMenuExport = document.querySelector("#chat-menu-export");
+const chatMenuTrust = document.querySelector("#chat-menu-trust");
+const chatMenuBlock = document.querySelector("#chat-menu-block");
 const callBanner = document.querySelector("#call-banner");
 const incomingCallScreen = document.querySelector("#incoming-call-screen");
 const incomingCallName = document.querySelector("#incoming-call-name");
@@ -147,6 +157,15 @@ const remoteParticipantBadges = document.querySelector(
   "#remote-participant-badges",
 );
 const messages = document.querySelector("#messages");
+const chatSearchBar = document.querySelector("#chat-search-bar");
+const chatSearchInput = document.querySelector("#chat-search-input");
+const chatSearchCount = document.querySelector("#chat-search-count");
+const chatSearchClose = document.querySelector("#chat-search-close");
+const messageSelectionBar = document.querySelector("#message-selection-bar");
+const messageSelectionCount = document.querySelector("#message-selection-count");
+const selectionCopy = document.querySelector("#selection-copy");
+const selectionDelete = document.querySelector("#selection-delete");
+const selectionClose = document.querySelector("#selection-close");
 const typingIndicator = document.querySelector("#typing-indicator");
 const messageForm = document.querySelector("#message-form");
 const messageInput = document.querySelector("#message-input");
@@ -437,6 +456,14 @@ const menuSaveFile = document.querySelector("#menu-save-file");
 const menuScanFile = document.querySelector("#menu-scan-file");
 const menuDelete = document.querySelector("#menu-delete");
 const menuDeleteEveryone = document.querySelector("#menu-delete-everyone");
+const menuMessageInfo = document.querySelector("#menu-message-info");
+const menuReply = document.querySelector("#menu-reply");
+const messageReactionOptions = document.querySelector("#message-reaction-options");
+const detailsModal = document.querySelector("#details-modal");
+const detailsModalKicker = document.querySelector("#details-modal-kicker");
+const detailsModalTitle = document.querySelector("#details-modal-title");
+const detailsModalContent = document.querySelector("#details-modal-content");
+const detailsModalClose = document.querySelector("#details-modal-close");
 const qrCodeMenu = document.querySelector("#qr-code-menu");
 const qrMenuSave = document.querySelector("#qr-menu-save");
 const qrMenuCopyId = document.querySelector("#qr-menu-copy-id");
@@ -617,8 +644,12 @@ let updateMenuResetTimer = null;
 let currentWelcomeStep = 0;
 let contacts = [];
 const connectionHeartbeats = new Map();
+const connectionStats = new Map();
 let contextContactId = "";
 let contextMessage = null;
+let replyTarget = null;
+let selectingMessages = false;
+const selectedMessageIds = new Set();
 let contextParticipantTarget = null;
 let contextStreamTarget = "";
 let selectedScreenSource = null;
@@ -1922,6 +1953,7 @@ function loadContacts() {
       pinned: contact.pinned !== false,
       trusted: Boolean(contact.trusted),
       blocked: Boolean(contact.blocked),
+      muted: Boolean(contact.muted),
       playbackVolume: Number.isFinite(contact.playbackVolume)
         ? Math.max(0, Math.min(150, Math.round(contact.playbackVolume)))
         : 100,
@@ -4471,6 +4503,7 @@ function upsertContact(id, updates = {}) {
       pinned: updates.pinned ?? true,
       trusted: Boolean(updates.trusted),
       blocked: Boolean(updates.blocked),
+      muted: Boolean(updates.muted),
       playbackVolume: Number.isFinite(updates.playbackVolume)
         ? Math.max(0, Math.min(150, Math.round(updates.playbackVolume)))
         : 100,
@@ -4537,6 +4570,7 @@ function migrateContactIdentity(previousIds, nextId, nickname = "") {
       oldContacts.some((contact) => contact.blocked) ||
       existingTarget?.blocked ||
       false,
+    muted: oldContacts.some((contact) => contact.muted) || existingTarget?.muted || false,
     playbackVolume:
       existingTarget?.playbackVolume ?? preferred.playbackVolume ?? 100,
     showVideoName:
@@ -4822,6 +4856,7 @@ function createContactBadges({
   blocked = false,
   waiting = false,
   online = false,
+  muted = false,
 }) {
   const badges = document.createElement("span");
   badges.className = "contact-badges";
@@ -4844,6 +4879,9 @@ function createContactBadges({
   }
   if (blocked) {
     badges.append(createBadge("fa-solid fa-ban", "Blocked", "blocked"));
+  }
+  if (muted) {
+    badges.append(createBadge("fa-solid fa-bell-slash", "Muted", "muted"));
   }
 
   return badges;
@@ -5074,6 +5112,7 @@ function drainOutgoingMessageQueue(peerId) {
   const item = queue.shift();
   try {
     conn.send(item.payload);
+    item.message.sentAt = Date.now();
   } catch (error) {
     clearOutgoingMessageQueue(peerId);
     setStatus("offline", `Send failed: ${error.message}`);
@@ -5129,6 +5168,36 @@ function formatTime(date = new Date()) {
   });
 }
 
+function formatExactTime(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    fractionalSecondDigits: 3,
+  });
+}
+
+function formatByteCount(bytes) {
+  const value = Math.max(0, Number(bytes) || 0);
+  if (value < 1024) return `${value} B`;
+  if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KiB`;
+  return `${(value / (1024 * 1024)).toFixed(2)} MiB`;
+}
+
+function estimateProtocolBytes(payload) {
+  try {
+    return new TextEncoder().encode(JSON.stringify(payload)).byteLength;
+  } catch {
+    return 0;
+  }
+}
+
 function updateConnectButton() {
   const remoteId = normalizeAeroId(remoteIdInput.value);
   connectButton.disabled =
@@ -5162,11 +5231,16 @@ function updateEmptyChatState() {
 }
 
 function syncChatActionAvailability() {
-  clearChat.disabled =
-    !activePeerId || (chatHistory.get(activePeerId)?.length || 0) === 0;
+  const hasMessages = Boolean(
+    activePeerId && (chatHistory.get(activePeerId)?.length || 0) > 0,
+  );
+  clearChat.disabled = !hasMessages;
+  clearChatEveryone.disabled =
+    !hasMessages || !connections.get(activePeerId)?.open;
+  chatMoreButton.disabled = !activePeerId;
   chatActions.classList.toggle(
     "unavailable",
-    [callChat, disconnectChat, clearChat].every((button) => button.disabled),
+    [callChat, disconnectChat, chatMoreButton].every((button) => button.disabled),
   );
 }
 
@@ -5448,7 +5522,7 @@ function sendReadReceiptsForActiveChat() {
     if (item.sender !== "them" || item.readReceiptSent || !item.id) {
       continue;
     }
-    if (sendProtocolMessage(conn, "message-read", { messageId: item.id })) {
+    if (sendProtocolMessage(conn, "message-read", { messageId: item.id, at: Date.now() })) {
       item.readReceiptSent = true;
     }
   }
@@ -5898,6 +5972,17 @@ function createChatMessage(item) {
   const row = document.createElement("div");
   row.className = `message-row ${sender === "me" ? "mine" : "theirs"}`;
   row.dataset.messageId = id;
+  row.classList.toggle("selected", selectedMessageIds.has(id));
+  if (selectingMessages) {
+    row.classList.add("selectable");
+    const selector = document.createElement("span");
+    selector.className = "message-selector";
+    selector.setAttribute("aria-hidden", "true");
+    selector.innerHTML = selectedMessageIds.has(id)
+      ? '<i class="fa-solid fa-check"></i>'
+      : "";
+    row.append(selector);
+  }
 
   const bubble = document.createElement("article");
   bubble.className = "bubble";
@@ -5923,11 +6008,43 @@ function createChatMessage(item) {
       : document.createElement("p");
   if (!item.voice && !item.file) appendMessageTextWithLinks(body, text);
 
+  if (item.replyTo) {
+    const quote = document.createElement("button");
+    quote.type = "button";
+    quote.className = "message-reply-quote";
+    const author = document.createElement("strong");
+    author.textContent = item.replyTo.sender === "me" ? "You" : getPeerLabel(peerId, connections.get(peerId));
+    const preview = document.createElement("span");
+    preview.textContent = String(item.replyTo.text || "Message").slice(0, 120);
+    quote.append(author, preview);
+    quote.addEventListener("click", () => {
+      findRenderedMessageRow(item.replyTo.id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    bubble.append(quote);
+  }
   bubble.append(body, footer);
+  if (Array.isArray(item.reactions) && item.reactions.length) {
+    const reactions = document.createElement("div");
+    reactions.className = "message-reactions";
+    for (const reaction of item.reactions) {
+      const chip = document.createElement("span");
+      chip.textContent = `${reaction.emoji}${reaction.byMe ? " · You" : ""}`;
+      chip.title = reaction.byMe ? "Your reaction" : "Contact reaction";
+      reactions.append(chip);
+    }
+    bubble.append(reactions);
+  }
   row.append(bubble);
 
   bubble.addEventListener("contextmenu", (event) => {
     openMessageMenu(event, item);
+  });
+  row.addEventListener("click", (event) => {
+    if (!selectingMessages || event.target.closest("a, button, audio")) return;
+    if (selectedMessageIds.has(id)) selectedMessageIds.delete(id);
+    else selectedMessageIds.add(id);
+    updateMessageSelectionUi();
+    renderChatHistory({ scrollState: captureChatScrollState() });
   });
 
   return row;
@@ -6003,7 +6120,7 @@ function refreshMessageDeliveryState(peerId, messageId) {
   );
 }
 
-function setMessageDeliveryState(peerId, messageId, status) {
+function setMessageDeliveryState(peerId, messageId, status, statusAt = Date.now()) {
   const item = ensureChatHistory(peerId).find(
     (message) => message.id === messageId && message.sender === "me",
   );
@@ -6019,6 +6136,16 @@ function setMessageDeliveryState(peerId, messageId, status) {
   }
 
   item.deliveryStatus = status;
+  const now = Number.isFinite(statusAt) ? statusAt : Date.now();
+  if (status === "delivered") {
+    item.deliveredAt ||= now;
+    if (item.sentAt && item.roundTripMs == null) item.roundTripMs = Math.max(0, now - item.sentAt);
+  }
+  if (status === "read") {
+    item.deliveredAt ||= now;
+    item.readAt ||= now;
+    if (item.sentAt && item.roundTripMs == null) item.roundTripMs = Math.max(0, now - item.sentAt);
+  }
   refreshMessageDeliveryState(peerId, messageId);
 }
 
@@ -6092,6 +6219,14 @@ function appendMessageRow(row, { animate = false } = {}) {
 
 function renderChatHistory({ scrollState = null } = {}) {
   const isSameChat = renderedChatPeerId === activePeerId;
+  if (!isSameChat) {
+    selectingMessages = false;
+    selectedMessageIds.clear();
+    updateMessageSelectionUi();
+    clearReplyTarget();
+    chatSearchInput.value = "";
+    chatSearchBar.classList.add("hidden");
+  }
   const preservedScrollState =
     scrollState || (isSameChat ? captureChatScrollState() : null);
   messages.replaceChildren();
@@ -6110,6 +6245,7 @@ function renderChatHistory({ scrollState = null } = {}) {
   updateTypingIndicator();
   refreshCallStage();
   sendReadReceiptsForActiveChat();
+  if (!chatSearchBar.classList.contains("hidden")) updateChatSearch();
 }
 
 function parseManifest(text) {
@@ -6613,7 +6749,25 @@ function disposeMessageAssets(item) {
   if (item?.file?.tempRef) void platformApi.releaseReceivedFile(item.file.tempRef);
 }
 
-function addChatMessage({ id, text, sender, peerId, time, voice, file }) {
+function addChatMessage({
+  id,
+  text,
+  sender,
+  peerId,
+  time,
+  voice,
+  file,
+  replyTo = null,
+  deliveryStatus,
+  createdAt,
+  sentAt,
+  receivedAt,
+  deliveredAt,
+  readAt,
+  payloadBytes,
+  roundTripMs,
+  reactions = [],
+}) {
   const item = {
     id: id ?? createMessageId(),
     text,
@@ -6622,6 +6776,16 @@ function addChatMessage({ id, text, sender, peerId, time, voice, file }) {
     time: time ?? formatTime(),
     voice,
     file,
+    replyTo,
+    deliveryStatus: deliveryStatus || (sender === "me" ? "sent" : ""),
+    createdAt: createdAt || Date.now(),
+    sentAt: sentAt || (sender === "me" ? Date.now() : null),
+    receivedAt: receivedAt || (sender === "them" ? Date.now() : null),
+    deliveredAt: deliveredAt || null,
+    readAt: readAt || null,
+    payloadBytes: Number(payloadBytes) || 0,
+    roundTripMs: Number.isFinite(roundTripMs) ? roundTripMs : null,
+    reactions,
   };
 
   if (sender !== "me") {
@@ -6804,7 +6968,7 @@ function formatIncomingMessagePreview(text) {
 function notifyIncomingMessage(peerId, text, { variant = "chat" } = {}) {
   normalizeAppSettings();
   refreshNotificationState();
-  if (isPresenceDnd() || isPresenceOffline()) {
+  if (isPresenceDnd() || isPresenceOffline() || findContact(getPeerIdentityId(peerId, connections.get(peerId)))?.muted) {
     return;
   }
 
@@ -6868,6 +7032,21 @@ function notifyIncomingCall(peerId, callId) {
   });
 }
 
+function setReplyTarget(item) {
+  replyTarget = item || null;
+  if (!replyTarget) return;
+  const preview = String(
+    replyTarget.text || (replyTarget.voice ? "Voice message" : replyTarget.file?.name || "Message"),
+  ).replace(/\s+/g, " ").slice(0, 54);
+  messageInput.placeholder = `Replying to “${preview}${preview.length >= 54 ? "…" : ""}”`;
+  messageInput.focus();
+}
+
+function clearReplyTarget() {
+  replyTarget = null;
+  messageInput.placeholder = "Write a message...";
+}
+
 function sendChatText(peerId, rawText) {
   const text = String(rawText || "").trim();
   if (!text) {
@@ -6897,12 +7076,22 @@ function sendChatText(peerId, rawText) {
   }
 
   const messageId = createMessageId();
+  const createdAt = Date.now();
+  const reply = replyTarget?.peerId === peerId
+    ? {
+        id: replyTarget.id,
+        text: String(replyTarget.text || (replyTarget.voice ? "Voice message" : replyTarget.file ? replyTarget.file.name : "Message")).slice(0, 160),
+        sender: replyTarget.sender,
+      }
+    : null;
   const payload = {
     type: "chat-message",
     id: messageId,
     protocol: PROTOCOL_VERSION,
     text: text.slice(0, MAX_MESSAGE_LENGTH),
     time: formatTime(),
+    createdAt,
+    replyTo: reply,
   };
 
   queue.push({
@@ -6914,10 +7103,15 @@ function sendChatText(peerId, rawText) {
       peerId,
       time: payload.time,
       deliveryStatus: "sent",
+      createdAt,
+      sentAt: createdAt,
+      payloadBytes: estimateProtocolBytes(payload),
+      replyTo: reply,
     },
   });
   outgoingMessageQueues.set(peerId, queue);
   scheduleOutgoingMessageDrain(peerId);
+  clearReplyTarget();
 
   if (queue.length > 4) {
     setStatus("pending", `Sending ${queue.length} queued messages...`);
@@ -7502,7 +7696,7 @@ function handleVoiceOffer(peerId, conn, data) {
   if (!voice || !shouldAcceptIncomingMessage(peerId) || findVoiceMessage(peerId, voice.id)) return;
   const messageId = typeof data.id === "string" ? data.id.slice(0, 128) : createMessageId();
   addChatMessage({ id: messageId, text: "", sender: "them", peerId, time: typeof data.time === "string" ? data.time : formatTime(), voice: { ...voice, downloadState: "offered" } });
-  if (appConfig.appSettings?.readReceipts) sendProtocolMessage(conn, "message-delivered", { messageId });
+  if (appConfig.appSettings?.readReceipts) sendProtocolMessage(conn, "message-delivered", { messageId, at: Date.now() });
   notifyIncomingMessage(peerId, formatIncomingVoiceNotification(voice), { variant: "voice" });
   if (appConfig.appSettings?.voiceAutoDownload) {
     requestVoiceMessage(findVoiceMessage(peerId, voice.id));
@@ -7856,7 +8050,7 @@ function handleFileOffer(peerId, conn, data) {
     sendProtocolMessage(conn, "file-declined", { fileId: file.id, blocked: true });
     return;
   }
-  if (appConfig.appSettings?.readReceipts) sendProtocolMessage(conn, "message-delivered", { messageId });
+  if (appConfig.appSettings?.readReceipts) sendProtocolMessage(conn, "message-delivered", { messageId, at: Date.now() });
   notifyIncomingMessage(
     peerId,
     `${file.name} · ${formatFileSize(file.size)}\nOpen chat to accept`,
@@ -11721,6 +11915,7 @@ function openContactMenu(event, id) {
   closeAppMenu();
   closeParticipantMenu();
   closeStreamMenu();
+  closeChatMoreMenu();
   contextContactId = id;
 
   const contact = findContact(id);
@@ -11771,6 +11966,7 @@ function openAppMenu(event) {
   closeMessageMenu();
   closeParticipantMenu();
   closeStreamMenu();
+  closeChatMoreMenu();
 
   const rect = titlebarLogo.getBoundingClientRect();
   appMenu.classList.remove("hidden");
@@ -11796,6 +11992,104 @@ function closeAppMenu() {
   titlebarLogo.setAttribute("aria-expanded", "false");
 }
 
+function closeDetailsModal() {
+  detailsModal.classList.add("hidden");
+}
+
+function showDetailsModal({ kicker = "Details", title = "Information", rows = [] } = {}) {
+  detailsModalKicker.textContent = kicker;
+  detailsModalTitle.textContent = title;
+  detailsModalContent.replaceChildren();
+  for (const [labelText, valueText, hintText = ""] of rows) {
+    const row = document.createElement("div");
+    row.className = "details-row";
+    const label = document.createElement("span");
+    label.textContent = labelText;
+    const value = document.createElement("strong");
+    value.textContent = valueText;
+    row.append(label, value);
+    if (hintText) {
+      const hint = document.createElement("small");
+      hint.textContent = hintText;
+      row.append(hint);
+    }
+    detailsModalContent.append(row);
+  }
+  detailsModal.classList.remove("hidden");
+  detailsModalClose.focus();
+}
+
+function showMessageInfo(item) {
+  const stats = connectionStats.get(item.peerId) || {};
+  const status = item.sender === "me" ? formatDeliveryStatus(item.deliveryStatus || "sent") : "Received";
+  showDetailsModal({
+    kicker: "Message diagnostics",
+    title: "Message info",
+    rows: [
+      ["Status", status, appConfig.appSettings?.readReceipts ? "Receipts are enabled" : "Read receipts are disabled"],
+      ["Created", formatExactTime(item.createdAt)],
+      [item.sender === "me" ? "Sent" : "Received", formatExactTime(item.sender === "me" ? item.sentAt : item.receivedAt)],
+      ["Delivered", formatExactTime(item.deliveredAt)],
+      ["Seen", formatExactTime(item.readAt)],
+      ["Message round trip", item.roundTripMs == null ? "—" : `${item.roundTripMs} ms`, "Measured until the first receipt"],
+      ["Current peer ping", stats.latencyMs == null ? "—" : `${stats.latencyMs} ms`, "Data-channel heartbeat round trip"],
+      ["Payload", formatByteCount(item.payloadBytes), "Approximate protocol payload, not total network overhead"],
+      ["Type", item.voice ? "Voice" : item.file ? "File" : "Text"],
+      ["Protocol", `Aero P2P v${PROTOCOL_VERSION}`],
+      ["Message ID", item.id, "Identifier only; contains no message content"],
+    ],
+  });
+}
+
+function showContactInfo(peerId) {
+  const conn = connections.get(peerId);
+  const identityId = getPeerIdentityId(peerId, conn);
+  const contact = findContact(identityId);
+  const stats = connectionStats.get(peerId) || {};
+  const history = ensureChatHistory(peerId);
+  const traffic = history.reduce((total, item) => total + (item.payloadBytes || 0) + (item.file?.size || 0) + (item.voice?.size || 0), 0);
+  showDetailsModal({
+    kicker: "Contact & connection",
+    title: getPeerLabel(peerId, conn),
+    rows: [
+      ["Aero ID", identityId],
+      ["Connection", conn?.open ? "Direct data channel connected" : "Offline"],
+      ["Ping", stats.latencyMs == null ? "Measuring…" : `${stats.latencyMs} ms`],
+      ["Protocol", `Aero P2P v${PROTOCOL_VERSION}`],
+      ["Messages in this session", String(history.length)],
+      ["Visible chat traffic", formatByteCount(traffic), "Approximate payload represented in this chat only"],
+      ["Trust", contact?.trusted ? "Trusted" : "Not trusted"],
+      ["Notifications", contact?.muted ? "Muted" : "Enabled"],
+      ["Encryption path", "WebRTC / DTLS", "Transport security is handled by the peer connection"],
+    ],
+  });
+}
+
+function closeChatMoreMenu() {
+  chatMoreMenu.classList.add("hidden");
+  chatMoreButton.setAttribute("aria-expanded", "false");
+}
+
+function openChatMoreMenu(event) {
+  event.preventDefault();
+  if (!activePeerId) return;
+  if (!chatMoreMenu.classList.contains("hidden")) return closeChatMoreMenu();
+  closeMessageMenu();
+  closeContactMenu();
+  closeAppMenu();
+  const identityId = getPeerIdentityId(activePeerId, connections.get(activePeerId));
+  const contact = findContact(identityId);
+  chatMenuMute.querySelector("span").textContent = contact?.muted ? "Unmute notifications" : "Mute notifications";
+  chatMenuTrust.querySelector("span").textContent = contact?.trusted ? "Remove trust" : "Trust";
+  chatMenuBlock.querySelector("span").textContent = contact?.blocked ? "Unblock" : "Block";
+  syncChatActionAvailability();
+  const rect = chatMoreButton.getBoundingClientRect();
+  chatMoreMenu.classList.remove("hidden");
+  chatMoreMenu.style.left = `${Math.max(10, Math.min(rect.right - chatMoreMenu.offsetWidth, window.innerWidth - chatMoreMenu.offsetWidth - 10))}px`;
+  chatMoreMenu.style.top = `${Math.min(rect.bottom + 6, window.innerHeight - chatMoreMenu.offsetHeight - 10)}px`;
+  chatMoreButton.setAttribute("aria-expanded", "true");
+}
+
 function openMessageMenu(event, messageItem) {
   event.preventDefault();
   closeQrCodeMenu();
@@ -11803,6 +12097,7 @@ function openMessageMenu(event, messageItem) {
   closeAppMenu();
   closeParticipantMenu();
   closeStreamMenu();
+  closeChatMoreMenu();
 
   contextMessage = messageItem;
 
@@ -11856,6 +12151,69 @@ function openMessageMenu(event, messageItem) {
 function closeMessageMenu() {
   messageMenu.classList.add("hidden");
   contextMessage = null;
+}
+
+function updateMessageSelectionUi() {
+  messageSelectionBar.classList.toggle("hidden", !selectingMessages);
+  messageSelectionCount.textContent = `${selectedMessageIds.size} selected`;
+  selectionCopy.disabled = selectedMessageIds.size === 0;
+  selectionDelete.disabled = selectedMessageIds.size === 0;
+}
+
+function setMessageSelectionMode(enabled) {
+  selectingMessages = Boolean(enabled);
+  if (!selectingMessages) selectedMessageIds.clear();
+  updateMessageSelectionUi();
+  renderChatHistory();
+}
+
+function updateChatSearch() {
+  const query = chatSearchInput.value.trim().toLocaleLowerCase();
+  let matches = 0;
+  for (const item of activePeerId ? ensureChatHistory(activePeerId) : []) {
+    const row = findRenderedMessageRow(item.id);
+    const haystack = `${item.text || ""} ${item.file?.name || ""}`.toLocaleLowerCase();
+    const match = !query || haystack.includes(query);
+    row?.classList.toggle("search-hidden", Boolean(query) && !match);
+    row?.classList.toggle("search-match", Boolean(query) && match);
+    if (query && match) matches += 1;
+  }
+  chatSearchCount.textContent = query ? `${matches} result${matches === 1 ? "" : "s"}` : "";
+}
+
+function setChatSearchOpen(open) {
+  chatSearchBar.classList.toggle("hidden", !open);
+  if (open) {
+    chatSearchInput.focus();
+    chatSearchInput.select();
+    updateChatSearch();
+  } else {
+    chatSearchInput.value = "";
+    updateChatSearch();
+  }
+}
+
+function exportActiveChat() {
+  if (!activePeerId) return;
+  const label = getPeerLabel(activePeerId, connections.get(activePeerId));
+  const lines = [
+    `Aero P2P Chat export with ${label}`,
+    `Exported: ${new Date().toLocaleString()}`,
+    "",
+    ...ensureChatHistory(activePeerId).map((item) => {
+      const author = item.sender === "me" ? identity.nickname || "You" : label;
+      const content = item.text || (item.voice ? `[Voice message · ${formatVoiceDuration(item.voice.duration)}]` : item.file ? `[File: ${item.file.name}]` : "[Message]");
+      const reactions = item.reactions?.length ? ` ${item.reactions.map((reaction) => reaction.emoji).join(" ")}` : "";
+      return `[${item.time || "--:--"}] ${author}: ${content}${reactions}`;
+    }),
+  ];
+  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `aero-chat-${String(label).replace(/[^a-z0-9_-]+/gi, "-").slice(0, 48) || "contact"}-${new Date().toISOString().slice(0, 10)}.txt`;
+  anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function openParticipantMenu(event, target) {
@@ -12246,6 +12604,30 @@ async function deleteMessageLocally(peerId, messageId) {
   }
 }
 
+function clearChatLocally(peerId) {
+  if (!peerId) return;
+  ensureChatHistory(peerId).forEach(disposeMessageAssets);
+  chatHistory.set(peerId, []);
+  unreadCounts.delete(peerId);
+  selectedMessageIds.clear();
+  if (activePeerId === peerId) renderChatHistory();
+  refreshPeers();
+}
+
+function applyMessageReaction(peerId, messageId, emoji, byMe) {
+  const allowed = new Set(["👍", "❤️", "😂", "😮", "😢", "🙏"]);
+  if (!allowed.has(emoji)) return false;
+  const item = ensureChatHistory(peerId).find((entry) => entry.id === messageId);
+  if (!item) return false;
+  item.reactions ||= [];
+  const existing = item.reactions.find((reaction) => reaction.byMe === byMe);
+  if (existing?.emoji === emoji) item.reactions = item.reactions.filter((reaction) => reaction !== existing);
+  else if (existing) existing.emoji = emoji;
+  else item.reactions.push({ emoji, byMe });
+  if (activePeerId === peerId) renderChatHistory();
+  return true;
+}
+
 function isKnownChatConnection(conn) {
   if (conn.type !== "data") {
     return false;
@@ -12267,6 +12649,16 @@ function normalizeMessage(data) {
     id: typeof data.id === "string" ? data.id : null,
     text: data.text.slice(0, MAX_MESSAGE_LENGTH),
     time: typeof data.time === "string" ? data.time : formatTime(),
+    createdAt: Number.isFinite(data.createdAt) ? data.createdAt : Date.now(),
+    payloadBytes: estimateProtocolBytes(data),
+    replyTo:
+      data.replyTo && typeof data.replyTo.id === "string"
+        ? {
+            id: data.replyTo.id,
+            text: String(data.replyTo.text || "Message").slice(0, 160),
+            sender: data.replyTo.sender === "me" ? "them" : "me",
+          }
+        : null,
   };
 }
 
@@ -12362,12 +12754,22 @@ function startConnectionHeartbeat(peerId, conn) {
         return;
       }
 
-      sendProtocolMessage(conn, "connection-ping");
+      heartbeat.lastPingId = createMessageId();
+      heartbeat.pingSentAt = Date.now();
+      sendProtocolMessage(conn, "connection-ping", {
+        pingId: heartbeat.lastPingId,
+        sentAt: heartbeat.pingSentAt,
+      });
     }, CONNECTION_HEARTBEAT_INTERVAL_MS),
   };
 
   connectionHeartbeats.set(peerId, heartbeat);
-  sendProtocolMessage(conn, "connection-ping");
+  heartbeat.lastPingId = createMessageId();
+  heartbeat.pingSentAt = Date.now();
+  sendProtocolMessage(conn, "connection-ping", {
+    pingId: heartbeat.lastPingId,
+    sentAt: heartbeat.pingSentAt,
+  });
 }
 
 function markConnectionHeartbeat(peerId) {
@@ -12641,6 +13043,7 @@ function refreshPeers() {
         pinned: Boolean(contact?.pinned),
         trusted: isTrusted(identityId),
         online: conn.open,
+        muted: Boolean(contact?.muted),
       }),
     );
     button.append(
@@ -12890,11 +13293,23 @@ function attachConnectionHandlers(conn, peerId, direction) {
     }
 
     if (data?.type === "connection-ping") {
-      sendProtocolMessage(conn, "connection-pong");
+      sendProtocolMessage(conn, "connection-pong", {
+        pingId: typeof data.pingId === "string" ? data.pingId : "",
+      });
       return;
     }
 
     if (data?.type === "connection-pong") {
+      const heartbeat = connectionHeartbeats.get(peerId);
+      if (heartbeat?.lastPingId && data.pingId === heartbeat.lastPingId) {
+        const latencyMs = Math.max(0, Date.now() - heartbeat.pingSentAt);
+        heartbeat.latencyMs = latencyMs;
+        connectionStats.set(peerId, {
+          ...(connectionStats.get(peerId) || {}),
+          latencyMs,
+          updatedAt: Date.now(),
+        });
+      }
       return;
     }
 
@@ -13012,14 +13427,37 @@ function attachConnectionHandlers(conn, peerId, direction) {
       data?.type === "message-delivered" &&
       typeof data.messageId === "string"
     ) {
-      setMessageDeliveryState(peerId, data.messageId, "delivered");
+      setMessageDeliveryState(peerId, data.messageId, "delivered", data.at);
       return;
     }
 
     if (data?.type === "message-read" && typeof data.messageId === "string") {
       if (appConfig.appSettings?.readReceipts) {
-        setMessageDeliveryState(peerId, data.messageId, "read");
+        setMessageDeliveryState(peerId, data.messageId, "read", data.at);
       }
+      return;
+    }
+
+    if (data?.type === "clear-chat") {
+      clearChatLocally(peerId);
+      sendProtocolMessage(conn, "clear-chat-ack", {
+        clearId: typeof data.clearId === "string" ? data.clearId : "",
+      });
+      if (activePeerId === peerId) addSystemMessage(`${peerLabel()} cleared the chat for everyone.`);
+      return;
+    }
+
+    if (data?.type === "clear-chat-ack") {
+      if (activePeerId === peerId) addSystemMessage(`Chat cleared for you and ${peerLabel()}.`);
+      return;
+    }
+
+    if (
+      data?.type === "message-reaction" &&
+      typeof data.messageId === "string" &&
+      typeof data.emoji === "string"
+    ) {
+      applyMessageReaction(peerId, data.messageId, data.emoji, false);
       return;
     }
 
@@ -13142,9 +13580,13 @@ function attachConnectionHandlers(conn, peerId, direction) {
       sender: "them",
       peerId,
       time: message.time,
+      createdAt: message.createdAt,
+      receivedAt: Date.now(),
+      payloadBytes: message.payloadBytes,
+      replyTo: message.replyTo,
     });
     if (message.id && appConfig.appSettings?.readReceipts) {
-      sendProtocolMessage(conn, "message-delivered", { messageId: message.id });
+      sendProtocolMessage(conn, "message-delivered", { messageId: message.id, at: Date.now() });
     }
     if (
       message.id &&
@@ -13157,7 +13599,7 @@ function attachConnectionHandlers(conn, peerId, direction) {
       );
       if (
         item &&
-        sendProtocolMessage(conn, "message-read", { messageId: message.id })
+        sendProtocolMessage(conn, "message-read", { messageId: message.id, at: Date.now() })
       ) {
         item.readReceiptSent = true;
       }
@@ -14072,10 +14514,31 @@ clearChat.addEventListener("click", async () => {
     if (!confirmed) {
       return;
     }
-    ensureChatHistory(peerId).forEach(disposeMessageAssets);
-    chatHistory.set(peerId, []);
+    clearChatLocally(peerId);
   }
-  renderChatHistory();
+  closeChatMoreMenu();
+});
+
+clearChatEveryone.addEventListener("click", async () => {
+  if (!activePeerId) return;
+  const peerId = activePeerId;
+  const conn = connections.get(peerId);
+  const confirmed = await showAppDialog({
+    title: "Clear chat for everyone?",
+    message: `This removes the complete visible chat on your device and ${getPeerLabel(peerId, conn)}'s device. This cannot be undone.`,
+    confirmText: "Clear for everyone",
+    cancelText: "Cancel",
+    danger: true,
+  });
+  if (!confirmed) return;
+  const clearId = createMessageId();
+  if (!sendProtocolMessage(conn, "clear-chat", { clearId })) {
+    setStatus("offline", "The contact must be connected to clear the chat for everyone.");
+    return;
+  }
+  clearChatLocally(peerId);
+  addSystemMessage("Chat cleared locally. Waiting for the other device…");
+  closeChatMoreMenu();
 });
 
 messageInput.addEventListener("input", () => {
@@ -15786,12 +16249,117 @@ menuBlock.addEventListener("click", () => {
   closeContactMenu();
 });
 
+chatMoreButton.addEventListener("click", openChatMoreMenu);
+
+chatMenuContactInfo.addEventListener("click", () => {
+  const peerId = activePeerId;
+  closeChatMoreMenu();
+  if (peerId) showContactInfo(peerId);
+});
+
+chatMenuSearch.addEventListener("click", () => {
+  closeChatMoreMenu();
+  setChatSearchOpen(true);
+});
+
+chatMenuSelect.addEventListener("click", () => {
+  closeChatMoreMenu();
+  setMessageSelectionMode(true);
+});
+
+chatMenuMute.addEventListener("click", () => {
+  if (!activePeerId) return;
+  const identityId = getPeerIdentityId(activePeerId, connections.get(activePeerId));
+  const muted = !findContact(identityId)?.muted;
+  upsertContact(identityId, { muted, pinned: true });
+  addSystemMessage(muted ? "Chat notifications muted." : "Chat notifications enabled.");
+  closeChatMoreMenu();
+});
+
+chatMenuExport.addEventListener("click", () => {
+  exportActiveChat();
+  closeChatMoreMenu();
+});
+
+chatMenuTrust.addEventListener("click", () => {
+  if (!activePeerId) return;
+  const identityId = getPeerIdentityId(activePeerId, connections.get(activePeerId));
+  setTrusted(identityId, !isTrusted(identityId));
+  closeChatMoreMenu();
+});
+
+chatMenuBlock.addEventListener("click", async () => {
+  if (!activePeerId) return;
+  const identityId = getPeerIdentityId(activePeerId, connections.get(activePeerId));
+  const blocked = isBlocked(identityId);
+  if (!blocked) {
+    const confirmed = await showAppDialog({
+      title: "Block contact?",
+      message: "The current connection will close and this contact will no longer be able to connect.",
+      confirmText: "Block",
+      cancelText: "Cancel",
+      danger: true,
+    });
+    if (!confirmed) return;
+  }
+  setBlocked(identityId, !blocked);
+  closeChatMoreMenu();
+});
+
+chatSearchInput.addEventListener("input", updateChatSearch);
+chatSearchClose.addEventListener("click", () => setChatSearchOpen(false));
+selectionClose.addEventListener("click", () => setMessageSelectionMode(false));
+selectionCopy.addEventListener("click", () => {
+  if (!activePeerId) return;
+  const text = ensureChatHistory(activePeerId)
+    .filter((item) => selectedMessageIds.has(item.id))
+    .map((item) => item.text || item.file?.name || "Voice message")
+    .join("\n");
+  void writeClipboardText(text);
+  setMessageSelectionMode(false);
+});
+selectionDelete.addEventListener("click", async () => {
+  if (!activePeerId) return;
+  const ids = [...selectedMessageIds];
+  for (const id of ids) await deleteMessageLocally(activePeerId, id);
+  setMessageSelectionMode(false);
+});
+
+detailsModalClose.addEventListener("click", closeDetailsModal);
+detailsModal.addEventListener("click", (event) => {
+  if (event.target === detailsModal) closeDetailsModal();
+});
+
 menuCopy.addEventListener("click", () => {
   if (!contextMessage) {
     return;
   }
 
   writeClipboardText(contextMessage.text).catch(() => {});
+  closeMessageMenu();
+});
+
+menuMessageInfo.addEventListener("click", () => {
+  const item = contextMessage;
+  closeMessageMenu();
+  if (item) showMessageInfo(item);
+});
+
+menuReply.addEventListener("click", () => {
+  const item = contextMessage;
+  closeMessageMenu();
+  if (item) setReplyTarget(item);
+});
+
+messageReactionOptions.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-reaction]");
+  const item = contextMessage;
+  if (!button || !item) return;
+  const emoji = button.dataset.reaction;
+  const conn = connections.get(item.peerId);
+  if (sendProtocolMessage(conn, "message-reaction", { messageId: item.id, emoji })) {
+    applyMessageReaction(item.peerId, item.id, emoji, true);
+  }
   closeMessageMenu();
 });
 
@@ -15815,19 +16383,28 @@ menuDelete.addEventListener("click", () => {
   closeMessageMenu();
 });
 
-menuDeleteEveryone.addEventListener("click", () => {
+menuDeleteEveryone.addEventListener("click", async () => {
   if (!contextMessage || contextMessage.sender !== "me") {
     return;
   }
 
   const { id, peerId } = contextMessage;
+  closeMessageMenu();
+  const confirmed = await showAppDialog({
+    title: "Delete message for everyone?",
+    message: "This message will be removed from both devices.",
+    confirmText: "Delete for everyone",
+    cancelText: "Cancel",
+    danger: true,
+  });
+  if (!confirmed) return;
   const conn = connections.get(peerId);
   if (!sendProtocolMessage(conn, "delete-message", { messageId: id })) {
+    setStatus("offline", "The contact must be connected to delete for everyone.");
     return;
   }
 
   void deleteMessageLocally(peerId, id);
-  closeMessageMenu();
 });
 
 document.addEventListener("click", (event) => {
@@ -15843,6 +16420,9 @@ document.addEventListener("click", (event) => {
   if (!messageMenu.contains(event.target)) {
     closeMessageMenu();
   }
+  if (!chatMoreMenu.contains(event.target) && !chatMoreButton.contains(event.target)) {
+    closeChatMoreMenu();
+  }
   if (!participantMenu.contains(event.target)) {
     closeParticipantMenu();
   }
@@ -15855,11 +16435,24 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if (
+    (event.ctrlKey || event.metaKey) &&
+    event.key.toLowerCase() === "f" &&
+    activePeerId &&
+    settingsModal.classList.contains("hidden")
+  ) {
+    event.preventDefault();
+    setChatSearchOpen(true);
+    return;
+  }
   if (event.key === "Escape") {
     closeQrCodeMenu();
     closeAppMenu();
     closeContactMenu();
     closeMessageMenu();
+    closeChatMoreMenu();
+    closeDetailsModal();
+    setChatSearchOpen(false);
     closeParticipantMenu();
     closeStreamMenu();
     closeStreamSizeMenu();
