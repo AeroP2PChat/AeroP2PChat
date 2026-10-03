@@ -15,7 +15,7 @@ server.
 Open the interactive installer and choose what you want to do:
 
 ```sh
-curl -fsSL https://zorblock.de/sh/aero | sh
+curl -fsSL https://tenkayro.de/sh/aero | sh
 ```
 
 If the short URL is unavailable:
@@ -61,7 +61,7 @@ aerop2p uninstall
 
 ## Links
 
-- [Website](https://zorblock.de/app/aero/)
+- [Website](https://tenkayro.de/app/aero/)
 - [Releases](https://github.com/Tenkayro/AeroP2Pchat/releases/latest)
 - [Issues](https://github.com/Tenkayro/AeroP2Pchat/issues)
 - [MIT License](./LICENSE)

@@ -1050,7 +1050,7 @@ const githubRepoUrl = `https://github.com/${githubRepo}`;
 const githubRawBaseUrl = `https://raw.githubusercontent.com/${githubRepo}/${projectConfig.branch || "main"}`;
 const latestReleaseUrl = `${githubRepoUrl}/releases/latest`;
 const latestManifestUrl = `${latestReleaseUrl}/download/latest.yml`;
-const newsPageUrl = "https://zorblock.de/feedback";
+const newsPageUrl = "https://tenkayro.de/feedback";
 const linuxInstallCommand = `${linuxTerminalCommandName} update`;
 const linuxWebsiteUpdateCommand =
   `bash <(curl -fsSL ${githubRawBaseUrl}/install.sh) update`;
