@@ -21,7 +21,7 @@ curl -fsSL https://zorblock.de/sh/aero | sh
 If the short URL is unavailable:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/Zorblock/AeroP2Pchat/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/Tenkayro/AeroP2Pchat/main/install.sh | sh
 ```
 
 Manual downloads:
@@ -62,8 +62,8 @@ aerop2p uninstall
 ## Links
 
 - [Website](https://zorblock.de/app/aero/)
-- [Releases](https://github.com/Zorblock/AeroP2Pchat/releases/latest)
-- [Issues](https://github.com/Zorblock/AeroP2Pchat/issues)
+- [Releases](https://github.com/Tenkayro/AeroP2Pchat/releases/latest)
+- [Issues](https://github.com/Tenkayro/AeroP2Pchat/issues)
 - [MIT License](./LICENSE)
 
 [badge-windows]: https://img.shields.io/badge/Windows-Download_Setup-0078D4?style=for-the-badge&logo=windows11&logoColor=white
@@ -71,8 +71,8 @@ aerop2p uninstall
 [badge-appimage]: https://img.shields.io/badge/Linux-AppImage-F9C440?style=for-the-badge&logo=linux&logoColor=black
 [badge-rpm]: https://img.shields.io/badge/Fedora%20%2F%20Nobara-RPM-51A2DA?style=for-the-badge&logo=fedora&logoColor=white
 [badge-deb]: https://img.shields.io/badge/Debian%20%2F%20Ubuntu-DEB-A81D33?style=for-the-badge&logo=debian&logoColor=white
-[download-windows]: https://github.com/Zorblock/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Windows-x64-Setup.exe
+[download-windows]: https://github.com/Tenkayro/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Windows-x64-Setup.exe
 [download-store]: https://apps.microsoft.com/detail/9MTXC0M7P403
-[download-appimage]: https://github.com/Zorblock/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Linux-x64.AppImage
-[download-rpm]: https://github.com/Zorblock/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Linux-x64.rpm
-[download-deb]: https://github.com/Zorblock/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Linux-x64.deb
+[download-appimage]: https://github.com/Tenkayro/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Linux-x64.AppImage
+[download-rpm]: https://github.com/Tenkayro/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Linux-x64.rpm
+[download-deb]: https://github.com/Tenkayro/AeroP2Pchat/releases/latest/download/Aero-P2P-Chat-Linux-x64.deb

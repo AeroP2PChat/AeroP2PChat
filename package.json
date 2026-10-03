@@ -4,8 +4,8 @@
   "description": "A clean peer-to-peer chat client for Windows and Linux.",
   "license": "MIT",
   "author": {
-    "name": "Zorblock",
-    "email": "zorblock@users.noreply.github.com",
+    "name": "Tenkayro",
+    "email": "92232204+Tenkayro@users.noreply.github.com",
     "url": "https://zorblock.de/app/aero"
   },
   "main": "out/main/index.js",
