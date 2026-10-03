@@ -4,7 +4,7 @@ import {
   isValidReleaseAssetUrl,
 } from "../src/renderer/update-security.mjs";
 
-const repo = "Tenkayro/AeroP2Pchat";
+const repo = "AeroP2PChat/AeroP2PChat";
 const asset = "Aero-P2P-Chat-Windows-x64-Setup.exe";
 const validUrl =
   `https://github.com/${repo}/releases/download/v26.52.2/${asset}`;
