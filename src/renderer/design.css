@@ -3244,9 +3244,9 @@ body.reduce-motion *::after {
 .welcome-panel {
   display: grid;
   grid-template-rows: auto auto minmax(0, 1fr) auto;
-  width: min(600px, calc(100vw - 32px));
+  width: min(620px, calc(100vw - 32px));
   min-height: min(430px, calc(100vh - 32px));
-  max-height: min(600px, calc(100vh - 32px));
+  max-height: min(590px, calc(100vh - 32px));
   overflow: hidden;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-lg);
@@ -3258,9 +3258,12 @@ body.reduce-motion *::after {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 20px 13px;
+  padding: 14px 18px 11px;
 }
-.welcome-header > strong {
+.welcome-brand {
+  min-width: 0;
+}
+.welcome-brand strong {
   color: var(--text);
   font-size: 14px;
   font-weight: 800;
@@ -3284,7 +3287,7 @@ body.reduce-motion *::after {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
-  padding: 0 20px;
+  padding: 0 18px;
 }
 .welcome-progress span {
   height: 4px;
@@ -3294,17 +3297,18 @@ body.reduce-motion *::after {
 }
 .welcome-progress span.active {
   background: var(--accent);
+  box-shadow: 0 2px 8px var(--accent-ring);
 }
 .welcome-pages {
   min-height: 0;
-  padding: 28px 42px 20px;
+  padding: 20px 36px 16px;
   overflow-y: auto;
 }
 .welcome-page {
   display: grid;
   align-content: center;
   justify-items: center;
-  gap: 18px;
+  gap: 13px;
   min-height: 100%;
 }
 .welcome-copy {
@@ -4002,8 +4006,8 @@ body.reduce-motion *::after {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 62px;
-  padding: 11px 20px;
+  min-height: 54px;
+  padding: 8px 18px;
   border-top: 1px solid var(--line);
   background: var(--surface-subtle);
 }
@@ -4248,16 +4252,42 @@ body:not(.platform-android) [data-settings-nav="feedback"] {
 }
 .settings-reset-section {
   grid-column: 1 / -1;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+  display: grid;
+  gap: 16px;
 }
 .settings-section.settings-reset-section h3 {
   margin: 0;
 }
 .settings-reset-section button {
   min-height: 36px;
+}
+.settings-reset-actions {
+  display: grid;
+  gap: 10px;
+}
+.settings-reset-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+.settings-reset-card > div {
+  display: grid;
+  gap: 4px;
+}
+.settings-reset-card strong {
+  color: var(--text);
+  font-size: 11px;
+}
+.settings-reset-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.4;
 }
 @media (max-width: 840px) {
   .settings-layout {
@@ -4308,6 +4338,12 @@ body:not(.platform-android) [data-settings-nav="feedback"] {
   }
   .settings-reset-section button {
     width: 100%;
+  }
+  .settings-reset-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settings-reset-card > button {
+    grid-column: 1 / -1;
   }
   #settings-modal .modal-header {
     flex-wrap: wrap;

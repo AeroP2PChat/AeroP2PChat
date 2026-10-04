@@ -262,6 +262,7 @@ const welcomeAutostartModes = document.querySelector(
 const welcomeAutostartUnavailable = document.querySelector(
   "#welcome-autostart-unavailable",
 );
+const welcomeCloseToTray = document.querySelector("#welcome-close-to-tray");
 const welcomeBack = document.querySelector("#welcome-back");
 const welcomeNext = document.querySelector("#welcome-next");
 const settingsModal = document.querySelector("#settings-modal");
@@ -279,6 +280,7 @@ const settingsContent = document.querySelector(".settings-grid");
 let activeSettingsPage = "";
 let settingsSearchResultsCache = [];
 const resetAllSettingsButton = document.querySelector("#reset-all-settings");
+const reopenWelcomeScreenButton = document.querySelector("#reopen-welcome-screen");
 const profileModal = document.querySelector("#profile-modal");
 const profileClose = document.querySelector("#profile-close");
 const profileAvatarPreview = document.querySelector("#profile-avatar-preview");
@@ -2888,6 +2890,12 @@ function renderWelcomeSettings() {
     "hidden",
     platformApi.supportsAutostart,
   );
+  welcomeCloseToTray.checked = Boolean(settings.closeToTray);
+  welcomeCloseToTray.disabled = !platformApi.supportsCloseToTray;
+  welcomeCloseToTray.closest(".settings-check")?.classList.toggle(
+    "disabled",
+    welcomeCloseToTray.disabled,
+  );
 }
 
 function renderWelcomeStep() {
@@ -2915,8 +2923,8 @@ function renderWelcomeStep() {
   });
 }
 
-function openWelcomeScreen() {
-  if (!appConfig.appSettings?.welcomeScreen) {
+function openWelcomeScreen({ force = false } = {}) {
+  if (!force && !appConfig.appSettings?.welcomeScreen) {
     return;
   }
 
@@ -14852,6 +14860,10 @@ welcomeCustomAccentColorInput.addEventListener("input", () => {
   });
 });
 
+welcomeCloseToTray.addEventListener("change", () => {
+  saveAppSettings({ closeToTray: welcomeCloseToTray.checked });
+});
+
 welcomeMicrophoneSelect.addEventListener("change", () => {
   appConfig.audio.inputDeviceId = welcomeMicrophoneSelect.value || "default";
   microphoneSelect.value = appConfig.audio.inputDeviceId;
@@ -14907,14 +14919,14 @@ welcomeNext.addEventListener("click", async () => {
   welcomeNext.disabled = true;
   try {
     const lastStep = welcomePages.length - 1;
-    if (currentWelcomeStep === lastStep && !(await saveWelcomeNickname())) {
+    if (currentWelcomeStep === 0 && !(await saveWelcomeNickname())) {
       return;
     }
 
     if (currentWelcomeStep < lastStep) {
       currentWelcomeStep += 1;
       renderWelcomeStep();
-      if (currentWelcomeStep === 1) {
+      if (currentWelcomeStep === 2) {
         await refreshAudioDevices();
       }
       return;
@@ -16242,6 +16254,15 @@ resetAllSettingsButton.addEventListener("click", async () => {
     setMobileTab("contacts");
   }
   openWelcomeScreen();
+});
+
+reopenWelcomeScreenButton.addEventListener("click", () => {
+  clearSettingsSearch();
+  settingsModal.classList.add("hidden");
+  if (!platformApi.isElectron) {
+    setMobileTab("contacts");
+  }
+  openWelcomeScreen({ force: true });
 });
 
 
