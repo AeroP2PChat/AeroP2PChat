@@ -15498,40 +15498,83 @@ function setUpdateButtonText(text) {
   headerUpdateButton.textContent = text;
 }
 
+function formatUpdateBytes(bytes) {
+  const value = Number(bytes);
+  if (!Number.isFinite(value) || value <= 0) return "";
+  if (value >= 1024 * 1024) return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+  return `${Math.round(value / 1024)} KB`;
+}
+
+function setUpdateProgressStatus(text, percent = null) {
+  for (const id of ["update-progress-status", "startup-update-progress-status"]) {
+    const status = document.getElementById(id);
+    if (status) status.textContent = text;
+  }
+  for (const id of ["update-progress-bar", "startup-update-progress-bar"]) {
+    const bar = document.getElementById(id);
+    if (!bar || !Number.isFinite(percent)) continue;
+    const boundedPercent = Math.max(0, Math.min(100, Math.round(percent)));
+    bar.style.width = `${boundedPercent}%`;
+    bar.setAttribute("aria-valuenow", String(boundedPercent));
+  }
+}
+
+function setUpdateProgressVisible(visible) {
+  for (const id of [
+    "update-progress-container",
+    "startup-update-progress-container",
+  ]) {
+    document.getElementById(id)?.classList.toggle("hidden", !visible);
+  }
+}
+
 function startUpdateProgressListener() {
   removeUpdateProgressListener?.();
   removeUpdateProgressListener =
     platformApi.onUpdateProgress((progress) => {
       if (progress?.phase === "download") {
-        const percent = Number.isFinite(progress.percent) ? progress.percent : 0;
+        const percent = Number.isFinite(progress.percent)
+          ? Math.max(0, Math.min(100, Math.round(progress.percent)))
+          : 0;
         const percentText = percent > 0 ? `${percent}%` : "...";
         setUpdateButtonText(`Downloading ${percentText}`);
         startupUpdateButton.textContent = `Downloading ${percentText}`;
         
-        // Show progress containers
-        const pCard = document.getElementById("update-progress-container");
-        const pStartup = document.getElementById("startup-update-progress-container");
-        if (pCard) pCard.classList.remove("hidden");
-        if (pStartup) pStartup.classList.remove("hidden");
-        
-        // Update bar widths
-        const pCardBar = document.getElementById("update-progress-bar");
-        const pStartupBar = document.getElementById("startup-update-progress-bar");
-        if (pCardBar) pCardBar.style.width = `${percent}%`;
-        if (pStartupBar) pStartupBar.style.width = `${percent}%`;
+        setUpdateProgressVisible(true);
+
+        const received = formatUpdateBytes(progress.receivedBytes);
+        const total = formatUpdateBytes(progress.totalBytes);
+        const transferText = received
+          ? total
+            ? `${received} of ${total}`
+            : `${received} downloaded`
+          : "Connecting to the update server...";
+        setUpdateProgressStatus(`Downloading update · ${transferText}`, percent);
         
         return;
       }
 
-      if (progress?.phase === "install") {
-        setUpdateButtonText("Starting setup...");
-        startupUpdateButton.textContent = "Starting setup...";
+      if (progress?.phase === "launch") {
+        setUpdateButtonText("Opening setup...");
+        startupUpdateButton.textContent = "Opening setup...";
+        setUpdateProgressStatus("Download verified · opening Windows Setup...", 100);
+        return;
+      }
+
+      if (progress?.phase === "launched") {
+        setUpdateButtonText("Setup opened");
+        startupUpdateButton.textContent = "Setup opened";
+        setUpdateProgressStatus(
+          "Windows Setup is open. Follow its steps; Aero will close automatically.",
+          100,
+        );
         return;
       }
 
       if (progress?.phase === "verify") {
         setUpdateButtonText("Verifying...");
         startupUpdateButton.textContent = "Verifying...";
+        setUpdateProgressStatus("Download complete · verifying file integrity...", 100);
       }
     }) || null;
 }
@@ -15541,10 +15584,7 @@ function stopUpdateProgressListener() {
   removeUpdateProgressListener = null;
   
   // Hide progress containers
-  const pCard = document.getElementById("update-progress-container");
-  const pStartup = document.getElementById("startup-update-progress-container");
-  if (pCard) pCard.classList.add("hidden");
-  if (pStartup) pStartup.classList.add("hidden");
+  setUpdateProgressVisible(false);
 }
 
 async function installAvailableUpdate() {
@@ -15566,9 +15606,14 @@ async function installAvailableUpdate() {
   if (platformApi.supportsNativeUpdateInstall) {
     updateButton.disabled = true;
     headerUpdateButton.disabled = true;
+    startupUpdateButton.disabled = true;
+    startupUpdateIgnoreButton.classList.add("hidden");
+    startupUpdateClose.classList.add("hidden");
     startUpdateProgressListener();
+    setUpdateProgressVisible(true);
     setUpdateButtonText("Downloading 0%");
     startupUpdateButton.textContent = "Downloading 0%";
+    setUpdateProgressStatus("Connecting to the update server...", 0);
 
     try {
       const linuxUpdate = platform === "linux";
@@ -15578,8 +15623,8 @@ async function installAvailableUpdate() {
         sha256: linuxUpdate ? availableUpdate.linuxSha256 : availableUpdate.windowsSha256,
         sha512: linuxUpdate ? availableUpdate.linuxSha512 : availableUpdate.windowsSha512,
       });
-      setUpdateButtonText("Updater started");
-      startupUpdateButton.textContent = "Updater started";
+      setUpdateButtonText("Setup opened");
+      startupUpdateButton.textContent = "Setup opened";
     } catch (error) {
       stopUpdateProgressListener();
       updateButton.disabled = false;

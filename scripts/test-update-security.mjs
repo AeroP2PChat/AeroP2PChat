@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import {
   hasValidUpdateChecksums,
   isValidReleaseAssetUrl,
@@ -40,5 +42,17 @@ assert.equal(
 assert.equal(hasValidUpdateChecksums("a".repeat(64), "A".repeat(86) + "=="), true);
 assert.equal(hasValidUpdateChecksums("a".repeat(63), "A".repeat(86) + "=="), false);
 assert.equal(hasValidUpdateChecksums("a".repeat(64), "invalid"), false);
+
+const mainSource = readFileSync(
+  fileURLToPath(new URL("../src/main/index.js", import.meta.url)),
+  "utf8",
+);
+const windowsUpdaterSource = mainSource.slice(
+  mainSource.indexOf("async function installWindowsUpdate("),
+  mainSource.indexOf("async function installLinuxAppImageUpdate("),
+);
+assert.doesNotMatch(windowsUpdaterSource, /\["\/S"\]/);
+assert.match(windowsUpdaterSource, /windowsHide:\s*false/);
+assert.match(windowsUpdaterSource, /phase:\s*"launched"/);
 
 console.log("Update security tests passed.");

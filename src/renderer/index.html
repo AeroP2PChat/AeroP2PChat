@@ -520,8 +520,9 @@
               </button>
             </div>
             <div id="update-progress-container" class="hidden" style="margin-top: 12px;">
+              <p id="update-progress-status" class="update-progress-status" role="status" aria-live="polite">Preparing download...</p>
               <div class="progress">
-                <div id="update-progress-bar" class="progress-indicator"></div>
+                <div id="update-progress-bar" class="progress-indicator" role="progressbar" aria-label="Update download" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
               </div>
             </div>
           </div>
@@ -998,8 +999,9 @@
           </div>
           
           <div id="startup-update-progress-container" class="hidden" style="margin-top: 24px;">
+            <p id="startup-update-progress-status" class="update-progress-status" role="status" aria-live="polite">Preparing download...</p>
             <div class="progress">
-              <div id="startup-update-progress-bar" class="progress-indicator"></div>
+              <div id="startup-update-progress-bar" class="progress-indicator" role="progressbar" aria-label="Update download" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
             </div>
           </div>
         </section>

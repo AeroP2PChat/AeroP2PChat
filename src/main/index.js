@@ -2997,7 +2997,7 @@ async function installWindowsUpdate(
     );
     const setupPath = stagedInstaller.path;
 
-    onProgress({ phase: "install", percent: 100 });
+    onProgress({ phase: "launch", percent: 100 });
 
     let updater;
     let spawnError;
@@ -3005,11 +3005,14 @@ async function installWindowsUpdate(
       try {
         updater = spawn(
           setupPath,
-          ["/S"],
+          [],
           {
             detached: true,
             stdio: "ignore",
-            windowsHide: true,
+            // The user explicitly requested the update. Keep the native NSIS
+            // wizard visible so Windows security prompts and install progress
+            // cannot disappear behind a silent background update.
+            windowsHide: false,
           },
         );
         break;
@@ -3026,12 +3029,13 @@ async function installWindowsUpdate(
     }
 
     updater.unref();
+    onProgress({ phase: "launched", percent: 100 });
 
     setTimeout(() => {
       forceQuit = true;
       app.quit();
-    }, 250);
-    return { ok: true };
+    }, 1500);
+    return { ok: true, installerVisible: true };
   } catch (error) {
     throw error;
   }

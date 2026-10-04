@@ -38,12 +38,13 @@ module.exports = {
   nsis: {
     oneClick: false,
     perMachine: false,
-    allowToChangeInstallationDirectory: false,
+    allowToChangeInstallationDirectory: true,
     createDesktopShortcut: "always",
     createStartMenuShortcut: true,
     shortcutName: projectConfig.app.name,
     uninstallDisplayName: projectConfig.app.name,
     deleteAppDataOnUninstall: false,
+    runAfterFinish: true,
   },
   // This identity is assigned to Aero P2P Chat in Microsoft Partner Center.
   // The Store replaces the package signature after certification.
