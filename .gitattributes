@@ -1,0 +1,5 @@
+# Keep Linux entry points and GitHub Actions files executable/readable after a
+# Windows checkout, regardless of the developer's core.autocrlf setting.
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
