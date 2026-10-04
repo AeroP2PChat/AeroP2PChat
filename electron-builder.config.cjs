@@ -60,6 +60,10 @@ module.exports = {
     backgroundColor: "transparent",
     languages: ["en-US", "de-DE"],
     capabilities: ["runFullTrust", "internetClient", "microphone", "webcam"],
+    // Partner Center rejects MSIX packages targeting 10.0.17134.0 or older.
+    // Windows 10 1809 is also a suitable baseline for the current Electron runtime.
+    minVersion: "10.0.17763.0",
+    maxVersionTested: "10.0.26100.0",
   },
 
   linux: {

@@ -29,12 +29,18 @@ assert.equal(resolveMinimumVersion("clear", "26.52.2", "26.40.0"), "");
 const root = path.resolve(__dirname, "..");
 const packageInfo = require("../package.json");
 const projectConfig = require("../config.json");
+const builderConfig = require("../electron-builder.config.cjs");
 assert.match(packageInfo.scripts.build, /--platform=windows/);
 assert.equal(
   projectConfig.release.windowsStoreMsixAsset,
   "Aero-P2P-Chat-Microsoft-Store-x64.msix",
 );
 assert.equal(projectConfig.release.windowsStoreAppxAsset, undefined);
+assert.ok(
+  Number(builderConfig.appx.minVersion.split(".")[2]) > 17134,
+  "Microsoft Store MSIX MinVersion must be newer than Windows build 17134",
+);
+assert.equal(builderConfig.appx.minVersion, "10.0.17763.0");
 const workflow = fs.readFileSync(
   path.join(root, ".github", "workflows", "linux-release.yml"),
   "utf8",
