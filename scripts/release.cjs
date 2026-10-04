@@ -3,10 +3,10 @@ const {
   compareVersions,
   downloadStoreAppx,
   executeRelease,
-  findWindowsWorkflowRun,
+  findLinuxWorkflowRun,
   getReleaseState,
   parseVersion,
-  watchWindowsWorkflow,
+  watchLinuxWorkflow,
 } = require("./release-help.cjs");
 
 function formatMinimumVersion(value) {
@@ -145,7 +145,7 @@ async function main() {
 
   const publishRelease = unwrap(
     await select({
-      message: "Was soll nach dem Windows-Build passieren?",
+      message: "Was soll nach dem Linux-Build passieren?",
       initialValue: true,
       options: [
         {
@@ -198,8 +198,8 @@ async function main() {
     [
       `Version       ${state.currentVersion} → ${nextVersion}`,
       `Mindestversion ${minimumVersion}`,
-      "Linux         AppImage + RPM + DEB (local)",
-      "Windows       NSIS + APPX (GitHub Actions)",
+      "Windows       NSIS + APPX (lokal)",
+      "Linux         AppImage + RPM + DEB (GitHub Actions)",
       `Chrome        ${chromeLabel}`,
       `GitHub        ${publishRelease ? "Automatisch veröffentlichen" : "Als Entwurf behalten"}`,
     ].join("\n"),
@@ -252,11 +252,11 @@ async function main() {
     },
   );
 
-  log.step("Warte auf den Windows-Workflow");
-  const workflowRun = findWindowsWorkflowRun(result);
-  log.info(`Windows-Workflow: ${workflowRun.url}`);
-  watchWindowsWorkflow(workflowRun.databaseId);
-  log.success("Windows-Setup und Microsoft-Store-APPX wurden erfolgreich gebaut.");
+  log.step("Warte auf den Linux-Workflow");
+  const workflowRun = findLinuxWorkflowRun(result);
+  log.info(`Linux-Workflow: ${workflowRun.url}`);
+  watchLinuxWorkflow(workflowRun.databaseId);
+  log.success("AppImage, RPM und DEB wurden erfolgreich gebaut.");
 
   const downloadAppx = unwrap(
     await confirm({

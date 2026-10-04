@@ -1,4 +1,6 @@
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const {
   bumpVersion,
   compareVersions,
@@ -23,5 +25,17 @@ assert.equal(
   "26.52.2",
 );
 assert.equal(resolveMinimumVersion("clear", "26.52.2", "26.40.0"), "");
+
+const root = path.resolve(__dirname, "..");
+const packageInfo = require("../package.json");
+assert.match(packageInfo.scripts.build, /--platform=windows/);
+const workflow = fs.readFileSync(
+  path.join(root, ".github", "workflows", "linux-release.yml"),
+  "utf8",
+);
+assert.match(workflow, /--platform=linux/);
+assert.match(workflow, /Aero-P2P-Chat-Linux-x64\.AppImage/);
+assert.match(workflow, /Aero-P2P-Chat-Linux-x64\.rpm/);
+assert.match(workflow, /Aero-P2P-Chat-Linux-x64\.deb/);
 
 console.log("Release workflow tests passed.");

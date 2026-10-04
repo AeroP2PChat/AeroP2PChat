@@ -10,7 +10,15 @@ const artifactsDir = path.join(root, "dist", "build", "artifacts");
 const config = require("../config.json");
 
 function run(command, args, { capture = false } = {}) {
-  const result = spawnSync(command, args, {
+  const windowsCommand =
+    process.platform === "win32" && ["npm", "npx"].includes(command);
+  const executable = windowsCommand
+    ? process.env.ComSpec || "cmd.exe"
+    : command;
+  const commandArgs = windowsCommand
+    ? ["/d", "/s", "/c", `${command}.cmd`, ...args]
+    : args;
+  const result = spawnSync(executable, commandArgs, {
     cwd: root,
     stdio: capture ? ["ignore", "pipe", "pipe"] : "inherit",
     encoding: capture ? "utf8" : undefined,
@@ -159,7 +167,7 @@ function wait(milliseconds) {
   );
 }
 
-function findWindowsWorkflowRun({ headSha, dispatchedAt, attempts = 20 }) {
+function findLinuxWorkflowRun({ headSha, dispatchedAt, attempts = 20 }) {
   const earliestCreatedAt = Number(dispatchedAt) - 10000;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     const output = run(
@@ -170,7 +178,7 @@ function findWindowsWorkflowRun({ headSha, dispatchedAt, attempts = 20 }) {
         "--repo",
         config.repo,
         "--workflow",
-        "windows-release.yml",
+        "linux-release.yml",
         "--commit",
         headSha,
         "--event",
@@ -194,11 +202,11 @@ function findWindowsWorkflowRun({ headSha, dispatchedAt, attempts = 20 }) {
     if (attempt < attempts) wait(1500);
   }
   throw new Error(
-    "The dispatched Windows workflow could not be found. Check GitHub Actions.",
+    "The dispatched Linux workflow could not be found. Check GitHub Actions.",
   );
 }
 
-function watchWindowsWorkflow(runId) {
+function watchLinuxWorkflow(runId) {
   run("gh", [
     "run",
     "watch",
@@ -223,34 +231,6 @@ async function uploadReleaseAsset(tag, filePath) {
   return { name: path.basename(filePath), size };
 }
 
-async function downloadStoreAppx(runId, tag) {
-  const destination = path.join(
-    root,
-    "dist",
-    "build",
-    "microsoft-store",
-    tag,
-    `run-${runId}`,
-  );
-  fs.mkdirSync(destination, { recursive: true });
-  await runAsync("gh", [
-    "run",
-    "download",
-    String(runId),
-    "--repo",
-    config.repo,
-    "--name",
-    `microsoft-store-appx-${tag}`,
-    "--dir",
-    destination,
-  ]);
-  const appxPath = path.join(destination, config.release.windowsStoreAppxAsset);
-  if (!fs.existsSync(appxPath)) {
-    throw new Error(`Downloaded APPX not found: ${appxPath}`);
-  }
-  return { path: appxPath, size: fs.statSync(appxPath).size };
-}
-
 function releaseNotes(tag, highlights = "") {
   const lines = [`## Aero P2P Chat ${tag}`, ""];
   if (highlights.trim()) {
@@ -264,14 +244,14 @@ function releaseNotes(tag, highlights = "") {
     `- Debian/Ubuntu DEB: \`${config.release.linuxDebAsset}\``,
     `- Windows setup: \`${config.release.windowsSetupAsset}\``,
     "",
-    "The Microsoft Store APPX is retained as a private workflow artifact for Store submission.",
+    "The Microsoft Store APPX is built locally on Windows and retained for Store submission.",
   );
   return lines.join("\n");
 }
 
 async function executeRelease(options, reporter = {}) {
-  if (process.platform !== "linux") {
-    throw new Error("Releases are prepared locally on Linux.");
+  if (process.platform !== "win32") {
+    throw new Error("Releases are prepared locally on Windows.");
   }
   const step = reporter.step || ((message) => console.log(`\n${message}`));
   const info = reporter.info || console.log;
@@ -318,21 +298,29 @@ async function executeRelease(options, reporter = {}) {
     setVersion(nextVersion);
     writeJson(policyPath, { minimumVersion });
 
-    step("Build AppImage, RPM and DEB natively");
+    step("Build Windows NSIS setup and Microsoft Store APPX natively");
     run("node", [
       "scripts/ci-build-release.cjs",
-      "--platform=linux",
+      "--platform=windows",
       `--version=${nextVersion}`,
     ]);
-    const linuxAssets = [
-      config.release.linuxAppImageAsset,
-      config.release.linuxRpmAsset,
-      config.release.linuxDebAsset,
-      "update_manifest_linux.json",
+    run("node", [
+      "scripts/ci-create-latest.cjs",
+      path.relative(root, artifactsDir),
+      ...(minimumVersion ? [`--minimum-version=${minimumVersion}`] : []),
+    ]);
+    const windowsAssets = [
+      config.release.windowsSetupAsset,
+      config.release.windowsStoreAppxAsset,
+      "update_manifest_windows.json",
+      "latest.yml",
     ];
-    verifyArtifacts(linuxAssets, "Linux");
+    verifyArtifacts(windowsAssets, "Windows");
 
-    const releaseAssets = [...linuxAssets];
+    // The APPX is for Partner Center, not a public GitHub release download.
+    const releaseAssets = windowsAssets.filter(
+      (name) => name !== config.release.windowsStoreAppxAsset,
+    );
     if (chromeMode !== "skip") {
       step("Build Chrome extension");
       run("node", ["scripts/build-chrome-extension.cjs"]);
@@ -390,13 +378,13 @@ async function executeRelease(options, reporter = {}) {
       run("node", ["scripts/publish-chrome-extension.cjs"]);
     }
 
-    step("Dispatch Windows release workflow");
+    step("Dispatch Linux release workflow");
     const headSha = run("git", ["rev-parse", "HEAD"], { capture: true });
     const dispatchedAt = Date.now();
     run("gh", [
       "workflow",
       "run",
-      "windows-release.yml",
+      "linux-release.yml",
       "--ref",
       branch,
       "-f",
@@ -407,11 +395,11 @@ async function executeRelease(options, reporter = {}) {
       `publish_release=${publishRelease}`,
     ]);
 
-    info(`Draft ${tag} contains the native Linux artifacts.`);
+    info(`Draft ${tag} contains the native Windows setup.`);
     info(
       publishRelease
-        ? "The Windows workflow will add Windows files and publish the release."
-        : "The Windows workflow will add Windows files and keep the release as a draft.",
+        ? "The Linux workflow will add AppImage, RPM and DEB files and publish the release."
+        : "The Linux workflow will add AppImage, RPM and DEB files and keep the release as a draft.",
     );
     return {
       branch,
@@ -421,6 +409,7 @@ async function executeRelease(options, reporter = {}) {
       chromeMode,
       headSha,
       dispatchedAt,
+      appxPath: path.join(artifactsDir, config.release.windowsStoreAppxAsset),
     };
   } catch (error) {
     if (!committed) {
@@ -436,13 +425,19 @@ async function executeRelease(options, reporter = {}) {
 module.exports = {
   bumpVersion,
   compareVersions,
-  downloadStoreAppx,
+  downloadStoreAppx: async () => {
+    const appxPath = path.join(artifactsDir, config.release.windowsStoreAppxAsset);
+    if (!fs.existsSync(appxPath)) throw new Error(`Local APPX not found: ${appxPath}`);
+    return { path: appxPath, size: fs.statSync(appxPath).size };
+  },
   executeRelease,
-  findWindowsWorkflowRun,
+  findLinuxWorkflowRun,
+  findWindowsWorkflowRun: findLinuxWorkflowRun,
   getReleaseState,
   parseVersion,
   releaseNotes,
   resolveMinimumVersion,
   uploadReleaseAsset,
-  watchWindowsWorkflow,
+  watchLinuxWorkflow,
+  watchWindowsWorkflow: watchLinuxWorkflow,
 };

@@ -45,6 +45,23 @@ aerop2p repair
 aerop2p uninstall
 ```
 
+## Development and releases
+
+Local development and release preparation use Windows with Node.js 22, Git,
+GitHub CLI and npm. Check the workstation with `npm run doctor`.
+
+- `npm run dev` starts the Electron development build.
+- `npm run build` or `npm run build:windows` builds the Windows NSIS setup and
+  Microsoft Store APPX locally.
+- `npm run build:store` builds only the Microsoft Store APPX.
+- `npm run release` builds and uploads the Windows setup locally, keeps the APPX
+  for Partner Center, and starts the Linux GitHub Actions workflow.
+- `.github/workflows/linux-release.yml` builds AppImage, RPM and DEB natively on
+  Ubuntu, completes `latest.yml`, and optionally publishes the draft release.
+
+The Linux-only `build:linux:*` commands remain available for CI and native Linux
+diagnostics; they intentionally fail on Windows instead of cross-compiling.
+
 ## Start chatting
 
 1. Share your Peer ID.

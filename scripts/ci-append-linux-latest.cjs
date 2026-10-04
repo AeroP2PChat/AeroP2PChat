@@ -72,6 +72,17 @@ function main() {
   }
 
   let existing = fs.readFileSync(latestYmlPath, "utf8");
+  const latestVersionLine = existing
+    .split("\n")
+    .find((line) => line.startsWith("version:"));
+  const latestVersion = latestVersionLine
+    ? JSON.parse(latestVersionLine.slice("version:".length).trim())
+    : "";
+  if (latestVersion !== version) {
+    throw new Error(
+      `Windows and Linux manifest versions differ: ${latestVersion || "missing"} vs ${version}`,
+    );
+  }
 
   // Insert Linux lines before the final productName line
   const productNameLine = existing

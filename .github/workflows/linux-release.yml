@@ -1,0 +1,104 @@
+name: Linux Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing draft release tag (vX.Y.Z)
+        required: true
+        type: string
+      minimum_version:
+        description: Minimum supported version (optional)
+        required: false
+        type: string
+      publish_release:
+        description: Publish the draft after Linux artifacts are uploaded
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: linux-release-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out release commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install native packaging tools
+        run: sudo apt-get update && sudo apt-get install --yes fakeroot rpm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate release input
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          node -e "const version=require('./package.json').version; if (process.env.RELEASE_TAG !== 'v' + version) throw new Error('Tag does not match package.json: ' + process.env.RELEASE_TAG + ' vs v' + version)"
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build AppImage, RPM and DEB
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: node scripts/ci-build-release.cjs --platform=linux --version="${RELEASE_TAG#v}"
+
+      - name: Download Windows update manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: gh release download "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --pattern latest.yml --dir dist/build/artifacts
+
+      - name: Add Linux update metadata
+        run: node scripts/ci-append-linux-latest.cjs dist/build/artifacts/latest.yml dist/build/artifacts
+
+      - name: Upload Linux packages and update metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            "dist/build/artifacts/Aero-P2P-Chat-Linux-x64.AppImage" \
+            "dist/build/artifacts/Aero-P2P-Chat-Linux-x64.rpm" \
+            "dist/build/artifacts/Aero-P2P-Chat-Linux-x64.deb" \
+            "dist/build/artifacts/update_manifest_linux.json" \
+            "dist/build/artifacts/latest.yml" \
+            --repo "$GITHUB_REPOSITORY" --clobber
+
+      - name: Publish release
+        if: ${{ inputs.publish_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+
+      - name: Retain Linux packages as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-packages-${{ inputs.tag }}
+          path: |
+            dist/build/artifacts/Aero-P2P-Chat-Linux-x64.AppImage
+            dist/build/artifacts/Aero-P2P-Chat-Linux-x64.rpm
+            dist/build/artifacts/Aero-P2P-Chat-Linux-x64.deb
+            dist/build/artifacts/update_manifest_linux.json
+            dist/build/artifacts/latest.yml
+          if-no-files-found: error
+          retention-days: 14
