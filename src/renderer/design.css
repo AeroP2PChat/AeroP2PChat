@@ -7026,9 +7026,9 @@ body.platform-android .incoming-call-screen {
   outline-offset: 2px;
 }
 
-/* Keep the Aero wallpaper visible in OLED, just like the original dark theme. */
-html[data-theme="ultra-dark"] body.chat-wallpaper-ready .messages,
-body[data-theme="ultra-dark"].chat-wallpaper-ready .messages {
+/* Keep the Aero wallpaper tinted with the selected accent in both dark themes. */
+html:is([data-theme="dark"], [data-theme="ultra-dark"]) body.chat-wallpaper-ready .messages,
+body:is([data-theme="dark"], [data-theme="ultra-dark"]).chat-wallpaper-ready .messages {
   background-image: linear-gradient(
       color-mix(in srgb, var(--surface) 28%, transparent),
       color-mix(in srgb, var(--surface) 28%, transparent)
@@ -7037,8 +7037,8 @@ body[data-theme="ultra-dark"].chat-wallpaper-ready .messages {
     url("../../assets/chat/background.png");
   background-blend-mode: normal, hue, normal;
 }
-html[data-theme="ultra-dark"] .boot-screen,
-body[data-theme="ultra-dark"] .boot-screen {
+html:is([data-theme="dark"], [data-theme="ultra-dark"]) .boot-screen,
+body:is([data-theme="dark"], [data-theme="ultra-dark"]) .boot-screen {
   background-image: linear-gradient(
       color-mix(in srgb, var(--surface) 32%, transparent),
       color-mix(in srgb, var(--surface) 32%, transparent)
