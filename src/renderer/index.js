@@ -15071,6 +15071,7 @@ closeToTrayToggle.addEventListener("change", () => {
   saveAppSettings({ closeToTray: closeToTrayToggle.checked });
 });
 
+
 checkUpdatesButton.addEventListener("click", async () => {
   renderUpdateSettingsStatus("Checking...");
   await checkForUpdates({ manual: true });
