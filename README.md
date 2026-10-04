@@ -52,9 +52,9 @@ GitHub CLI and npm. Check the workstation with `npm run doctor`.
 
 - `npm run dev` starts the Electron development build.
 - `npm run build` or `npm run build:windows` builds the Windows NSIS setup and
-  Microsoft Store APPX locally.
-- `npm run build:store` builds only the Microsoft Store APPX.
-- `npm run release` builds and uploads the Windows setup locally, keeps the APPX
+  Microsoft Store MSIX locally.
+- `npm run build:store` builds only the Microsoft Store MSIX.
+- `npm run release` builds and uploads the Windows setup locally, keeps the MSIX
   for Partner Center, and starts the Linux GitHub Actions workflow.
 - `.github/workflows/linux-release.yml` builds AppImage, RPM and DEB natively on
   Ubuntu, completes `latest.yml`, and optionally publishes the draft release.

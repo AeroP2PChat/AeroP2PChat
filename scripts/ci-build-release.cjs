@@ -67,6 +67,23 @@ function copyArtifact(sourceDir, sourceName, targetName = sourceName) {
 function resetPlatformOutput(platform) {
   fs.rmSync(path.join(buildDir, platform), { recursive: true, force: true });
   fs.mkdirSync(artifactsDir, { recursive: true });
+  const platformArtifacts = platform === "windows"
+    ? [
+        config.release.windowsSetupAsset,
+        config.release.windowsStoreMsixAsset,
+        // Remove packages produced before the Store migration to MSIX.
+        "Aero-P2P-Chat-Microsoft-Store-x64.appx",
+        "update_manifest_windows.json",
+      ]
+    : [
+        config.release.linuxAppImageAsset,
+        config.release.linuxRpmAsset,
+        config.release.linuxDebAsset,
+        "update_manifest_linux.json",
+      ];
+  for (const name of platformArtifacts) {
+    fs.rmSync(path.join(artifactsDir, name), { force: true });
+  }
 }
 
 function buildLinux(version) {
@@ -105,7 +122,7 @@ function buildWindows(version) {
     "--config.directories.output=dist/build/windows/store",
   ]);
   const setup = copyArtifact(path.join(buildDir, "windows", "setup"), config.release.windowsSetupAsset);
-  copyArtifact(path.join(buildDir, "windows", "store"), config.release.windowsStoreAppxAsset);
+  copyArtifact(path.join(buildDir, "windows", "store"), config.release.windowsStoreMsixAsset);
   fs.writeFileSync(
     path.join(artifactsDir, "update_manifest_windows.json"),
     `${JSON.stringify({ version, platform: "windows", asset: setup }, null, 2)}\n`,

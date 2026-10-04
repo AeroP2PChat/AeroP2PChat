@@ -50,10 +50,10 @@ function run(command, args) {
   }
 }
 
-function findAppx(outputDir) {
+function findMsix(outputDir) {
   const candidates = fs
     .readdirSync(outputDir, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".appx"))
+    .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".msix"))
     .map((entry) => path.join(outputDir, entry.name));
 
   candidates.sort(
@@ -64,7 +64,7 @@ function findAppx(outputDir) {
 
 function main() {
   if (process.platform !== "win32") {
-    throw new Error("Microsoft Store APPX packages can only be built on Windows.");
+    throw new Error("Microsoft Store MSIX packages can only be built on Windows.");
   }
 
   const options = parseArgs();
@@ -87,9 +87,9 @@ function main() {
     `--config.directories.output=${path.relative(root, options.output)}`,
   ]);
 
-  const generatedPackage = findAppx(options.output);
+  const generatedPackage = findMsix(options.output);
   if (!generatedPackage) {
-    throw new Error("electron-builder did not create a Microsoft Store .appx package.");
+    throw new Error("electron-builder did not create a Microsoft Store .msix package.");
   }
 
   const artifactPath = options.artifact || generatedPackage;
@@ -99,7 +99,7 @@ function main() {
   }
 
   console.log(`Microsoft Store package: ${path.relative(root, artifactPath)}`);
-  console.log("Upload the .appx file to Microsoft Partner Center; do not rename it to .msix.");
+  console.log("Upload the .msix file to Microsoft Partner Center.");
 }
 
 main();

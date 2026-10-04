@@ -244,7 +244,7 @@ function releaseNotes(tag, highlights = "") {
     `- Debian/Ubuntu DEB: \`${config.release.linuxDebAsset}\``,
     `- Windows setup: \`${config.release.windowsSetupAsset}\``,
     "",
-    "The Microsoft Store APPX is built locally on Windows and retained for Store submission.",
+    "The Microsoft Store MSIX is built locally on Windows and retained for Store submission.",
   );
   return lines.join("\n");
 }
@@ -298,7 +298,7 @@ async function executeRelease(options, reporter = {}) {
     setVersion(nextVersion);
     writeJson(policyPath, { minimumVersion });
 
-    step("Build Windows NSIS setup and Microsoft Store APPX natively");
+    step("Build Windows NSIS setup and Microsoft Store MSIX natively");
     run("node", [
       "scripts/ci-build-release.cjs",
       "--platform=windows",
@@ -311,15 +311,15 @@ async function executeRelease(options, reporter = {}) {
     ]);
     const windowsAssets = [
       config.release.windowsSetupAsset,
-      config.release.windowsStoreAppxAsset,
+      config.release.windowsStoreMsixAsset,
       "update_manifest_windows.json",
       "latest.yml",
     ];
     verifyArtifacts(windowsAssets, "Windows");
 
-    // The APPX is for Partner Center, not a public GitHub release download.
+    // The MSIX is for Partner Center, not a public GitHub release download.
     const releaseAssets = windowsAssets.filter(
-      (name) => name !== config.release.windowsStoreAppxAsset,
+      (name) => name !== config.release.windowsStoreMsixAsset,
     );
     if (chromeMode !== "skip") {
       step("Build Chrome extension");
@@ -409,7 +409,7 @@ async function executeRelease(options, reporter = {}) {
       chromeMode,
       headSha,
       dispatchedAt,
-      appxPath: path.join(artifactsDir, config.release.windowsStoreAppxAsset),
+      msixPath: path.join(artifactsDir, config.release.windowsStoreMsixAsset),
     };
   } catch (error) {
     if (!committed) {
@@ -425,10 +425,10 @@ async function executeRelease(options, reporter = {}) {
 module.exports = {
   bumpVersion,
   compareVersions,
-  downloadStoreAppx: async () => {
-    const appxPath = path.join(artifactsDir, config.release.windowsStoreAppxAsset);
-    if (!fs.existsSync(appxPath)) throw new Error(`Local APPX not found: ${appxPath}`);
-    return { path: appxPath, size: fs.statSync(appxPath).size };
+  downloadStoreMsix: async () => {
+    const msixPath = path.join(artifactsDir, config.release.windowsStoreMsixAsset);
+    if (!fs.existsSync(msixPath)) throw new Error(`Local MSIX not found: ${msixPath}`);
+    return { path: msixPath, size: fs.statSync(msixPath).size };
   },
   executeRelease,
   findLinuxWorkflowRun,

@@ -28,7 +28,13 @@ assert.equal(resolveMinimumVersion("clear", "26.52.2", "26.40.0"), "");
 
 const root = path.resolve(__dirname, "..");
 const packageInfo = require("../package.json");
+const projectConfig = require("../config.json");
 assert.match(packageInfo.scripts.build, /--platform=windows/);
+assert.equal(
+  projectConfig.release.windowsStoreMsixAsset,
+  "Aero-P2P-Chat-Microsoft-Store-x64.msix",
+);
+assert.equal(projectConfig.release.windowsStoreAppxAsset, undefined);
 const workflow = fs.readFileSync(
   path.join(root, ".github", "workflows", "linux-release.yml"),
   "utf8",

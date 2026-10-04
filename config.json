@@ -20,7 +20,7 @@
   "release": {
     "windowsSetupBaseName": "Aero-P2P-Chat-Setup",
     "windowsSetupAsset": "Aero-P2P-Chat-Windows-x64-Setup.exe",
-    "windowsStoreAppxAsset": "Aero-P2P-Chat-Microsoft-Store-x64.appx",
+    "windowsStoreMsixAsset": "Aero-P2P-Chat-Microsoft-Store-x64.msix",
     "linuxAppImageAsset": "Aero-P2P-Chat-Linux-x64.AppImage",
     "linuxRpmAsset": "Aero-P2P-Chat-Linux-x64.rpm",
     "linuxDebAsset": "Aero-P2P-Chat-Linux-x64.deb",

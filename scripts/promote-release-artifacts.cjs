@@ -15,7 +15,7 @@ const renameRetryAttempts = process.platform === "win32" ? 20 : 1;
 
 const requiredFiles = [
   config.release.windowsSetupAsset,
-  config.release.windowsStoreAppxAsset,
+  config.release.windowsStoreMsixAsset,
   config.release.linuxAppImageAsset,
   config.release.linuxRpmAsset,
   config.release.linuxDebAsset,

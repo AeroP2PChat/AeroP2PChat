@@ -1,7 +1,7 @@
 const {
   bumpVersion,
   compareVersions,
-  downloadStoreAppx,
+  downloadStoreMsix,
   executeRelease,
   findLinuxWorkflowRun,
   getReleaseState,
@@ -198,7 +198,7 @@ async function main() {
     [
       `Version       ${state.currentVersion} → ${nextVersion}`,
       `Mindestversion ${minimumVersion}`,
-      "Windows       NSIS + APPX (lokal)",
+      "Windows       NSIS + MSIX (lokal)",
       "Linux         AppImage + RPM + DEB (GitHub Actions)",
       `Chrome        ${chromeLabel}`,
       `GitHub        ${publishRelease ? "Automatisch veröffentlichen" : "Als Entwurf behalten"}`,
@@ -260,36 +260,36 @@ async function main() {
 
   const downloadAppx = unwrap(
     await confirm({
-      message: "Microsoft-Store-APPX jetzt herunterladen?",
+      message: "Lokalen Microsoft-Store-MSIX-Pfad jetzt anzeigen?",
       active: "Ja",
       inactive: "Nein",
       initialValue: true,
     }),
   );
-  let appxPath = "";
+  let msixPath = "";
   if (downloadAppx) {
     const downloadSpinner = spinner();
-    downloadSpinner.start("Microsoft-Store-APPX wird heruntergeladen …");
+    downloadSpinner.start("Microsoft-Store-MSIX wird vorbereitet …");
     try {
-      const downloadedAppx = await downloadStoreAppx(
+      const downloadedMsix = await downloadStoreMsix(
         workflowRun.databaseId,
         result.tag,
       );
-      appxPath = downloadedAppx.path;
+      msixPath = downloadedMsix.path;
       downloadSpinner.stop(
-        `APPX heruntergeladen · ${formatFileSize(downloadedAppx.size)}`,
+        `MSIX bereit · ${formatFileSize(downloadedMsix.size)}`,
       );
-      log.info(`Datei: ${appxPath}`);
+      log.info(`Datei: ${msixPath}`);
     } catch (error) {
-      downloadSpinner.error("APPX-Download fehlgeschlagen.");
+      downloadSpinner.error("MSIX konnte nicht gefunden werden.");
       throw error;
     }
   }
 
   outro(
-    appxPath
-      ? `${result.tag} fertig · APPX wurde lokal gespeichert.`
-      : `${result.tag} fertig · APPX bleibt als GitHub-Artefakt verfügbar.`,
+    msixPath
+      ? `${result.tag} fertig · MSIX wurde lokal gespeichert.`
+      : `${result.tag} fertig · MSIX bleibt lokal im Build-Ordner verfügbar.`,
   );
 }
 

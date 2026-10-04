@@ -48,8 +48,11 @@ module.exports = {
   },
   // This identity is assigned to Aero P2P Chat in Microsoft Partner Center.
   // The Store replaces the package signature after certification.
+  // electron-builder 26 uses its stable AppX/MakeAppx backend for both AppX
+  // and MSIX containers. A .msix output name produces the modern Store format
+  // without depending on electron-builder 27's still-unreleased msix target.
   appx: {
-    artifactName: "Aero-P2P-Chat-Microsoft-Store-${arch}.${ext}",
+    artifactName: "Aero-P2P-Chat-Microsoft-Store-${arch}.msix",
     identityName: "Zorblock.AeroP2PChat",
     publisher: "CN=9C56695C-1431-40D0-A466-EAE7BFAE9231",
     publisherDisplayName: "Zorblock",
