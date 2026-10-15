@@ -488,6 +488,35 @@ body.app-boot-finish .window-frame {
   gap: 2px;
   -webkit-app-region: no-drag;
 }
+.titlebar-lock-countdown {
+  display: inline-flex;
+  align-self: center;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  margin: 0 5px 0 3px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.titlebar-lock-countdown i {
+  color: var(--accent);
+  font-size: 9px;
+}
+.titlebar-lock-countdown.is-soon {
+  border-color: color-mix(in srgb, var(--warning) 45%, var(--line));
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.titlebar-lock-countdown.is-soon i {
+  color: currentColor;
+}
 .window-controls button {
   display: grid;
   min-width: 40px;
@@ -4326,6 +4355,55 @@ body.reduce-motion *::after {
   flex: 0 0 auto;
   font-size: 11px;
 }
+.auto-lock-settings {
+  display: grid;
+  gap: 11px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line);
+}
+.auto-lock-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+.auto-lock-heading > div {
+  display: grid;
+  gap: 3px;
+}
+.auto-lock-heading strong {
+  color: var(--text);
+  font-size: 11px;
+}
+.auto-lock-heading span,
+.auto-lock-note {
+  color: var(--muted);
+  font-size: 10px;
+}
+.auto-lock-master {
+  min-height: 24px;
+  font-size: 11px;
+}
+.auto-lock-options {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.7fr) minmax(220px, 1fr);
+  align-items: end;
+  gap: 12px;
+}
+.auto-lock-options.is-disabled {
+  opacity: 0.48;
+}
+.auto-lock-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  line-height: 1.4;
+}
+.auto-lock-note i {
+  color: var(--accent);
+  font-size: 10px;
+}
 .recovery-card pre {
   margin: 0;
   padding: 12px;
@@ -4448,6 +4526,13 @@ body.reduce-motion *::after {
   #app-lock-enable {
     justify-self: stretch;
     width: 100%;
+  }
+  .auto-lock-heading,
+  .auto-lock-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .auto-lock-master {
+    justify-self: start;
   }
   .recovery-card pre {
     columns: 1;

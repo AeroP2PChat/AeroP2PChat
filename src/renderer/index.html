@@ -354,6 +354,10 @@
           </div>
         </div>
         <div class="window-controls">
+          <div id="app-lock-countdown" class="titlebar-lock-countdown hidden" aria-label="Automatic lock countdown">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i>
+            <span id="app-lock-countdown-text">5:00</span>
+          </div>
           <button
             id="header-update-button"
             class="header-update-button hidden"
@@ -1446,6 +1450,27 @@
                     <button id="app-lock-change-pin" class="ghost-button" type="button">Change PIN</button>
                     <button id="app-lock-new-codes" class="ghost-button" type="button">New recovery codes</button>
                     <button id="app-lock-disable" class="ghost-button danger" type="button">Turn off</button>
+                  </div>
+                  <div id="auto-lock-settings" class="auto-lock-settings hidden">
+                    <div class="auto-lock-heading">
+                      <div><strong>Automatic lock</strong><span>Lock Aero when this device has not been used.</span></div>
+                      <label class="settings-check auto-lock-master"><input id="auto-lock-enabled" type="checkbox" /><span>Enable</span></label>
+                    </div>
+                    <div id="auto-lock-options" class="auto-lock-options">
+                      <label class="settings-field">
+                        <span>Lock after</span>
+                        <select id="auto-lock-delay">
+                          <option value="60">1 minute</option>
+                          <option value="300">5 minutes</option>
+                          <option value="600">10 minutes</option>
+                          <option value="900">15 minutes</option>
+                          <option value="1800">30 minutes</option>
+                          <option value="3600">1 hour</option>
+                        </select>
+                      </label>
+                      <label class="settings-check"><input id="auto-lock-countdown-enabled" type="checkbox" /><span>Show countdown in title bar</span></label>
+                    </div>
+                    <p class="auto-lock-note"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i>Aero also locks when the system is locked or suspended.</p>
                   </div>
                   <p id="app-lock-status-message" class="app-lock-status-message" aria-live="polite"></p>
                 </article>

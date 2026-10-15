@@ -30,6 +30,8 @@ const titlebarLogo = document.querySelector("#titlebar-logo");
 const titlebarUsername = document.querySelector("#titlebar-username");
 const titlebarPresence = document.querySelector("#titlebar-presence");
 const titlebarSubtitle = document.querySelector("#titlebar-subtitle");
+const appLockCountdown = document.querySelector("#app-lock-countdown");
+const appLockCountdownText = document.querySelector("#app-lock-countdown-text");
 const windowMinimize = document.querySelector("#window-minimize");
 const windowMaximize = document.querySelector("#window-maximize");
 const windowClose = document.querySelector("#window-close");
@@ -301,6 +303,13 @@ const appLockEnableButton = document.querySelector("#app-lock-enable");
 const appLockChangePinButton = document.querySelector("#app-lock-change-pin");
 const appLockNewCodesButton = document.querySelector("#app-lock-new-codes");
 const appLockDisableButton = document.querySelector("#app-lock-disable");
+const autoLockSettings = document.querySelector("#auto-lock-settings");
+const autoLockEnabled = document.querySelector("#auto-lock-enabled");
+const autoLockOptions = document.querySelector("#auto-lock-options");
+const autoLockDelay = document.querySelector("#auto-lock-delay");
+const autoLockCountdownEnabled = document.querySelector(
+  "#auto-lock-countdown-enabled",
+);
 const appLockStatusMessage = document.querySelector("#app-lock-status-message");
 const appLockRecovery = document.querySelector("#app-lock-recovery");
 const appLockRecoveryCodes = document.querySelector("#app-lock-recovery-codes");
@@ -1095,6 +1104,19 @@ function setTitlebarActionLabel(button, text) {
 }
 const platformApi = createPlatformApi();
 const platform = platformApi.platform;
+platformApi.onAppLockCountdown((state = {}) => {
+  const visible = state.enabled === true && Number.isFinite(state.remainingSeconds);
+  appLockCountdown?.classList.toggle("hidden", !visible);
+  if (!visible || !appLockCountdownText) return;
+  const seconds = Math.max(0, Math.ceil(state.remainingSeconds));
+  const minutes = Math.floor(seconds / 60);
+  const remainder = String(seconds % 60).padStart(2, "0");
+  appLockCountdownText.textContent = `${minutes}:${remainder}`;
+  appLockCountdown.classList.toggle("is-soon", seconds <= 60);
+  const label = `Aero locks after inactivity in ${minutes}:${remainder}`;
+  appLockCountdown.title = label;
+  appLockCountdown.setAttribute("aria-label", label);
+});
 const mobileWebLayoutQuery = window.matchMedia(
   "(max-width: 820px), (hover: none) and (pointer: coarse)",
 );
@@ -1241,6 +1263,37 @@ function setAppLockBusy(busy) {
   }
 }
 
+function normalizeAutoLockSettings() {
+  const allowedSeconds = new Set([60, 300, 600, 900, 1800, 3600]);
+  const security =
+    appConfig.security && typeof appConfig.security === "object"
+      ? appConfig.security
+      : {};
+  appConfig.security = {
+    ...security,
+    autoLockEnabled: Boolean(security.autoLockEnabled),
+    autoLockSeconds: allowedSeconds.has(security.autoLockSeconds)
+      ? security.autoLockSeconds
+      : 300,
+    showAutoLockCountdown: security.showAutoLockCountdown !== false,
+  };
+  return appConfig.security;
+}
+
+function renderAutoLockSettings() {
+  const security = normalizeAutoLockSettings();
+  const enabled = Boolean(currentAppLockStatus.enabled);
+  autoLockSettings?.classList.toggle("hidden", !enabled);
+  if (!autoLockEnabled || !autoLockDelay || !autoLockCountdownEnabled) return;
+  autoLockEnabled.checked = security.autoLockEnabled;
+  autoLockDelay.value = String(security.autoLockSeconds);
+  autoLockCountdownEnabled.checked = security.showAutoLockCountdown;
+  autoLockDelay.disabled = !security.autoLockEnabled;
+  autoLockCountdownEnabled.disabled = !security.autoLockEnabled;
+  autoLockOptions?.classList.toggle("is-disabled", !security.autoLockEnabled);
+  syncEnhancedSelect(autoLockDelay);
+}
+
 function renderAppLockSettings() {
   const enabled = Boolean(currentAppLockStatus.enabled);
   appLockState.textContent = enabled ? "On" : "Off";
@@ -1253,6 +1306,7 @@ function renderAppLockSettings() {
   appLockEnableButton.innerHTML = appLockPinChangeMode
     ? '<i class="fa-solid fa-key" aria-hidden="true"></i><span>Save new PIN</span>'
     : '<i class="fa-solid fa-lock" aria-hidden="true"></i><span>Enable App Lock</span>';
+  renderAutoLockSettings();
   setAppLockBusy(appLockBusy);
 }
 
@@ -2621,6 +2675,7 @@ function normalizeAppSettings() {
     ),
   );
   delete appConfig.appSettings.feedbackEnabled;
+  normalizeAutoLockSettings();
 
   if (
     !appConfig.notificationSettings ||
@@ -16456,6 +16511,27 @@ settingsModal.addEventListener("click", (event) => {
   if (event.target === settingsModal && platformApi.isElectron) {
     settingsModal.classList.add("hidden");
   }
+});
+
+autoLockEnabled?.addEventListener("change", () => {
+  normalizeAutoLockSettings();
+  appConfig.security.autoLockEnabled = autoLockEnabled.checked;
+  renderAutoLockSettings();
+  void saveAppConfig();
+});
+
+autoLockDelay?.addEventListener("change", () => {
+  normalizeAutoLockSettings();
+  appConfig.security.autoLockSeconds = Number(autoLockDelay.value);
+  renderAutoLockSettings();
+  void saveAppConfig();
+});
+
+autoLockCountdownEnabled?.addEventListener("change", () => {
+  normalizeAutoLockSettings();
+  appConfig.security.showAutoLockCountdown = autoLockCountdownEnabled.checked;
+  renderAutoLockSettings();
+  void saveAppConfig();
 });
 
 appLockEnableButton?.addEventListener("click", async () => {

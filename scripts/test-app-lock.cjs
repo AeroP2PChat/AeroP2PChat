@@ -1,5 +1,6 @@
 const {
   createAppLockRecord,
+  getAutoLockRemainingSeconds,
   regenerateRecoveryCodes,
   replaceAppLockPin,
   validatePin,
@@ -14,6 +15,18 @@ function assert(value, message) {
 assert(!validatePin("123456").ok, "A sequential PIN was accepted.");
 assert(!validatePin("111111").ok, "A repeated PIN was accepted.");
 assert(validatePin("604927").ok, "A valid PIN was rejected.");
+assert(
+  getAutoLockRemainingSeconds(300, 45, 120) === 255,
+  "Auto-lock countdown did not use system idle time.",
+);
+assert(
+  getAutoLockRemainingSeconds(300, 500, 20) === 280,
+  "Auto-lock countdown ignored the post-unlock grace period.",
+);
+assert(
+  getAutoLockRemainingSeconds(60, 60, 60) === 0,
+  "Auto-lock countdown did not expire.",
+);
 
 const created = createAppLockRecord("604927", 1_000);
 assert(created.recoveryCodes.length === 10, "Recovery code count is incorrect.");

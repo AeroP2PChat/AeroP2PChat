@@ -59,6 +59,7 @@ const {
 const {
   assertAppLockRecord,
   createAppLockRecord,
+  getAutoLockRemainingSeconds,
   regenerateRecoveryCodes,
   replaceAppLockPin,
   verifyAppLockCredential,
@@ -102,6 +103,7 @@ const latestManifestUrl = `https://${releaseHost}${releasePathPrefix}latest/down
 const changelogGistId = "57f4fc6d54f13b545152c76312d8554f";
 const changelogGistApiUrl = `https://api.github.com/gists/${changelogGistId}`;
 const changelogCacheLifetimeMs = 5 * 60 * 1000;
+const allowedAutoLockSeconds = new Set([60, 300, 600, 900, 1800, 3600]);
 let changelogCache = null;
 const appDisplayName = projectConfig.app.name;
 const userConfigFileName = "config.aero";
@@ -182,6 +184,8 @@ let appLockRecord = null;
 let appUnlocked = false;
 let appStartupReady = false;
 let activeAppLockRequest = null;
+let appUnlockedAt = Date.now();
+let autoLockInterval = null;
 let toastWindow = null;
 let callHealthWindow = null;
 let callHealthPayload = null;
@@ -1468,6 +1472,19 @@ function normalizeConfig(config = {}) {
     config.appSettings.startHidden = false;
   }
 
+  const security =
+    config.security && typeof config.security === "object"
+      ? config.security
+      : {};
+  config.security = {
+    appLockRequired: security.appLockRequired === true,
+    autoLockEnabled: Boolean(security.autoLockEnabled),
+    autoLockSeconds: allowedAutoLockSeconds.has(security.autoLockSeconds)
+      ? security.autoLockSeconds
+      : 300,
+    showAutoLockCountdown: security.showAutoLockCountdown !== false,
+  };
+
   const audio = {
     ...getDefaultAudioSettings(),
     ...(config.audio && typeof config.audio === "object" ? config.audio : {}),
@@ -1785,6 +1802,7 @@ async function saveConfig(config, { allowAppLockMarkerChange = false } = {}) {
   }
   appConfig = normalizedConfig;
   await applyAutostartSettings();
+  if (appStartupReady) checkAutoLockTimer();
   return { ok: true, path: configPath };
 }
 
@@ -2026,6 +2044,62 @@ function requestAppLockAuthentication({
   });
 }
 
+function sendAutoLockCountdown(payload = { enabled: false }) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send("app-lock-countdown", payload);
+  }
+}
+
+function checkAutoLockTimer() {
+  const security = appConfig?.security;
+  if (
+    !appStartupReady ||
+    !appUnlocked ||
+    !appLockRecord?.enabled ||
+    !security?.autoLockEnabled ||
+    activeAppLockRequest
+  ) {
+    sendAutoLockCountdown();
+    return;
+  }
+
+  const duration = allowedAutoLockSeconds.has(security.autoLockSeconds)
+    ? security.autoLockSeconds
+    : 300;
+  const secondsSinceUnlock = Math.max(
+    0,
+    Math.floor((Date.now() - appUnlockedAt) / 1000),
+  );
+  let systemIdleSeconds = 0;
+  try {
+    systemIdleSeconds = powerMonitor.getSystemIdleTime();
+  } catch {
+    sendAutoLockCountdown();
+    return;
+  }
+  const remainingSeconds = getAutoLockRemainingSeconds(
+    duration,
+    systemIdleSeconds,
+    secondsSinceUnlock,
+  );
+  sendAutoLockCountdown({
+    enabled: security.showAutoLockCountdown !== false,
+    remainingSeconds,
+    durationSeconds: duration,
+  });
+
+  if (remainingSeconds === 0) {
+    void lockRunningApp("inactivity");
+  }
+}
+
+function startAutoLockMonitor() {
+  if (autoLockInterval) clearInterval(autoLockInterval);
+  autoLockInterval = setInterval(checkAutoLockTimer, 1000);
+  autoLockInterval.unref?.();
+  checkAutoLockTimer();
+}
+
 async function lockRunningApp(reason = "system-lock") {
   if (
     !appStartupReady ||
@@ -2037,6 +2111,9 @@ async function lockRunningApp(reason = "system-lock") {
   }
 
   appUnlocked = false;
+  sendAutoLockCountdown();
+  updateConnectionBadge();
+  updateTrayMenu();
   closeCallHealthWindow();
   if (toastWindow && !toastWindow.isDestroyed()) toastWindow.hide();
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.hide();
@@ -2051,6 +2128,9 @@ async function lockRunningApp(reason = "system-lock") {
   if (!authenticated) return;
 
   appUnlocked = true;
+  appUnlockedAt = Date.now();
+  updateConnectionBadge();
+  updateTrayMenu();
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.show();
     mainWindow.focus();
@@ -2230,19 +2310,26 @@ function getConnectionOverlayIcon() {
 }
 
 function updateConnectionBadge() {
+  const isLocked = Boolean(appLockRecord?.enabled && !appUnlocked);
   const isConnected = Boolean(trayState.hasActivePeerConnection);
 
   if (tray) {
-    tray.setImage(isConnected ? getConnectedTrayIcon() : windowIcon);
+    tray.setImage(
+      !isLocked && isConnected ? getConnectedTrayIcon() : windowIcon,
+    );
     tray.setToolTip(
-      isConnected ? `${appDisplayName} · Peer connected` : appDisplayName,
+      isLocked
+        ? `${appDisplayName} · Locked`
+        : isConnected
+          ? `${appDisplayName} · Peer connected`
+          : appDisplayName,
     );
   }
 
   if (process.platform === "win32" && mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.setOverlayIcon(
-      isConnected ? getConnectionOverlayIcon() : null,
-      isConnected ? "Peer connected" : "",
+      !isLocked && isConnected ? getConnectionOverlayIcon() : null,
+      !isLocked && isConnected ? "Peer connected" : "",
     );
   }
 }
@@ -2255,7 +2342,7 @@ function updateTrayMenu() {
   const menuIcon = windowIcon.resize({ width: 16, height: 16 });
 
   const sendTrayAction = (action, value) => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
+    if (appUnlocked && mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send("tray-action", { action, value });
     }
   };
@@ -2268,6 +2355,25 @@ function updateTrayMenu() {
     },
     { type: "separator" },
   ];
+
+  if (appLockRecord?.enabled && !appUnlocked) {
+    menuTemplate.push(
+      {
+        label: "Unlock Aero",
+        click: showMainWindow,
+      },
+      { type: "separator" },
+      {
+        label: "Quit",
+        click: () => {
+          forceQuit = true;
+          app.quit();
+        },
+      },
+    );
+    tray.setContextMenu(Menu.buildFromTemplate(menuTemplate));
+    return;
+  }
 
   if (trayState.peerId) {
     menuTemplate.push({
@@ -2784,6 +2890,10 @@ function closeCallHealthWindow() {
 }
 
 function sendNotificationAction(action) {
+  if (appLockRecord?.enabled && !appUnlocked) {
+    showMainWindow();
+    return;
+  }
   if (action?.openWindow) {
     showMainWindow();
   }
@@ -3711,7 +3821,10 @@ app.whenReady().then(async () => {
         retryAfterMs: result.retryAfterMs,
       };
     }
-    if (activeAppLockRequest.startup) appUnlocked = true;
+    if (activeAppLockRequest.startup) {
+      appUnlocked = true;
+      appUnlockedAt = Date.now();
+    }
     activeAppLockRequest.finish(true);
     if (appLockWindow && !appLockWindow.isDestroyed()) appLockWindow.close();
     return {
@@ -4297,9 +4410,11 @@ app.whenReady().then(async () => {
     if (!authenticated) return;
   }
   appUnlocked = true;
+  appUnlockedAt = Date.now();
   appStartupReady = true;
   createTray();
   createWindow({ hidden: shouldStartHidden() && !appLockRecord?.enabled });
+  startAutoLockMonitor();
 
   powerMonitor.on("shutdown", () => {
     notifyRendererShutdown("shutdown");

@@ -134,6 +134,20 @@ function getRetryDelayMs(failedAttempts) {
   return Math.min(15 * 60_000, 30_000 * 2 ** Math.min(failedAttempts - 5, 5));
 }
 
+function getAutoLockRemainingSeconds(
+  durationSeconds,
+  systemIdleSeconds,
+  secondsSinceUnlock,
+) {
+  const duration = Math.max(1, Math.floor(Number(durationSeconds) || 0));
+  const idle = Math.max(0, Math.floor(Number(systemIdleSeconds) || 0));
+  const unlockedFor = Math.max(
+    0,
+    Math.floor(Number(secondsSinceUnlock) || 0),
+  );
+  return Math.max(0, duration - Math.min(idle, unlockedFor));
+}
+
 function secureEqual(actual, expectedBase64) {
   const expected = Buffer.from(expectedBase64, "base64");
   return actual.length === expected.length && timingSafeEqual(actual, expected);
@@ -240,6 +254,7 @@ module.exports = {
   APP_LOCK_VERSION,
   assertAppLockRecord,
   createAppLockRecord,
+  getAutoLockRemainingSeconds,
   regenerateRecoveryCodes,
   replaceAppLockPin,
   validatePin,

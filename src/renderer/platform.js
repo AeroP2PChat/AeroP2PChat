@@ -349,6 +349,10 @@ export function createPlatformApi() {
       return electron?.getAppLockStatus?.() || { enabled: false, unsupported: true };
     },
 
+    onAppLockCountdown(callback) {
+      return electron?.onAppLockCountdown?.(callback) || null;
+    },
+
     async enableAppLock(details) {
       return electron?.enableAppLock?.(details) || { ok: false, unsupported: true };
     },
