@@ -703,7 +703,9 @@ function getCustomWallpaperPath(wallpaperId) {
 }
 
 function isCustomSoundRequest(event) {
-  return BrowserWindow.fromWebContents(event.sender) === mainWindow;
+  return (
+    appUnlocked && BrowserWindow.fromWebContents(event.sender) === mainWindow
+  );
 }
 
 function toCustomSoundBuffer(value) {
@@ -1748,8 +1750,19 @@ async function loadConfig() {
   return normalizeConfig({});
 }
 
-async function saveConfig(config) {
+async function saveConfig(config, { allowAppLockMarkerChange = false } = {}) {
   const normalizedConfig = normalizeConfig(config || {});
+  if (
+    !allowAppLockMarkerChange &&
+    (appLockRecord?.enabled || appConfig?.security?.appLockRequired === true)
+  ) {
+    normalizedConfig.security = {
+      ...(normalizedConfig.security && typeof normalizedConfig.security === "object"
+        ? normalizedConfig.security
+        : {}),
+      appLockRequired: true,
+    };
+  }
   const configPath = getConfigPath();
   const backupPath = getConfigBackupPath();
   const tempPath = `${configPath}.${process.pid}.tmp`;
@@ -1773,6 +1786,65 @@ async function saveConfig(config) {
   appConfig = normalizedConfig;
   await applyAutostartSettings();
   return { ok: true, path: configPath };
+}
+
+async function setConfigAppLockRequired(required) {
+  const nextConfig = {
+    ...appConfig,
+    security: {
+      ...(appConfig?.security && typeof appConfig.security === "object"
+        ? appConfig.security
+        : {}),
+      appLockRequired: Boolean(required),
+    },
+  };
+  return saveConfig(nextConfig, { allowAppLockMarkerChange: true });
+}
+
+async function saveAppLockRecoveryCodes(codesValue) {
+  const codes = Array.isArray(codesValue)
+    ? codesValue.map((code) => String(code || "").trim().toUpperCase())
+    : [];
+  if (
+    codes.length === 0 ||
+    codes.length > 10 ||
+    codes.length !== appLockRecord?.recovery?.hashes?.length ||
+    !codes.every((code) => /^[A-F0-9]{4}(?:-[A-F0-9]{4}){3}$/.test(code))
+  ) {
+    return { ok: false, error: "The recovery code list is invalid." };
+  }
+
+  const now = new Date();
+  const date = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0"),
+  ].join("-");
+  const fileName = `Aero-App-Lock-Recovery-Codes-${date}.txt`;
+  const result = await dialog.showSaveDialog(mainWindow, {
+    title: "Save App Lock recovery codes",
+    defaultPath: join(app.getPath("documents"), fileName),
+    buttonLabel: "Save codes",
+    filters: [{ name: "Text document", extensions: ["txt"] }],
+    properties: ["createDirectory", "showOverwriteConfirmation"],
+  });
+  if (result.canceled || !result.filePath) return { ok: false, canceled: true };
+
+  const contents = [
+    "Aero P2P Chat - App Lock Recovery Codes",
+    `Created: ${now.toLocaleString()}`,
+    "",
+    "Each code can be used once. Keep this file private.",
+    "",
+    ...codes,
+    "",
+  ].join("\n");
+  await writeFile(result.filePath, contents, {
+    encoding: "utf8",
+    mode: 0o600,
+  });
+  await chmod(result.filePath, 0o600).catch(() => {});
+  return { ok: true, fileName: basename(result.filePath) };
 }
 
 function getAutostartArgs() {
@@ -1952,6 +2024,39 @@ function requestAppLockAuthentication({
       securityWindow.loadFile(join(__dirname, "../renderer/security.html"), { query });
     }
   });
+}
+
+async function lockRunningApp(reason = "system-lock") {
+  if (
+    !appStartupReady ||
+    !appLockRecord?.enabled ||
+    !appUnlocked ||
+    activeAppLockRequest
+  ) {
+    return;
+  }
+
+  appUnlocked = false;
+  closeCallHealthWindow();
+  if (toastWindow && !toastWindow.isDestroyed()) toastWindow.hide();
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.hide();
+  recordDiagnosticEvent("security", "app-locked", { reason });
+
+  const authenticated = await requestAppLockAuthentication({
+    title: "Unlock Aero",
+    description: "Enter your App Lock PIN or a one-time recovery code to continue.",
+    cancelable: false,
+    startup: true,
+  });
+  if (!authenticated) return;
+
+  appUnlocked = true;
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.show();
+    mainWindow.focus();
+  } else {
+    createWindow({ hidden: false });
+  }
 }
 
 async function performFullAppReset() {
@@ -2740,6 +2845,9 @@ function showLinuxSystemNotification(payload) {
 }
 
 function showAppNotification(details = {}) {
+  if (appLockRecord?.enabled && !appUnlocked) {
+    return { ok: true, suppressed: true, locked: true };
+  }
   if (
     shouldSuppressNotification({
       showWhenFocused: Boolean(details.showWhenFocused),
@@ -3556,6 +3664,21 @@ app.whenReady().then(async () => {
   }
   appUnlocked = !appLockRecord;
   appConfig = await loadConfig();
+  if (!appLockRecord && appConfig?.security?.appLockRequired === true) {
+    dialog.showErrorBox(
+      `${appDisplayName} is locked`,
+      `App Lock was enabled, but its security record is missing. Aero will remain locked to protect local data.\n\nRestore security.aero or its backup in:\n${app.getPath("userData")}`,
+    );
+    forceQuit = true;
+    app.quit();
+    return;
+  }
+  if (
+    appLockRecord?.enabled &&
+    appConfig?.security?.appLockRequired !== true
+  ) {
+    await setConfigAppLockRequired(true);
+  }
   recordDiagnosticEvent("app", "ready", {
     locale: app.getLocale(),
     configLoaded: true,
@@ -3620,6 +3743,7 @@ app.whenReady().then(async () => {
     try {
       const created = createAppLockRecord(details.pin);
       await writeAppLockRecord(created.record);
+      await setConfigAppLockRequired(true);
       return { ok: true, recoveryCodes: created.recoveryCodes, ...getAppLockStatus() };
     } catch (error) {
       return { ok: false, error: error.message };
@@ -3659,6 +3783,16 @@ app.whenReady().then(async () => {
     await writeAppLockRecord(replacement.record);
     return { ok: true, recoveryCodes: replacement.recoveryCodes, ...getAppLockStatus() };
   });
+  ipcMain.handle("app-lock-save-recovery-codes", async (event, codes) => {
+    if (!isCustomSoundRequest(event) || !appLockRecord?.enabled) {
+      return { ok: false, error: "Unauthorized recovery code request." };
+    }
+    try {
+      return await saveAppLockRecoveryCodes(codes);
+    } catch (error) {
+      return { ok: false, error: error?.message || "Recovery codes could not be saved." };
+    }
+  });
   ipcMain.handle("app-lock-disable", async (event) => {
     if (!isCustomSoundRequest(event) || !appLockRecord) {
       return { ok: false, error: "App Lock is not enabled." };
@@ -3668,6 +3802,7 @@ app.whenReady().then(async () => {
       description: "Enter your PIN or a recovery code. Aero will no longer ask for it at startup.",
     });
     if (!authenticated) return { ok: false, canceled: true };
+    await setConfigAppLockRequired(false);
     await removeAppLockRecord();
     return { ok: true, ...getAppLockStatus() };
   });
@@ -3680,6 +3815,9 @@ app.whenReady().then(async () => {
     }
   });
   ipcMain.handle("install-update", async (event, details) => {
+    if (!isCustomSoundRequest(event)) {
+      return { ok: false, error: "Unauthorized update request." };
+    }
     const onProgress = (progress) => event.sender.send("update-progress", progress);
     recordDiagnosticEvent("update", "install-started", {
       platform: process.platform,
@@ -3741,7 +3879,10 @@ app.whenReady().then(async () => {
       details.data && typeof details.data === "object" ? details.data : {},
     );
   });
-  ipcMain.handle("download-update", async (_event, details = {}) => {
+  ipcMain.handle("download-update", async (event, details = {}) => {
+    if (!isCustomSoundRequest(event)) {
+      return { ok: false, error: "Unauthorized update request." };
+    }
     try {
       const result = await stageWindowsUpdateInstaller(
         details.url,
@@ -3753,7 +3894,8 @@ app.whenReady().then(async () => {
       return { ok: false, error: error?.message || "Update download failed." };
     }
   });
-  ipcMain.handle("open-microsoft-store-updates", async () => {
+  ipcMain.handle("open-microsoft-store-updates", async (event) => {
+    if (!isCustomSoundRequest(event)) return { ok: false };
     if (process.platform !== "win32" || !process.windowsStore) {
       return { ok: false };
     }
@@ -3763,7 +3905,10 @@ app.whenReady().then(async () => {
     await shell.openExternal(storeUri);
     return { ok: true };
   });
-  ipcMain.handle("fetch-update-manifest", async (_event, url) => {
+  ipcMain.handle("fetch-update-manifest", async (event, url) => {
+    if (!isCustomSoundRequest(event)) {
+      return { ok: false, error: "Unauthorized update request." };
+    }
     try {
       return { ok: true, text: await fetchUpdateManifest(url) };
     } catch (error) {
@@ -3790,9 +3935,17 @@ app.whenReady().then(async () => {
       };
     }
   });
-  ipcMain.handle("load-config", () => loadConfig());
-  ipcMain.handle("save-config", (_event, config) => saveConfig(config));
-  ipcMain.handle("get-config-path", () => getConfigPath());
+  ipcMain.handle("load-config", (event) =>
+    isCustomSoundRequest(event) ? loadConfig() : null,
+  );
+  ipcMain.handle("save-config", (event, config) =>
+    isCustomSoundRequest(event)
+      ? saveConfig(config)
+      : { ok: false, error: "Unauthorized config request." },
+  );
+  ipcMain.handle("get-config-path", (event) =>
+    isCustomSoundRequest(event) ? getConfigPath() : "",
+  );
   ipcMain.handle("open-call-health-window", (event) => {
     if (!isCustomSoundRequest(event)) return { ok: false };
     return openCallHealthWindow();
@@ -3818,12 +3971,17 @@ app.whenReady().then(async () => {
       return { color: "" };
     }
   });
-  ipcMain.handle("list-themes", async () => ({
-    path: getThemesPath(),
-    themes: await listThemes(),
-  }));
-  ipcMain.handle("open-themes-folder", () => openThemesFolder());
-  ipcMain.handle("load-theme", (_event, fileName) => loadTheme(fileName));
+  ipcMain.handle("list-themes", async (event) =>
+    isCustomSoundRequest(event)
+      ? { path: getThemesPath(), themes: await listThemes() }
+      : { path: "", themes: [] },
+  );
+  ipcMain.handle("open-themes-folder", (event) =>
+    isCustomSoundRequest(event) ? openThemesFolder() : { ok: false },
+  );
+  ipcMain.handle("load-theme", (event, fileName) =>
+    isCustomSoundRequest(event) ? loadTheme(fileName) : { ok: false },
+  );
   ipcMain.handle("choose-received-file-directory", (event) =>
     chooseReceivedFileDirectory(event),
   );
@@ -3994,14 +4152,16 @@ app.whenReady().then(async () => {
       return { ok: false, error: error?.message || "Wallpaper folder could not be opened." };
     }
   });
-  ipcMain.handle("fetch-online-theme", async (_event, url) => {
+  ipcMain.handle("fetch-online-theme", async (event, url) => {
+    if (!isCustomSoundRequest(event)) return { ok: false };
     try {
       return { ok: true, css: await fetchOnlineThemeCss(url) };
     } catch (error) {
       return { ok: false, error: error?.message || "Theme could not be loaded." };
     }
   });
-  ipcMain.on("update-tray-state", (_event, state) => {
+  ipcMain.on("update-tray-state", (event, state) => {
+    if (!isCustomSoundRequest(event)) return;
     const nextTrayState = { ...trayState, ...state };
     // The renderer synchronizes every 1.5 seconds. Replacing an open native
     // tray menu with an identical menu closes its submenus on Linux, so only
@@ -4016,7 +4176,7 @@ app.whenReady().then(async () => {
   });
   ipcMain.handle("get-screen-sources", async (event) => {
     const requestingWindow = BrowserWindow.fromWebContents(event.sender);
-    if (requestingWindow !== mainWindow) {
+    if (!appUnlocked || requestingWindow !== mainWindow) {
       return [];
     }
 
@@ -4049,19 +4209,27 @@ app.whenReady().then(async () => {
       appIcon: source.appIcon?.toDataURL?.() || "",
     }));
   });
-  ipcMain.handle("write-clipboard", (_event, text) => {
+  ipcMain.handle("write-clipboard", (event, text) => {
+    if (!isCustomSoundRequest(event)) return { ok: false };
     clipboard.writeText(String(text || ""));
     return { ok: true };
   });
-  ipcMain.handle("open-external-link", async (_event, rawUrl) => {
+  ipcMain.handle("open-external-link", async (event, rawUrl) => {
+    if (!isCustomSoundRequest(event)) return { ok: false };
     const url = normalizeExternalLinkUrl(rawUrl);
     if (!url) return { ok: false, error: "Invalid external link." };
     await shell.openExternal(url);
     return { ok: true };
   });
-  ipcMain.handle("get-notification-state", () => getAppNotificationState());
-  ipcMain.handle("show-app-notification", (_event, details) =>
-    showAppNotification(details),
+  ipcMain.handle("get-notification-state", (event) =>
+    isCustomSoundRequest(event)
+      ? getAppNotificationState()
+      : { appFocused: false, systemDnd: false },
+  );
+  ipcMain.handle("show-app-notification", (event, details) =>
+    isCustomSoundRequest(event)
+      ? showAppNotification(details)
+      : { ok: false, suppressed: true },
   );
   ipcMain.handle("close-app-notification", (_event, id) =>
     closeAppNotification(id),
@@ -4135,6 +4303,12 @@ app.whenReady().then(async () => {
 
   powerMonitor.on("shutdown", () => {
     notifyRendererShutdown("shutdown");
+  });
+  powerMonitor.on("lock-screen", () => {
+    void lockRunningApp("system-lock");
+  });
+  powerMonitor.on("suspend", () => {
+    void lockRunningApp("suspend");
   });
 
   app.on("activate", () => {

@@ -1435,19 +1435,19 @@
                     <span id="app-lock-state" class="security-state">Off</span>
                   </div>
                   <div id="app-lock-setup" class="app-lock-setup">
-                    <p class="settings-help">Use a 6–12 digit PIN. Repeated and sequential PINs are rejected.</p>
+                    <p class="app-lock-guidance">Use a 6–12 digit PIN. Repeated and sequential PINs are rejected.</p>
                     <div class="app-lock-pin-fields">
                       <label class="settings-field"><span>New PIN</span><input id="app-lock-pin" type="password" inputmode="numeric" autocomplete="new-password" minlength="6" maxlength="12" /></label>
                       <label class="settings-field"><span>Confirm PIN</span><input id="app-lock-pin-confirm" type="password" inputmode="numeric" autocomplete="new-password" minlength="6" maxlength="12" /></label>
                     </div>
-                    <button id="app-lock-enable" class="ghost-button" type="button"><i class="fa-solid fa-lock" aria-hidden="true"></i>Enable App Lock</button>
+                    <button id="app-lock-enable" class="ghost-button" type="button"><i class="fa-solid fa-lock" aria-hidden="true"></i><span>Enable App Lock</span></button>
                   </div>
                   <div id="app-lock-actions" class="app-lock-actions hidden">
                     <button id="app-lock-change-pin" class="ghost-button" type="button">Change PIN</button>
                     <button id="app-lock-new-codes" class="ghost-button" type="button">New recovery codes</button>
                     <button id="app-lock-disable" class="ghost-button danger" type="button">Turn off</button>
                   </div>
-                  <p id="app-lock-status-message" class="settings-help" aria-live="polite"></p>
+                  <p id="app-lock-status-message" class="app-lock-status-message" aria-live="polite"></p>
                 </article>
                 <article id="app-lock-recovery" class="security-card recovery-card hidden">
                   <div class="security-card-heading">
@@ -1457,10 +1457,11 @@
                   <pre id="app-lock-recovery-codes"></pre>
                   <div class="app-lock-actions">
                     <button id="app-lock-copy-codes" class="ghost-button" type="button"><i class="fa-regular fa-copy" aria-hidden="true"></i>Copy codes</button>
+                    <button id="app-lock-save-codes" class="ghost-button" type="button"><i class="fa-regular fa-floppy-disk" aria-hidden="true"></i>Save codes</button>
                     <button id="app-lock-hide-codes" class="ghost-button" type="button">I saved them</button>
                   </div>
                 </article>
-                <p class="security-limit-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>App Lock survives normal updates and reinstalls because it is stored in your OS user data. Someone with administrator access who deliberately deletes that data cannot be blocked by a purely local app.</span></p>
+                <p class="security-limit-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>App Lock stays enabled through normal updates and reinstalls. Deleting all local Aero data with administrator access cannot be prevented.</span></p>
               </div>
             </section>
 

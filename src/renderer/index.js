@@ -305,6 +305,7 @@ const appLockStatusMessage = document.querySelector("#app-lock-status-message");
 const appLockRecovery = document.querySelector("#app-lock-recovery");
 const appLockRecoveryCodes = document.querySelector("#app-lock-recovery-codes");
 const appLockCopyCodesButton = document.querySelector("#app-lock-copy-codes");
+const appLockSaveCodesButton = document.querySelector("#app-lock-save-codes");
 const appLockHideCodesButton = document.querySelector("#app-lock-hide-codes");
 const profileModal = document.querySelector("#profile-modal");
 const profileClose = document.querySelector("#profile-close");
@@ -1250,8 +1251,8 @@ function renderAppLockSettings() {
   appLockSetup.classList.toggle("hidden", enabled && !appLockPinChangeMode);
   appLockActions.classList.toggle("hidden", !enabled || appLockPinChangeMode);
   appLockEnableButton.innerHTML = appLockPinChangeMode
-    ? '<i class="fa-solid fa-key" aria-hidden="true"></i>Save new PIN'
-    : '<i class="fa-solid fa-lock" aria-hidden="true"></i>Enable App Lock';
+    ? '<i class="fa-solid fa-key" aria-hidden="true"></i><span>Save new PIN</span>'
+    : '<i class="fa-solid fa-lock" aria-hidden="true"></i><span>Enable App Lock</span>';
   setAppLockBusy(appLockBusy);
 }
 
@@ -16530,7 +16531,7 @@ appLockDisableButton?.addEventListener("click", async () => {
     appLockPinChangeMode = false;
     appLockRecovery.classList.add("hidden");
     renderAppLockSettings();
-    appLockStatusMessage.textContent = "App Lock is off.";
+    appLockStatusMessage.textContent = "";
   } finally {
     setAppLockBusy(false);
   }
@@ -16539,6 +16540,23 @@ appLockDisableButton?.addEventListener("click", async () => {
 appLockCopyCodesButton?.addEventListener("click", async () => {
   await platformApi.writeClipboard(appLockRecoveryCodes.textContent);
   appLockStatusMessage.textContent = "Recovery codes copied. Store them somewhere private.";
+});
+
+appLockSaveCodesButton?.addEventListener("click", async () => {
+  const codes = appLockRecoveryCodes.textContent
+    .split(/\r?\n/)
+    .map((code) => code.trim())
+    .filter(Boolean);
+  appLockSaveCodesButton.disabled = true;
+  try {
+    const result = await platformApi.saveAppLockRecoveryCodes(codes);
+    if (result?.canceled) return;
+    appLockStatusMessage.textContent = result?.ok
+      ? `Recovery codes saved as ${result.fileName}.`
+      : result?.error || "Recovery codes could not be saved.";
+  } finally {
+    appLockSaveCodesButton.disabled = false;
+  }
 });
 
 appLockHideCodesButton?.addEventListener("click", () => {

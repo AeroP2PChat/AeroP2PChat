@@ -7,7 +7,8 @@ const {
 
 const APP_LOCK_VERSION = 1;
 const RECOVERY_CODE_COUNT = 10;
-const SCRYPT_OPTIONS = { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
+const LEGACY_SCRYPT_OPTIONS = { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
+const SCRYPT_OPTIONS = { N: 32768, r: 8, p: 3, maxmem: 64 * 1024 * 1024 };
 
 function normalizePin(value) {
   return String(value ?? "").trim();
@@ -28,8 +29,22 @@ function normalizeRecoveryCode(value) {
   return String(value ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
 }
 
-function hashPin(pin, salt) {
-  return scryptSync(pin, Buffer.from(salt, "base64"), 32, SCRYPT_OPTIONS);
+function getPinScryptOptions(pinRecord = {}) {
+  const kdf = pinRecord.kdf;
+  if (kdf === undefined) return LEGACY_SCRYPT_OPTIONS;
+  if (
+    kdf?.name !== "scrypt" ||
+    kdf.N !== SCRYPT_OPTIONS.N ||
+    kdf.r !== SCRYPT_OPTIONS.r ||
+    kdf.p !== SCRYPT_OPTIONS.p
+  ) {
+    throw new Error("The App Lock PIN parameters are invalid.");
+  }
+  return SCRYPT_OPTIONS;
+}
+
+function hashPin(pin, salt, options = SCRYPT_OPTIONS) {
+  return scryptSync(pin, Buffer.from(salt, "base64"), 32, options);
 }
 
 function hashRecoveryCode(code, salt) {
@@ -66,6 +81,12 @@ function createAppLockRecord(pinValue, now = Date.now()) {
       pin: {
         salt: pinSalt,
         hash: hashPin(validated.pin, pinSalt).toString("base64"),
+        kdf: {
+          name: "scrypt",
+          N: SCRYPT_OPTIONS.N,
+          r: SCRYPT_OPTIONS.r,
+          p: SCRYPT_OPTIONS.p,
+        },
       },
       recovery: createRecoveryRecord(recoveryCodes),
       failedAttempts: 0,
@@ -86,6 +107,22 @@ function assertAppLockRecord(record) {
     typeof record.pin?.hash !== "string" ||
     typeof record.recovery?.salt !== "string" ||
     !Array.isArray(record.recovery?.hashes)
+  ) {
+    throw new Error("The App Lock security record is invalid.");
+  }
+  getPinScryptOptions(record.pin);
+  const validBase64Bytes = (value, bytes) => {
+    if (typeof value !== "string" || !/^[A-Za-z0-9+/]+={0,2}$/.test(value)) {
+      return false;
+    }
+    return Buffer.from(value, "base64").length === bytes;
+  };
+  if (
+    !validBase64Bytes(record.pin.salt, 16) ||
+    !validBase64Bytes(record.pin.hash, 32) ||
+    !validBase64Bytes(record.recovery.salt, 16) ||
+    record.recovery.hashes.length > RECOVERY_CODE_COUNT ||
+    !record.recovery.hashes.every((hash) => validBase64Bytes(hash, 32))
   ) {
     throw new Error("The App Lock security record is invalid.");
   }
@@ -117,8 +154,13 @@ function verifyAppLockCredential(recordValue, credentialValue, now = Date.now())
   const credential = String(credentialValue ?? "").trim();
   let recoveryIndex = -1;
   let matched = false;
+  let matchedPin = false;
   if (/^\d{6,12}$/.test(credential)) {
-    matched = secureEqual(hashPin(credential, record.pin.salt), record.pin.hash);
+    matchedPin = secureEqual(
+      hashPin(credential, record.pin.salt, getPinScryptOptions(record.pin)),
+      record.pin.hash,
+    );
+    matched = matchedPin;
   } else {
     const recoveryHash = hashRecoveryCode(credential, record.recovery.salt);
     recoveryIndex = record.recovery.hashes.findIndex((hash) =>
@@ -130,12 +172,27 @@ function verifyAppLockCredential(recordValue, credentialValue, now = Date.now())
   if (matched) {
     const recoveryHashes = [...record.recovery.hashes];
     if (recoveryIndex >= 0) recoveryHashes.splice(recoveryIndex, 1);
+    let pin = record.pin;
+    if (matchedPin && record.pin.kdf === undefined) {
+      const salt = randomBytes(16).toString("base64");
+      pin = {
+        salt,
+        hash: hashPin(credential, salt).toString("base64"),
+        kdf: {
+          name: "scrypt",
+          N: SCRYPT_OPTIONS.N,
+          r: SCRYPT_OPTIONS.r,
+          p: SCRYPT_OPTIONS.p,
+        },
+      };
+    }
     return {
       ok: true,
       usedRecoveryCode: recoveryIndex >= 0,
       remainingRecoveryCodes: recoveryHashes.length,
       record: {
         ...record,
+        pin,
         recovery: { ...record.recovery, hashes: recoveryHashes },
         failedAttempts: 0,
         blockedUntil: 0,

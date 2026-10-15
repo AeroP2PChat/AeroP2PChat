@@ -5,6 +5,7 @@ const {
   validatePin,
   verifyAppLockCredential,
 } = require("../src/main/app-lock");
+const { scryptSync } = require("node:crypto");
 
 function assert(value, message) {
   if (!value) throw new Error(message);
@@ -24,6 +25,21 @@ assert(
 
 let result = verifyAppLockCredential(created.record, "604927", 2_000);
 assert(result.ok && !result.usedRecoveryCode, "Correct PIN was rejected.");
+
+const legacyRecord = JSON.parse(JSON.stringify(created.record));
+delete legacyRecord.pin.kdf;
+legacyRecord.pin.hash = scryptSync(
+  "604927",
+  Buffer.from(legacyRecord.pin.salt, "base64"),
+  32,
+  { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 },
+).toString("base64");
+const migratedLegacy = verifyAppLockCredential(legacyRecord, "604927", 2_500);
+assert(migratedLegacy.ok, "A legacy App Lock PIN was rejected.");
+assert(
+  migratedLegacy.record.pin.kdf?.p === 3,
+  "A legacy App Lock PIN was not upgraded after authentication.",
+);
 
 result = verifyAppLockCredential(result.record, created.recoveryCodes[0], 3_000);
 assert(result.ok && result.usedRecoveryCode, "Recovery code was rejected.");

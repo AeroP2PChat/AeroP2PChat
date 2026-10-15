@@ -361,6 +361,13 @@ export function createPlatformApi() {
       return electron?.regenerateAppLockCodes?.() || { ok: false, unsupported: true };
     },
 
+    async saveAppLockRecoveryCodes(codes) {
+      return electron?.saveAppLockRecoveryCodes?.(codes) || {
+        ok: false,
+        unsupported: true,
+      };
+    },
+
     async disableAppLock() {
       return electron?.disableAppLock?.() || { ok: false, unsupported: true };
     },

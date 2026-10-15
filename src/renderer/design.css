@@ -4280,8 +4280,18 @@ body.reduce-motion *::after {
 }
 .app-lock-setup {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   padding-top: 2px;
+}
+.app-lock-guidance,
+.app-lock-status-message {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+.app-lock-status-message:empty {
+  display: none;
 }
 .app-lock-pin-fields {
   display: grid;
@@ -4296,6 +4306,25 @@ body.reduce-motion *::after {
 .app-lock-actions button,
 #app-lock-enable {
   min-height: 34px;
+}
+.app-lock-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+#app-lock-enable {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: end;
+  gap: 7px;
+  min-width: 164px;
+  padding-inline: 15px;
+}
+#app-lock-enable i {
+  flex: 0 0 auto;
+  font-size: 11px;
 }
 .recovery-card pre {
   margin: 0;
@@ -4314,9 +4343,10 @@ body.reduce-motion *::after {
   display: flex;
   gap: 8px;
   margin: 0;
-  padding: 10px 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  background: transparent;
   color: var(--muted);
   font-size: 10px;
   line-height: 1.45;
@@ -4414,6 +4444,10 @@ body.reduce-motion *::after {
   }
   .app-lock-pin-fields {
     grid-template-columns: minmax(0, 1fr);
+  }
+  #app-lock-enable {
+    justify-self: stretch;
+    width: 100%;
   }
   .recovery-card pre {
     columns: 1;

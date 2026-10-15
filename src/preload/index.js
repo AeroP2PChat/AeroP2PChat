@@ -84,6 +84,8 @@ contextBridge.exposeInMainWorld("aeroChat", {
   enableAppLock: (details) => ipcRenderer.invoke("app-lock-enable", details),
   changeAppLockPin: (details) => ipcRenderer.invoke("app-lock-change-pin", details),
   regenerateAppLockCodes: () => ipcRenderer.invoke("app-lock-regenerate-codes"),
+  saveAppLockRecoveryCodes: (codes) =>
+    ipcRenderer.invoke("app-lock-save-recovery-codes", codes),
   disableAppLock: () => ipcRenderer.invoke("app-lock-disable"),
   fullAppReset: () => ipcRenderer.invoke("full-app-reset"),
   getSystemAccentColor: () => ipcRenderer.invoke("get-system-accent-color"),
