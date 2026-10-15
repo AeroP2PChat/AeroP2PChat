@@ -45,7 +45,7 @@ const {
 const { createHash, randomBytes } = require("node:crypto");
 const { get } = require("node:https");
 const { tmpdir } = require("node:os");
-const { basename, dirname, extname, isAbsolute, join, resolve } = require("node:path");
+const { basename, dirname, extname, isAbsolute, join, resolve, sep } = require("node:path");
 const { execFileSync, spawn } = require("node:child_process");
 const { format } = require("node:util");
 const { pathToFileURL } = require("node:url");
@@ -56,6 +56,14 @@ const {
   encryptAuthenticatedConfig,
   isAuthenticatedConfig,
 } = require("./config-crypto");
+const {
+  assertAppLockRecord,
+  createAppLockRecord,
+  regenerateRecoveryCodes,
+  replaceAppLockPin,
+  verifyAppLockCredential,
+} = require("./app-lock");
+const { normalizeChangelogGist } = require("./changelog-gist");
 const projectConfig = __PROJECT_CONFIG__;
 
 const packagedWindowIconPath = join(
@@ -91,11 +99,14 @@ if (connectionBadgeImage.isEmpty() && app.isPackaged) {
 const releaseHost = "github.com";
 const releasePathPrefix = `/${projectConfig.repo}/releases/`;
 const latestManifestUrl = `https://${releaseHost}${releasePathPrefix}latest/download/latest.yml`;
-const changelogFeedUrl =
-  "https://zorblock.featurebase.app/api/v1/changelog/feed.rss";
+const changelogGistId = "57f4fc6d54f13b545152c76312d8554f";
+const changelogGistApiUrl = `https://api.github.com/gists/${changelogGistId}`;
+const changelogCacheLifetimeMs = 5 * 60 * 1000;
+let changelogCache = null;
 const appDisplayName = projectConfig.app.name;
 const userConfigFileName = "config.aero";
 const userConfigKeyFileName = "config.key";
+const appLockFileName = "security.aero";
 const themesDirectoryName = "Themes";
 const maxThemeFileSize = 2 * 1024 * 1024;
 const customSoundDirectoryName = "Sounds";
@@ -166,6 +177,11 @@ const bootAccentPresets = {
   amber: "#ad721c",
 };
 let mainWindow = null;
+let appLockWindow = null;
+let appLockRecord = null;
+let appUnlocked = false;
+let appStartupReady = false;
+let activeAppLockRequest = null;
 let toastWindow = null;
 let callHealthWindow = null;
 let callHealthPayload = null;
@@ -585,10 +601,6 @@ if (!allowMultipleInstances) {
     app.quit();
   } else {
     app.on("second-instance", () => {
-      if (!mainWindow) {
-        return;
-      }
-
       showMainWindow();
     });
   }
@@ -596,6 +608,74 @@ if (!allowMultipleInstances) {
 
 function getConfigPath() {
   return join(app.getPath("userData"), userConfigFileName);
+}
+
+function getAppLockPath() {
+  return join(app.getPath("userData"), appLockFileName);
+}
+
+function getAppLockBackupPath() {
+  return `${getAppLockPath()}.bak`;
+}
+
+async function loadAppLockRecord() {
+  let lastError = null;
+  for (const securityPath of [getAppLockPath(), getAppLockBackupPath()]) {
+    try {
+      const record = assertAppLockRecord(
+        JSON.parse(await readFile(securityPath, "utf8")),
+      );
+      if (securityPath === getAppLockBackupPath()) {
+        await writeAppLockRecord(record);
+        await copyFile(getAppLockPath(), getAppLockBackupPath());
+        await chmod(getAppLockBackupPath(), 0o600).catch(() => {});
+      }
+      return record;
+    } catch (error) {
+      if (error.code !== "ENOENT") {
+        lastError = error;
+      }
+    }
+  }
+  if (lastError) {
+    throw new Error(
+      "App Lock data is damaged. Aero will stay locked to avoid exposing private data.",
+      { cause: lastError },
+    );
+  }
+  return null;
+}
+
+async function writeAppLockRecord(recordValue) {
+  const record = assertAppLockRecord(recordValue);
+  const securityPath = getAppLockPath();
+  const backupPath = getAppLockBackupPath();
+  const temporaryPath = `${securityPath}.${process.pid}.tmp`;
+  await mkdir(app.getPath("userData"), { recursive: true });
+  await writeFile(temporaryPath, `${JSON.stringify(record, null, 2)}\n`, {
+    encoding: "utf8",
+    mode: 0o600,
+  });
+  let hadExistingRecord = false;
+  try {
+    await copyFile(securityPath, backupPath);
+    hadExistingRecord = true;
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+  await rename(temporaryPath, securityPath);
+  await chmod(securityPath, 0o600).catch(() => {});
+  if (!hadExistingRecord) await copyFile(securityPath, backupPath);
+  await chmod(backupPath, 0o600).catch(() => {});
+  appLockRecord = record;
+}
+
+async function removeAppLockRecord() {
+  await Promise.all([
+    rm(getAppLockPath(), { force: true }),
+    rm(getAppLockBackupPath(), { force: true }),
+  ]);
+  appLockRecord = null;
 }
 
 function getThemesPath() {
@@ -1295,7 +1375,6 @@ function getDefaultAppSettings() {
     fileDownloadMode: "ask",
     fileDownloadDirectory: "",
     fileDownloadDirectoryLabel: "",
-    feedbackEnabled: true,
     sidebarWidth: defaultSidebarWidth,
     theme: "system",
     customTheme: "",
@@ -1353,7 +1432,6 @@ function normalizeConfig(config = {}) {
       typeof settings.fileDownloadDirectoryLabel === "string"
         ? settings.fileDownloadDirectoryLabel.slice(0, 240)
         : "",
-    feedbackEnabled: settings.feedbackEnabled !== false,
     presenceStatus: ["online", "dnd", "offline"].includes(
       settings.presenceStatus,
     )
@@ -1382,6 +1460,7 @@ function normalizeConfig(config = {}) {
   // This is a temporary dialog state, not a user preference. Remove the
   // legacy persisted value when an existing configuration is next saved.
   delete config.appSettings.hideOwnId;
+  delete config.appSettings.feedbackEnabled;
 
   if (!config.appSettings.autostart) {
     config.appSettings.startHidden = false;
@@ -1754,6 +1833,20 @@ function shouldStartHidden() {
 }
 
 function showMainWindow() {
+  if (!app.isReady()) return;
+  if (!appStartupReady) {
+    appLockWindow?.show();
+    appLockWindow?.focus();
+    return;
+  }
+  if (!appUnlocked && appLockRecord) {
+    if (appLockWindow && !appLockWindow.isDestroyed()) {
+      if (appLockWindow.isMinimized()) appLockWindow.restore();
+      appLockWindow.show();
+      appLockWindow.focus();
+    }
+    return;
+  }
   if (!mainWindow) {
     createWindow({ hidden: false });
     return;
@@ -1764,6 +1857,147 @@ function showMainWindow() {
   }
   mainWindow.show();
   mainWindow.focus();
+}
+
+function getAppLockStatus() {
+  return {
+    enabled: Boolean(appLockRecord?.enabled),
+    remainingRecoveryCodes: appLockRecord?.recovery?.hashes?.length || 0,
+  };
+}
+
+function requestAppLockAuthentication({
+  title = "Confirm with App Lock",
+  description = "Enter your PIN or a one-time recovery code to continue.",
+  cancelable = true,
+  startup = false,
+} = {}) {
+  if (!appLockRecord?.enabled) return Promise.resolve(true);
+  if (activeAppLockRequest) {
+    appLockWindow?.show();
+    appLockWindow?.focus();
+    return Promise.resolve(false);
+  }
+
+  return new Promise((resolveAuthentication) => {
+    let settled = false;
+    const finish = (authenticated) => {
+      if (settled) return;
+      settled = true;
+      activeAppLockRequest = null;
+      resolveAuthentication(authenticated);
+    };
+    activeAppLockRequest = { finish, startup };
+    const parent = !startup && mainWindow && !mainWindow.isDestroyed()
+      ? mainWindow
+      : undefined;
+    const configuredTheme = appConfig?.appSettings?.theme || "system";
+    const securityTheme = configuredTheme === "system"
+      ? nativeTheme.shouldUseDarkColors
+        ? "dark"
+        : "light"
+      : ["dark", "ultra-dark"].includes(configuredTheme)
+        ? configuredTheme
+        : "light";
+    const securityWindow = new BrowserWindow({
+      width: 420,
+      height: 350,
+      minWidth: 420,
+      minHeight: 350,
+      resizable: false,
+      maximizable: false,
+      fullscreenable: false,
+      frame: false,
+      thickFrame: true,
+      title: `${appDisplayName} App Lock`,
+      icon: windowIcon,
+      backgroundColor: securityTheme === "light" ? "#edf2f5" : "#000000",
+      show: false,
+      alwaysOnTop: true,
+      modal: Boolean(parent),
+      parent,
+      webPreferences: {
+        preload: join(__dirname, "../preload/security.js"),
+        contextIsolation: true,
+        sandbox: true,
+        nodeIntegration: false,
+      },
+    });
+    appLockWindow = securityWindow;
+    securityWindow.setMenuBarVisibility(false);
+    securityWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+    securityWindow.once("ready-to-show", () => securityWindow.show());
+    securityWindow.on("closed", () => {
+      if (appLockWindow === securityWindow) appLockWindow = null;
+      finish(false);
+      if (startup && !appUnlocked) {
+        forceQuit = true;
+        app.quit();
+      }
+    });
+
+    const query = {
+      title,
+      description,
+      cancel: cancelable ? "1" : "0",
+      theme: securityTheme,
+    };
+    if (process.env.ELECTRON_RENDERER_URL) {
+      const securityUrl = new URL("security.html", process.env.ELECTRON_RENDERER_URL);
+      for (const [key, value] of Object.entries(query)) {
+        securityUrl.searchParams.set(key, value);
+      }
+      securityWindow.loadURL(securityUrl.toString());
+    } else {
+      securityWindow.loadFile(join(__dirname, "../renderer/security.html"), { query });
+    }
+  });
+}
+
+async function performFullAppReset() {
+  if (appLockRecord?.enabled) {
+    const authenticated = await requestAppLockAuthentication({
+      title: "Authorize full reset",
+      description: "Enter your PIN or a recovery code. This reset permanently removes local Aero data and App Lock.",
+    });
+    if (!authenticated) return { ok: false, canceled: true };
+  }
+
+  await session.defaultSession.clearStorageData();
+  closeCallHealthWindow();
+  if (toastWindow && !toastWindow.isDestroyed()) toastWindow.destroy();
+  const resetTargets = [
+    getConfigPath(),
+    getConfigBackupPath(),
+    getConfigKeyPath(),
+    getConfigKeyBackupPath(),
+    getAppLockPath(),
+    getAppLockBackupPath(),
+    getThemesPath(),
+    getCustomSoundsPath(),
+    getCustomWallpapersPath(),
+    join(app.getPath("userData"), ".temp"),
+  ];
+  const userDataRoot = resolve(app.getPath("userData"));
+  for (const targetPath of resetTargets) {
+    const resolvedTarget = resolve(targetPath);
+    if (
+      resolvedTarget === userDataRoot ||
+      !resolvedTarget.startsWith(`${userDataRoot}${sep}`)
+    ) {
+      throw new Error("Refused to reset a path outside Aero user data.");
+    }
+  }
+  await Promise.all(
+    resetTargets.map((targetPath) => rm(targetPath, { recursive: true, force: true })),
+  );
+  appLockRecord = null;
+  cachedConfigKey = null;
+  unreadableConfigKey = false;
+  forceQuit = true;
+  app.relaunch();
+  app.quit();
+  return { ok: true };
 }
 
 function hasTrayStateChanged(nextState) {
@@ -2117,7 +2351,7 @@ function updateTrayMenu() {
           },
           {
             label: "Clear App Data & Restart",
-            click: () => {
+            click: async () => {
               const { dialog } = require("electron");
               const response = dialog.showMessageBoxSync({
                 type: "warning",
@@ -2129,10 +2363,7 @@ function updateTrayMenu() {
               });
 
               if (response === 0) {
-                session.defaultSession.clearStorageData().then(() => {
-                  app.relaunch();
-                  app.quit();
-                });
+                await performFullAppReset();
               }
             },
           },
@@ -2741,9 +2972,9 @@ function assertTrustedManifestUrl(rawUrl) {
   return url;
 }
 
-function fetchText(url, redirects = 0) {
+function fetchText(url, redirects = 0, options = {}) {
   return new Promise((resolve, reject) => {
-    const request = get(url, (response) => {
+    const request = get(url, { headers: options.headers || {} }, (response) => {
       if (
         [301, 302, 303, 307, 308].includes(response.statusCode) &&
         response.headers.location
@@ -2753,7 +2984,7 @@ function fetchText(url, redirects = 0) {
           reject(new Error("Too many update manifest redirects."));
           return;
         }
-        fetchText(new URL(response.headers.location, url), redirects + 1).then(
+        fetchText(new URL(response.headers.location, url), redirects + 1, options).then(
           resolve,
           reject,
         );
@@ -2772,6 +3003,9 @@ function fetchText(url, redirects = 0) {
       let text = "";
       response.on("data", (chunk) => {
         text += chunk;
+        if (Buffer.byteLength(text, "utf8") > (options.maxBytes || 4 * 1024 * 1024)) {
+          request.destroy(new Error("Response is too large."));
+        }
       });
       response.on("end", () => resolve(text));
     });
@@ -2789,11 +3023,11 @@ function wait(ms) {
   });
 }
 
-async function fetchTextWithRetry(url, attempts = 2) {
+async function fetchTextWithRetry(url, attempts = 2, options = {}) {
   let lastError = null;
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
-      return await fetchText(url);
+      return await fetchText(url, 0, options);
     } catch (error) {
       lastError = error;
       if (attempt < attempts) {
@@ -2832,8 +3066,30 @@ function fetchUpdateManifest(rawUrl) {
   return fetchTextWithRetry(url);
 }
 
-function fetchChangelogFeed() {
-  return fetchTextWithRetry(new URL(changelogFeedUrl));
+async function fetchChangelogGist({ force = false } = {}) {
+  if (
+    !force &&
+    changelogCache &&
+    Date.now() - changelogCache.fetchedAt < changelogCacheLifetimeMs
+  ) {
+    return changelogCache.data;
+  }
+
+  const responseText = await fetchTextWithRetry(
+    new URL(changelogGistApiUrl),
+    2,
+    {
+      maxBytes: 2 * 1024 * 1024,
+      headers: {
+        Accept: "application/vnd.github+json",
+        "User-Agent": `${projectConfig.app.packageName}/${app.getVersion()}`,
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+    },
+  );
+  const data = normalizeChangelogGist(JSON.parse(responseText));
+  changelogCache = { data, fetchedAt: Date.now() };
+  return data;
 }
 
 function downloadFile(url, targetPath, onProgress = () => {}, redirects = 0) {
@@ -3197,7 +3453,6 @@ function createWindow({ hidden = false } = {}) {
     const sourceId = String(details.sourceId || "");
     if (
       sourceId.includes("/@vite/") ||
-      sourceId.includes("cdn.userjot.com") ||
       sourceId.startsWith("node:electron/")
     ) {
       return;
@@ -3288,6 +3543,18 @@ app.whenReady().then(async () => {
   await cleanupCompletedUpdateSetups();
   await migratePackagedUserData();
   await cleanupIncomingTempDirectory();
+  try {
+    appLockRecord = await loadAppLockRecord();
+  } catch (error) {
+    dialog.showErrorBox(
+      `${appDisplayName} is locked`,
+      `${error.message}\n\nRestore the security.aero backup in:\n${app.getPath("userData")}`,
+    );
+    forceQuit = true;
+    app.quit();
+    return;
+  }
+  appUnlocked = !appLockRecord;
   appConfig = await loadConfig();
   recordDiagnosticEvent("app", "ready", {
     locale: app.getLocale(),
@@ -3297,7 +3564,6 @@ app.whenReady().then(async () => {
     theme: appConfig.appSettings?.theme || "system",
   });
   await applyAutostartSettings();
-  createTray();
 
   session.defaultSession.setPermissionRequestHandler(
     (webContents, permission, callback) => {
@@ -3305,6 +3571,114 @@ app.whenReady().then(async () => {
       callback(requestingWindow === mainWindow && permission === "media");
     },
   );
+  ipcMain.handle("app-lock-authenticate", async (event, credential) => {
+    if (
+      BrowserWindow.fromWebContents(event.sender) !== appLockWindow ||
+      !activeAppLockRequest ||
+      !appLockRecord
+    ) {
+      return { ok: false, error: "Authentication request is no longer active." };
+    }
+    const result = verifyAppLockCredential(appLockRecord, credential);
+    await writeAppLockRecord(result.record);
+    if (!result.ok) {
+      return {
+        ok: false,
+        blocked: result.blocked,
+        retryAfterMs: result.retryAfterMs,
+      };
+    }
+    if (activeAppLockRequest.startup) appUnlocked = true;
+    activeAppLockRequest.finish(true);
+    if (appLockWindow && !appLockWindow.isDestroyed()) appLockWindow.close();
+    return {
+      ok: true,
+      usedRecoveryCode: result.usedRecoveryCode,
+      remainingRecoveryCodes: result.remainingRecoveryCodes,
+    };
+  });
+  ipcMain.on("app-lock-cancel", (event) => {
+    if (BrowserWindow.fromWebContents(event.sender) !== appLockWindow) return;
+    activeAppLockRequest?.finish(false);
+    appLockWindow?.close();
+  });
+  ipcMain.handle("app-lock-window-control", (event, action) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if (win !== appLockWindow) return { ok: false };
+    if (action === "minimize") win.minimize();
+    return { ok: true };
+  });
+  ipcMain.handle("app-lock-status", (event) =>
+    isCustomSoundRequest(event) ? getAppLockStatus() : { enabled: false },
+  );
+  ipcMain.handle("app-lock-enable", async (event, details = {}) => {
+    if (!isCustomSoundRequest(event)) return { ok: false, error: "Unauthorized request." };
+    if (appLockRecord?.enabled) return { ok: false, error: "App Lock is already enabled." };
+    if (String(details.pin || "") !== String(details.confirmPin || "")) {
+      return { ok: false, error: "The PIN entries do not match." };
+    }
+    try {
+      const created = createAppLockRecord(details.pin);
+      await writeAppLockRecord(created.record);
+      return { ok: true, recoveryCodes: created.recoveryCodes, ...getAppLockStatus() };
+    } catch (error) {
+      return { ok: false, error: error.message };
+    }
+  });
+  ipcMain.handle("app-lock-change-pin", async (event, details = {}) => {
+    if (!isCustomSoundRequest(event) || !appLockRecord) {
+      return { ok: false, error: "App Lock is not enabled." };
+    }
+    if (String(details.pin || "") !== String(details.confirmPin || "")) {
+      return { ok: false, error: "The PIN entries do not match." };
+    }
+    let replacement;
+    try {
+      replacement = replaceAppLockPin(appLockRecord, details.pin);
+    } catch (error) {
+      return { ok: false, error: error.message };
+    }
+    const authenticated = await requestAppLockAuthentication({
+      title: "Authorize PIN change",
+      description: "Enter your current PIN or a recovery code before replacing the App Lock PIN.",
+    });
+    if (!authenticated) return { ok: false, canceled: true };
+    await writeAppLockRecord(replacement.record);
+    return { ok: true, recoveryCodes: replacement.recoveryCodes, ...getAppLockStatus() };
+  });
+  ipcMain.handle("app-lock-regenerate-codes", async (event) => {
+    if (!isCustomSoundRequest(event) || !appLockRecord) {
+      return { ok: false, error: "App Lock is not enabled." };
+    }
+    const authenticated = await requestAppLockAuthentication({
+      title: "Replace recovery codes",
+      description: "Enter your PIN or a current recovery code. All previous recovery codes will stop working.",
+    });
+    if (!authenticated) return { ok: false, canceled: true };
+    const replacement = regenerateRecoveryCodes(appLockRecord);
+    await writeAppLockRecord(replacement.record);
+    return { ok: true, recoveryCodes: replacement.recoveryCodes, ...getAppLockStatus() };
+  });
+  ipcMain.handle("app-lock-disable", async (event) => {
+    if (!isCustomSoundRequest(event) || !appLockRecord) {
+      return { ok: false, error: "App Lock is not enabled." };
+    }
+    const authenticated = await requestAppLockAuthentication({
+      title: "Turn off App Lock",
+      description: "Enter your PIN or a recovery code. Aero will no longer ask for it at startup.",
+    });
+    if (!authenticated) return { ok: false, canceled: true };
+    await removeAppLockRecord();
+    return { ok: true, ...getAppLockStatus() };
+  });
+  ipcMain.handle("full-app-reset", async (event) => {
+    if (!isCustomSoundRequest(event)) return { ok: false, error: "Unauthorized request." };
+    try {
+      return await performFullAppReset();
+    } catch (error) {
+      return { ok: false, error: error?.message || "Full reset failed." };
+    }
+  });
   ipcMain.handle("install-update", async (event, details) => {
     const onProgress = (progress) => event.sender.send("update-progress", progress);
     recordDiagnosticEvent("update", "install-started", {
@@ -3400,13 +3774,19 @@ app.whenReady().then(async () => {
     }
   });
 
-  ipcMain.handle("fetch-changelog-feed", async () => {
+  ipcMain.handle("fetch-changelog", async (event, options = {}) => {
+    if (!isCustomSoundRequest(event)) {
+      return { ok: false, error: "Unauthorized changelog request." };
+    }
     try {
-      return { ok: true, text: await fetchChangelogFeed() };
+      return {
+        ok: true,
+        ...(await fetchChangelogGist({ force: options.force === true })),
+      };
     } catch (error) {
       return {
         ok: false,
-        error: error?.message || "Changelog request failed.",
+        error: error?.message || "GitHub changelog request failed.",
       };
     }
   });
@@ -3739,7 +4119,19 @@ app.whenReady().then(async () => {
       mainWindow.webContents.send("system-accent-color-changed", accent);
     }
   });
-  createWindow({ hidden: shouldStartHidden() });
+  if (appLockRecord?.enabled) {
+    const authenticated = await requestAppLockAuthentication({
+      title: "Unlock Aero",
+      description: "Enter your App Lock PIN or a one-time recovery code before Aero opens.",
+      cancelable: false,
+      startup: true,
+    });
+    if (!authenticated) return;
+  }
+  appUnlocked = true;
+  appStartupReady = true;
+  createTray();
+  createWindow({ hidden: shouldStartHidden() && !appLockRecord?.enabled });
 
   powerMonitor.on("shutdown", () => {
     notifyRendererShutdown("shutdown");

@@ -22,18 +22,10 @@ export default defineConfig({
       transformIndexHtml(html) {
         // Manifest V3 supplies the extension-page CSP. The Electron/web policy
         // contains directives that Chrome extensions are not allowed to use.
-        // UserJot loads a remote script. It remains available in the desktop
-        // and desktop clients, but Chrome Web Store extensions must ship all
-        // executable code in their package.
-        return html
-          .replace(
-            /\s*<meta http-equiv="Content-Security-Policy"[^>]*>\s*/,
-            "\n",
-          )
-          .replace(
-            /\s*<!-- UserJot Widget -->[\s\S]*?<!-- End UserJot Widget -->\s*/,
-            "\n",
-          );
+        return html.replace(
+          /\s*<meta http-equiv="Content-Security-Policy"[^>]*>\s*/,
+          "\n",
+        );
       },
     },
   ],

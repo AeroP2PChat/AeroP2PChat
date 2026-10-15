@@ -79,9 +79,18 @@ const appShell = document.querySelector(".app-shell");
 const sidebarResizer = document.querySelector("#sidebar-resizer");
 const contactSearchInput = document.querySelector("#contact-search");
 const peerList = document.querySelector("#peer-list");
-const feedbackButton = document.querySelector("#feedback-button");
-const mobileFeedbackButton = document.querySelector("#feedback-button-mobile");
-const feedbackEnabledToggle = document.querySelector("#feedback-enabled-toggle");
+const changelogButton = document.querySelector("#changelog-button");
+const changelogModal = document.querySelector("#changelog-modal");
+const changelogClose = document.querySelector("#changelog-close");
+const changelogRefresh = document.querySelector("#changelog-refresh");
+const changelogRetry = document.querySelector("#changelog-retry");
+const changelogSource = document.querySelector("#changelog-source");
+const changelogSubtitle = document.querySelector("#changelog-subtitle");
+const changelogCount = document.querySelector("#changelog-count");
+const changelogVersionList = document.querySelector("#changelog-version-list");
+const changelogLoading = document.querySelector("#changelog-loading");
+const changelogError = document.querySelector("#changelog-error");
+const changelogDocument = document.querySelector("#changelog-document");
 const chatAvatar = document.querySelector("#chat-avatar");
 const chatTitle = document.querySelector("#chat-title");
 const chatActions = document.querySelector(".chat-actions");
@@ -280,7 +289,23 @@ const settingsContent = document.querySelector(".settings-grid");
 let activeSettingsPage = "";
 let settingsSearchResultsCache = [];
 const resetAllSettingsButton = document.querySelector("#reset-all-settings");
+const fullAppResetButton = document.querySelector("#full-app-reset");
 const reopenWelcomeScreenButton = document.querySelector("#reopen-welcome-screen");
+const appLockSummary = document.querySelector("#app-lock-summary");
+const appLockState = document.querySelector("#app-lock-state");
+const appLockSetup = document.querySelector("#app-lock-setup");
+const appLockActions = document.querySelector("#app-lock-actions");
+const appLockPin = document.querySelector("#app-lock-pin");
+const appLockPinConfirm = document.querySelector("#app-lock-pin-confirm");
+const appLockEnableButton = document.querySelector("#app-lock-enable");
+const appLockChangePinButton = document.querySelector("#app-lock-change-pin");
+const appLockNewCodesButton = document.querySelector("#app-lock-new-codes");
+const appLockDisableButton = document.querySelector("#app-lock-disable");
+const appLockStatusMessage = document.querySelector("#app-lock-status-message");
+const appLockRecovery = document.querySelector("#app-lock-recovery");
+const appLockRecoveryCodes = document.querySelector("#app-lock-recovery-codes");
+const appLockCopyCodesButton = document.querySelector("#app-lock-copy-codes");
+const appLockHideCodesButton = document.querySelector("#app-lock-hide-codes");
 const profileModal = document.querySelector("#profile-modal");
 const profileClose = document.querySelector("#profile-close");
 const profileAvatarPreview = document.querySelector("#profile-avatar-preview");
@@ -1052,7 +1077,8 @@ const githubRepoUrl = `https://github.com/${githubRepo}`;
 const githubRawBaseUrl = `https://raw.githubusercontent.com/${githubRepo}/${projectConfig.branch || "main"}`;
 const latestReleaseUrl = `${githubRepoUrl}/releases/latest`;
 const latestManifestUrl = `${latestReleaseUrl}/download/latest.yml`;
-const newsPageUrl = "https://tenkayro.de/feedback";
+const changelogGistApiUrl =
+  "https://api.github.com/gists/57f4fc6d54f13b545152c76312d8554f";
 const linuxInstallCommand = `${linuxTerminalCommandName} update`;
 const linuxWebsiteUpdateCommand =
   `bash <(curl -fsSL ${githubRawBaseUrl}/install.sh) update`;
@@ -1190,11 +1216,70 @@ const peerConnectionConfig = {
 };
 let appConfig = {};
 let configSaveQueue = Promise.resolve();
-let userJotLoadPromise = null;
 const enhancedSelects = new Map();
+let changelogEntries = [];
+let selectedChangelogVersion = "";
+let changelogSourceUrl = "";
+let currentAppLockStatus = { enabled: false, remainingRecoveryCodes: 0 };
+let appLockPinChangeMode = false;
+let appLockBusy = false;
 
 async function loadAppConfig() {
   return platformApi.loadConfig();
+}
+
+function setAppLockBusy(busy) {
+  appLockBusy = busy;
+  for (const button of [
+    appLockEnableButton,
+    appLockChangePinButton,
+    appLockNewCodesButton,
+    appLockDisableButton,
+  ]) {
+    if (button) button.disabled = busy;
+  }
+}
+
+function renderAppLockSettings() {
+  const enabled = Boolean(currentAppLockStatus.enabled);
+  appLockState.textContent = enabled ? "On" : "Off";
+  appLockState.classList.toggle("enabled", enabled);
+  appLockSummary.textContent = enabled
+    ? `Required when Aero starts · ${currentAppLockStatus.remainingRecoveryCodes || 0} recovery codes left`
+    : "Off by default · no startup authentication required";
+  appLockSetup.classList.toggle("hidden", enabled && !appLockPinChangeMode);
+  appLockActions.classList.toggle("hidden", !enabled || appLockPinChangeMode);
+  appLockEnableButton.innerHTML = appLockPinChangeMode
+    ? '<i class="fa-solid fa-key" aria-hidden="true"></i>Save new PIN'
+    : '<i class="fa-solid fa-lock" aria-hidden="true"></i>Enable App Lock';
+  setAppLockBusy(appLockBusy);
+}
+
+async function refreshAppLockStatus() {
+  try {
+    currentAppLockStatus = await platformApi.getAppLockStatus();
+    if (currentAppLockStatus.unsupported) {
+      appLockSummary.textContent = "App Lock is available in the Windows and Linux desktop app.";
+      appLockSetup.classList.add("hidden");
+      appLockActions.classList.add("hidden");
+      return;
+    }
+    renderAppLockSettings();
+  } catch (error) {
+    appLockStatusMessage.textContent = error?.message || "App Lock status could not be loaded.";
+  }
+}
+
+function showAppLockRecoveryCodes(codes) {
+  if (!Array.isArray(codes) || !codes.length) return;
+  appLockRecoveryCodes.textContent = codes.join("\n");
+  appLockRecovery.classList.remove("hidden");
+  appLockRecovery.scrollIntoView({ block: "nearest" });
+}
+
+function clearAppLockPinFields() {
+  appLockPin.value = "";
+  appLockPinConfirm.value = "";
 }
 
 function stripRetiredIdentityData(config) {
@@ -1573,12 +1658,12 @@ legalLicenseSearch?.addEventListener("input", () => {
   renderLegalLicenses(legalLicenseSearch.value);
 });
 appConfig = await loadAppConfig();
+void refreshAppLockStatus();
 if (stripRetiredIdentityData(appConfig)) {
   await saveAppConfig();
 }
 normalizeAppSettings();
 applyAppearancePreferences();
-void syncFeedbackWidget();
 await refreshCustomThemes();
 setBootProgress(42, "Loading settings");
 migrateLocalStorageConfig();
@@ -1587,7 +1672,6 @@ if (stripRetiredIdentityData(appConfig)) {
 }
 normalizeAppSettings();
 applyAppearancePreferences();
-void syncFeedbackWidget();
 void refreshSystemAccentColor();
 void applyAllCustomSounds();
 setBootProgress(46, "Loading wallpaper");
@@ -2473,7 +2557,6 @@ function normalizeAppSettings() {
         : "",
     autoDownloadUpdates: Boolean(appConfig.appSettings.autoDownloadUpdates),
     showUpdateModal: appConfig.appSettings.showUpdateModal !== false,
-    feedbackEnabled: appConfig.appSettings.feedbackEnabled !== false,
     trustedLinkDomains: Array.isArray(appConfig.appSettings.trustedLinkDomains)
       ? [...new Set(appConfig.appSettings.trustedLinkDomains
           .map(normalizeTrustedLinkDomain)
@@ -2536,6 +2619,7 @@ function normalizeAppSettings() {
       Math.min(MAX_SIDEBAR_WIDTH, appConfig.appSettings.sidebarWidth),
     ),
   );
+  delete appConfig.appSettings.feedbackEnabled;
 
   if (
     !appConfig.notificationSettings ||
@@ -2590,9 +2674,6 @@ function applyAppTheme(theme = "system") {
   const nextTheme = resolveAppTheme(theme);
   document.documentElement.dataset.theme = nextTheme;
   document.body.dataset.theme = nextTheme;
-  // Keep UserJot on the same setting: system follows the OS, while explicit
-  // Aero themes override it.
-  window.uj?.setTheme?.(theme === "system" ? "auto" : nextTheme === "light" ? "light" : "dark");
   try {
     localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
   } catch {
@@ -3009,7 +3090,6 @@ function renderAppSettings() {
     appConfig.appSettings.closeToTray = false;
   }
   applyAppearancePreferences();
-  void syncFeedbackWidget();
   renderOwnIdPrivacy();
   applySidebarWidth(appConfig.appSettings.sidebarWidth);
   updatePresenceMenuState();
@@ -3045,7 +3125,6 @@ function renderAppSettings() {
     !appConfig.appSettings.autostart,
   );
   closeToTrayToggle.checked = appConfig.appSettings.closeToTray;
-  feedbackEnabledToggle.checked = appConfig.appSettings.feedbackEnabled;
   const updateChecksSupported = platformApi.supportsUpdateChecks;
   const updateModalSupported = updateChecksSupported && !platformApi.isWindowsStore;
   const updatePlatformMessage = platformApi.isWindowsStore
@@ -16045,112 +16124,271 @@ mobileTabSettings?.addEventListener("click", () => {
   setMobileTab("settings");
 });
 
-function isFeedbackEnabled() {
-  return appConfig.appSettings?.feedbackEnabled !== false;
+const changelogEmoji = new Map([
+  ["scales", "⚖️"],
+  ["sparkles", "✨"],
+  ["rocket", "🚀"],
+  ["bug", "🐛"],
+  ["lock", "🔒"],
+  ["art", "🎨"],
+  ["zap", "⚡"],
+]);
+
+function expandChangelogEmoji(text) {
+  return String(text).replace(/:([a-z0-9_+-]+):/gi, (match, name) =>
+    changelogEmoji.get(name.toLowerCase()) || match,
+  );
 }
 
-function updateFeedbackControls(enabled = isFeedbackEnabled()) {
-  feedbackButton?.classList.toggle("hidden", !enabled);
-  mobileFeedbackButton?.classList.toggle("hidden", !enabled);
-  document.querySelectorAll('[data-settings-nav="feedback"]').forEach((item) => {
-    item.classList.toggle("hidden", !enabled);
-  });
-}
-
-function getUserJotTheme() {
-  return appConfig.appSettings?.theme === "system"
-    ? "auto"
-    : ["dark", "ultra-dark"].includes(document.documentElement.dataset.theme)
-      ? "dark"
-      : "light";
-}
-
-function ensureUserJotProxy() {
-  if (window.uj) return;
-  window.$ujq = window.$ujq || [];
-  window.uj = new Proxy({}, {
-    get: (_, property) => (...args) => window.$ujq.push([property, ...args]),
-  });
-}
-
-function loadUserJotWidget() {
-  if (window.__ujInitialized) return Promise.resolve();
-  if (
-    document.querySelector("#userjot-sdk") &&
-    typeof window.uj?.init === "function"
-  ) {
-    window.uj.init("cmryo30j804kx0ipd9tt8xk2d", {
-      widget: true,
-      trigger: "custom",
-      position: "left",
-      theme: getUserJotTheme(),
-    });
-    return Promise.resolve();
+function appendChangelogInline(parent, source) {
+  const text = expandChangelogEmoji(source);
+  const tokenPattern = /(`[^`\n]+`|\*\*[^*\n]+\*\*|__[^_\n]+__|\*[^*\n]+\*|_[^_\n]+_|\[[^\]\n]+\]\([^\s)]+\))/g;
+  let offset = 0;
+  for (const match of text.matchAll(tokenPattern)) {
+    if (match.index > offset) parent.append(document.createTextNode(text.slice(offset, match.index)));
+    const token = match[0];
+    let element = null;
+    let content = "";
+    if (token.startsWith("`")) {
+      element = document.createElement("code");
+      content = token.slice(1, -1);
+    } else if (token.startsWith("**") || token.startsWith("__")) {
+      element = document.createElement("strong");
+      content = token.slice(2, -2);
+    } else if (token.startsWith("*") || token.startsWith("_")) {
+      element = document.createElement("em");
+      content = token.slice(1, -1);
+    } else {
+      const linkMatch = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(token);
+      try {
+        const url = new URL(linkMatch?.[2] || "");
+        if (!["https:", "http:"].includes(url.protocol)) throw new Error("Unsafe link");
+        element = document.createElement("a");
+        element.href = url.toString();
+        element.rel = "noopener noreferrer";
+        element.addEventListener("click", (event) => {
+          event.preventDefault();
+          void platformApi.openExternalLink(element.href);
+        });
+        content = linkMatch[1];
+      } catch {
+        parent.append(document.createTextNode(token));
+      }
+    }
+    if (element) {
+      element.textContent = content;
+      parent.append(element);
+    }
+    offset = match.index + token.length;
   }
-  if (userJotLoadPromise) return userJotLoadPromise;
-
-  ensureUserJotProxy();
-  window.uj.init("cmryo30j804kx0ipd9tt8xk2d", {
-    widget: true,
-    trigger: "custom",
-    position: "left",
-    theme: getUserJotTheme(),
-  });
-
-  userJotLoadPromise = new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.id = "userjot-sdk";
-    script.type = "module";
-    script.async = true;
-    script.src = "https://cdn.userjot.com/sdk/v2/uj.js";
-    script.addEventListener("load", () => {
-      if (!isFeedbackEnabled()) window.uj?.destroy?.();
-      resolve();
-    }, { once: true });
-    script.addEventListener("error", () => {
-      userJotLoadPromise = null;
-      script.remove();
-      reject(new Error("UserJot could not be loaded."));
-    }, { once: true });
-    document.head.append(script);
-  });
-  return userJotLoadPromise;
+  if (offset < text.length) parent.append(document.createTextNode(text.slice(offset)));
 }
 
-async function syncFeedbackWidget() {
-  const enabled = isFeedbackEnabled();
-  updateFeedbackControls(enabled);
-  if (!enabled) {
-    if (window.__ujInitialized) window.uj?.destroy?.();
-    userJotLoadPromise = null;
-    return;
+function renderChangelogMarkdown(container, markdown) {
+  container.replaceChildren();
+  const lines = String(markdown || "").replace(/\r/g, "").split("\n");
+  let paragraphLines = [];
+  let list = null;
+  let listType = "";
+  let codeBlock = null;
+
+  const flushParagraph = () => {
+    if (!paragraphLines.length) return;
+    const paragraph = document.createElement("p");
+    appendChangelogInline(paragraph, paragraphLines.join(" "));
+    container.append(paragraph);
+    paragraphLines = [];
+  };
+  const closeList = () => {
+    list = null;
+    listType = "";
+  };
+
+  for (const line of lines) {
+    if (line.trim().startsWith("```")) {
+      flushParagraph();
+      closeList();
+      if (codeBlock) {
+        container.append(codeBlock.wrapper);
+        codeBlock = null;
+      } else {
+        const wrapper = document.createElement("pre");
+        const code = document.createElement("code");
+        wrapper.append(code);
+        codeBlock = { wrapper, code, lines: [] };
+      }
+      continue;
+    }
+    if (codeBlock) {
+      codeBlock.lines.push(line);
+      codeBlock.code.textContent = codeBlock.lines.join("\n");
+      continue;
+    }
+    if (!line.trim()) {
+      flushParagraph();
+      closeList();
+      continue;
+    }
+
+    const headingMatch = /^(#{1,6})\s+(.+)$/.exec(line);
+    if (headingMatch) {
+      flushParagraph();
+      closeList();
+      const heading = document.createElement(`h${headingMatch[1].length}`);
+      appendChangelogInline(heading, headingMatch[2]);
+      container.append(heading);
+      continue;
+    }
+    if (/^\s*(?:---+|___+|\*\*\*+)\s*$/.test(line)) {
+      flushParagraph();
+      closeList();
+      container.append(document.createElement("hr"));
+      continue;
+    }
+    const listMatch = /^\s*(?:([-+*])|(\d+)\.)\s+(.+)$/.exec(line);
+    if (listMatch) {
+      flushParagraph();
+      const nextListType = listMatch[2] ? "ol" : "ul";
+      if (!list || listType !== nextListType) {
+        closeList();
+        listType = nextListType;
+        list = document.createElement(nextListType);
+        container.append(list);
+      }
+      const item = document.createElement("li");
+      appendChangelogInline(item, listMatch[3]);
+      list.append(item);
+      continue;
+    }
+    const quoteMatch = /^>\s?(.*)$/.exec(line);
+    if (quoteMatch) {
+      flushParagraph();
+      closeList();
+      const quote = document.createElement("blockquote");
+      appendChangelogInline(quote, quoteMatch[1]);
+      container.append(quote);
+      continue;
+    }
+    closeList();
+    paragraphLines.push(line.trim());
   }
-  if (platformApi.isChromeExtension) return;
+  flushParagraph();
+  if (codeBlock) container.append(codeBlock.wrapper);
+}
+
+function selectChangelogVersion(version) {
+  const entry = changelogEntries.find((item) => item.version === version);
+  if (!entry) return;
+  selectedChangelogVersion = entry.version;
+  for (const button of changelogVersionList.querySelectorAll("button")) {
+    const active = button.dataset.version === entry.version;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+  }
+  changelogDocument.replaceChildren();
+  const heading = document.createElement("div");
+  heading.className = "changelog-document-heading";
+  const title = document.createElement("h1");
+  title.textContent = `Version ${entry.version}`;
+  const file = document.createElement("span");
+  file.textContent = entry.fileName;
+  heading.append(title, file);
+  changelogDocument.append(heading);
+  const markdownContent = document.createElement("div");
+  markdownContent.className = "changelog-markdown";
+  renderChangelogMarkdown(markdownContent, entry.markdown);
+  changelogDocument.append(markdownContent);
+  changelogDocument.classList.remove("hidden");
+  changelogDocument.parentElement.scrollTop = 0;
+}
+
+function renderChangelogVersions() {
+  changelogCount.textContent = String(changelogEntries.length);
+  changelogVersionList.replaceChildren(
+    ...changelogEntries.map((entry, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.version = entry.version;
+      button.setAttribute("role", "option");
+      const version = document.createElement("strong");
+      version.textContent = entry.version;
+      const badges = document.createElement("span");
+      if (entry.version === currentVersion) {
+        const current = document.createElement("small");
+        current.textContent = "Current";
+        badges.append(current);
+      } else if (index === 0) {
+        const latest = document.createElement("small");
+        latest.textContent = "Latest";
+        badges.append(latest);
+      }
+      button.append(version, badges);
+      button.addEventListener("click", () => selectChangelogVersion(entry.version));
+      return button;
+    }),
+  );
+}
+
+async function loadChangelog({ force = false } = {}) {
+  changelogError.classList.add("hidden");
+  changelogRefresh.disabled = true;
+  changelogRefresh.querySelector("i")?.classList.add("fa-spin");
+  if (!changelogEntries.length) {
+    changelogLoading.classList.remove("hidden");
+    changelogDocument.classList.add("hidden");
+  }
   try {
-    await loadUserJotWidget();
-  } catch {
-    // The feedback buttons keep the website fallback available if the SDK is unavailable.
+    const result = await platformApi.fetchChangelog(changelogGistApiUrl, { force });
+    changelogEntries = Array.isArray(result?.entries)
+      ? result.entries.filter(
+          (entry) => /^\d+\.\d+\.0$/.test(entry?.version) && typeof entry.markdown === "string",
+        ).slice(0, 100)
+      : [];
+    changelogSourceUrl = result?.sourceUrl || "";
+    changelogSource.disabled = !changelogSourceUrl;
+    changelogSubtitle.textContent = result?.updatedAt
+      ? `Updated ${new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.updatedAt))}`
+      : "What changed in Aero P2P Chat";
+    renderChangelogVersions();
+    if (!changelogEntries.length) throw new Error("The Gist has no versioned Markdown files.");
+    const preferredVersion = changelogEntries.some((entry) => entry.version === selectedChangelogVersion)
+      ? selectedChangelogVersion
+      : changelogEntries.some((entry) => entry.version === currentVersion)
+        ? currentVersion
+        : changelogEntries[0].version;
+    selectChangelogVersion(preferredVersion);
+  } catch (error) {
+    if (!changelogEntries.length) {
+      changelogError.querySelector("span").textContent = error?.message || "Check your internet connection and try again.";
+      changelogError.classList.remove("hidden");
+    } else {
+      changelogSubtitle.textContent = "Refresh failed · showing the last loaded changelog";
+    }
+  } finally {
+    changelogLoading.classList.add("hidden");
+    changelogRefresh.disabled = false;
+    changelogRefresh.querySelector("i")?.classList.remove("fa-spin");
   }
 }
 
-async function openFeedbackWidget() {
-  if (!isFeedbackEnabled()) return;
-  await syncFeedbackWidget();
-  if (typeof window.uj?.showWidget === "function") {
-    window.uj.showWidget({ section: "feedback" });
-    return;
-  }
-
-  // The Chrome extension deliberately does not ship UserJot's remotely
-  // hosted SDK. Keep feedback available there by opening the feedback page.
-  window.open(newsPageUrl, "_blank", "noopener");
+function openChangelog() {
+  changelogModal.classList.remove("hidden");
+  void loadChangelog();
 }
 
-feedbackButton?.addEventListener("click", openFeedbackWidget);
-mobileFeedbackButton?.addEventListener("click", openFeedbackWidget);
-feedbackEnabledToggle.addEventListener("change", () => {
-  saveAppSettings({ feedbackEnabled: feedbackEnabledToggle.checked });
-  void syncFeedbackWidget();
+function closeChangelog() {
+  changelogModal.classList.add("hidden");
+}
+
+changelogButton?.addEventListener("click", openChangelog);
+changelogClose?.addEventListener("click", closeChangelog);
+changelogRefresh?.addEventListener("click", () => void loadChangelog({ force: true }));
+changelogRetry?.addEventListener("click", () => void loadChangelog({ force: true }));
+changelogSource?.addEventListener("click", () => {
+  if (changelogSourceUrl) void platformApi.openExternalLink(changelogSourceUrl);
+});
+changelogModal?.addEventListener("click", (event) => {
+  if (event.target === changelogModal) closeChangelog();
 });
 
 for (const item of settingsNavItems) {
@@ -16219,6 +16457,95 @@ settingsModal.addEventListener("click", (event) => {
   }
 });
 
+appLockEnableButton?.addEventListener("click", async () => {
+  appLockStatusMessage.textContent = "";
+  setAppLockBusy(true);
+  const action = appLockPinChangeMode
+    ? platformApi.changeAppLockPin.bind(platformApi)
+    : platformApi.enableAppLock.bind(platformApi);
+  try {
+    const result = await action({
+      pin: appLockPin.value,
+      confirmPin: appLockPinConfirm.value,
+    });
+    if (!result?.ok) {
+      if (!result?.canceled) {
+        appLockStatusMessage.textContent = result?.error || "App Lock could not be updated.";
+      }
+      return;
+    }
+    currentAppLockStatus = result;
+    appLockPinChangeMode = false;
+    clearAppLockPinFields();
+    renderAppLockSettings();
+    showAppLockRecoveryCodes(result.recoveryCodes);
+    appLockStatusMessage.textContent = "App Lock is active. Save the new recovery codes before leaving this page.";
+  } finally {
+    setAppLockBusy(false);
+  }
+});
+
+appLockChangePinButton?.addEventListener("click", () => {
+  appLockPinChangeMode = true;
+  appLockStatusMessage.textContent = "Choose a new PIN. Your current PIN will be requested in the security window.";
+  renderAppLockSettings();
+  appLockPin.focus();
+});
+
+appLockNewCodesButton?.addEventListener("click", async () => {
+  appLockStatusMessage.textContent = "";
+  setAppLockBusy(true);
+  try {
+    const result = await platformApi.regenerateAppLockCodes();
+    if (!result?.ok) {
+      if (!result?.canceled) appLockStatusMessage.textContent = result?.error || "Recovery codes could not be replaced.";
+      return;
+    }
+    currentAppLockStatus = result;
+    renderAppLockSettings();
+    showAppLockRecoveryCodes(result.recoveryCodes);
+    appLockStatusMessage.textContent = "Previous recovery codes are now invalid.";
+  } finally {
+    setAppLockBusy(false);
+  }
+});
+
+appLockDisableButton?.addEventListener("click", async () => {
+  const confirmed = await showAppDialog({
+    title: "Turn off App Lock?",
+    message: "Aero will ask for your current PIN or a recovery code in a separate security window.",
+    confirmText: "Continue",
+    cancelText: "Cancel",
+    danger: true,
+  });
+  if (!confirmed) return;
+  setAppLockBusy(true);
+  try {
+    const result = await platformApi.disableAppLock();
+    if (!result?.ok) {
+      if (!result?.canceled) appLockStatusMessage.textContent = result?.error || "App Lock could not be turned off.";
+      return;
+    }
+    currentAppLockStatus = result;
+    appLockPinChangeMode = false;
+    appLockRecovery.classList.add("hidden");
+    renderAppLockSettings();
+    appLockStatusMessage.textContent = "App Lock is off.";
+  } finally {
+    setAppLockBusy(false);
+  }
+});
+
+appLockCopyCodesButton?.addEventListener("click", async () => {
+  await platformApi.writeClipboard(appLockRecoveryCodes.textContent);
+  appLockStatusMessage.textContent = "Recovery codes copied. Store them somewhere private.";
+});
+
+appLockHideCodesButton?.addEventListener("click", () => {
+  appLockRecoveryCodes.textContent = "";
+  appLockRecovery.classList.add("hidden");
+});
+
 resetAllSettingsButton.addEventListener("click", async () => {
   const confirmed = await showAppDialog({
     title: "Reset all settings?",
@@ -16255,6 +16582,26 @@ resetAllSettingsButton.addEventListener("click", async () => {
     setMobileTab("contacts");
   }
   openWelcomeScreen();
+});
+
+fullAppResetButton?.addEventListener("click", async () => {
+  const confirmed = await showAppDialog({
+    title: "Erase all local Aero data?",
+    message: "This permanently removes your Aero ID, contacts, chats, settings, custom media and App Lock. This cannot be undone.",
+    confirmText: "Erase all data",
+    cancelText: "Cancel",
+    danger: true,
+  });
+  if (!confirmed) return;
+  const result = await platformApi.fullAppReset();
+  if (!result?.ok && !result?.canceled) {
+    await showAppDialog({
+      title: "Full reset failed",
+      message: result?.error || "Aero could not erase all local data.",
+      confirmText: "OK",
+      hideCancel: true,
+    });
+  }
 });
 
 reopenWelcomeScreenButton.addEventListener("click", () => {
@@ -16531,6 +16878,7 @@ document.addEventListener("keydown", (event) => {
     }
     callHealthPopover.classList.add("hidden");
     settingsModal.classList.add("hidden");
+    changelogModal.classList.add("hidden");
     stopAeroIdQrScanner();
     hideOwnIdQrCode();
     ownIdModal?.classList.add("hidden");

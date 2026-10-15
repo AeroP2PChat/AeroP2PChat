@@ -54,7 +54,7 @@ contextBridge.exposeInMainWorld("aeroChat", {
   },
   fetchUpdateManifest: (url) =>
     ipcRenderer.invoke("fetch-update-manifest", url),
-  fetchChangelogFeed: () => ipcRenderer.invoke("fetch-changelog-feed"),
+  fetchChangelog: (options) => ipcRenderer.invoke("fetch-changelog", options),
   onCheckForUpdates: (callback) => {
     const listener = () => callback();
     ipcRenderer.on("check-for-updates", listener);
@@ -80,6 +80,12 @@ contextBridge.exposeInMainWorld("aeroChat", {
   loadConfig: () => ipcRenderer.invoke("load-config"),
   saveConfig: (config) => ipcRenderer.invoke("save-config", config),
   getConfigPath: () => ipcRenderer.invoke("get-config-path"),
+  getAppLockStatus: () => ipcRenderer.invoke("app-lock-status"),
+  enableAppLock: (details) => ipcRenderer.invoke("app-lock-enable", details),
+  changeAppLockPin: (details) => ipcRenderer.invoke("app-lock-change-pin", details),
+  regenerateAppLockCodes: () => ipcRenderer.invoke("app-lock-regenerate-codes"),
+  disableAppLock: () => ipcRenderer.invoke("app-lock-disable"),
+  fullAppReset: () => ipcRenderer.invoke("full-app-reset"),
   getSystemAccentColor: () => ipcRenderer.invoke("get-system-accent-color"),
   onSystemAccentColorChanged: (callback) => {
     const listener = (_event, color) => callback(color);

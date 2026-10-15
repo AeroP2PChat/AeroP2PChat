@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'" />
+    <title>Aero App Lock</title>
+    <link rel="stylesheet" href="./security.css" />
+  </head>
+  <body>
+    <header class="titlebar">
+      <div class="title"><img src="/app.png" alt="" /><span>Aero P2P Chat</span></div>
+      <div class="window-controls">
+        <button id="minimize" type="button" aria-label="Minimize">&#8722;</button>
+        <button id="close" type="button" aria-label="Close">&#215;</button>
+      </div>
+    </header>
+    <main>
+      <div class="lock-heading">
+        <div class="lock-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M7 10V7a5 5 0 0 1 10 0v3m-9 0h8a2 2 0 0 1 2 2v7H6v-7a2 2 0 0 1 2-2Z" /></svg>
+        </div>
+        <div>
+          <h1 id="title">Unlock Aero</h1>
+          <p id="description" class="description">Enter your PIN or a one-time recovery code.</p>
+        </div>
+      </div>
+      <form id="form">
+        <label for="credential">PIN or recovery code</label>
+        <div class="credential-row">
+          <input id="credential" type="password" inputmode="text" autocomplete="current-password" autofocus required />
+          <button id="reveal" class="reveal" type="button" aria-label="Show entry">Show</button>
+        </div>
+        <p id="status" class="status" aria-live="polite"></p>
+        <div class="actions">
+          <button id="cancel" class="secondary" type="button">Cancel</button>
+          <button id="submit" class="primary" type="submit">Unlock</button>
+        </div>
+      </form>
+    </main>
+    <script type="module" src="./security.js"></script>
+  </body>
+</html>

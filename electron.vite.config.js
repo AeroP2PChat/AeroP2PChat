@@ -26,6 +26,7 @@ module.exports = defineConfig({
       rolldownOptions: {
         input: {
           index: resolve(__dirname, "src/preload/index.js"),
+          security: resolve(__dirname, "src/preload/security.js"),
         },
       },
     },
@@ -44,6 +45,7 @@ module.exports = defineConfig({
           index: resolve(__dirname, "src/renderer/index.html"),
           toast: resolve(__dirname, "src/renderer/toast.html"),
           callHealth: resolve(__dirname, "src/renderer/call-health.html"),
+          security: resolve(__dirname, "src/renderer/security.html"),
         },
         output: {
           manualChunks(id) {

@@ -1,6 +1,16 @@
 const CONFIG_KEY = "aero-p2p-chat.config.v1";
 const MAX_REMOTE_THEME_BYTES = 2 * 1024 * 1024;
 
+function compareVersionStrings(left, right) {
+  const leftParts = String(left).split(".").map(Number);
+  const rightParts = String(right).split(".").map(Number);
+  for (let index = 0; index < 3; index += 1) {
+    const difference = (leftParts[index] || 0) - (rightParts[index] || 0);
+    if (difference) return difference;
+  }
+  return 0;
+}
+
 function triggerBrowserDownload(blob, fileName) {
   const objectUrl = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -335,6 +345,30 @@ export function createPlatformApi() {
       return { ok: true };
     },
 
+    async getAppLockStatus() {
+      return electron?.getAppLockStatus?.() || { enabled: false, unsupported: true };
+    },
+
+    async enableAppLock(details) {
+      return electron?.enableAppLock?.(details) || { ok: false, unsupported: true };
+    },
+
+    async changeAppLockPin(details) {
+      return electron?.changeAppLockPin?.(details) || { ok: false, unsupported: true };
+    },
+
+    async regenerateAppLockCodes() {
+      return electron?.regenerateAppLockCodes?.() || { ok: false, unsupported: true };
+    },
+
+    async disableAppLock() {
+      return electron?.disableAppLock?.() || { ok: false, unsupported: true };
+    },
+
+    async fullAppReset() {
+      return electron?.fullAppReset?.() || { ok: false, unsupported: true };
+    },
+
     async getSystemAccentColor() {
       if (electron?.getSystemAccentColor) {
         return electron.getSystemAccentColor();
@@ -477,20 +511,39 @@ export function createPlatformApi() {
       return response.text();
     },
 
-    async fetchChangelogFeed(url) {
-      if (electron?.fetchChangelogFeed) {
-        const response = await electron.fetchChangelogFeed();
+    async fetchChangelog(url, options = {}) {
+      if (electron?.fetchChangelog) {
+        const response = await electron.fetchChangelog(options);
         if (!response?.ok) {
           throw new Error(response?.error || "Could not load the changelog.");
         }
-        return response.text;
+        return response;
       }
 
       const response = await fetch(url, { cache: "no-store" });
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
-      return response.text();
+      const payload = await response.json();
+      const entries = Object.entries(payload.files || {})
+        .map(([fileName, file]) => {
+          const match = /^(\d+)\.(\d+)\.md$/i.exec(fileName);
+          return match && typeof file?.content === "string" && !file.truncated
+            ? {
+                fileName,
+                version: `${Number(match[1])}.${Number(match[2])}.0`,
+                markdown: file.content,
+              }
+            : null;
+        })
+        .filter(Boolean)
+        .sort((left, right) => compareVersionStrings(right.version, left.version));
+      return {
+        ok: true,
+        entries,
+        updatedAt: payload.updated_at || "",
+        sourceUrl: payload.html_url || "",
+      };
     },
 
     async showNotification(details = {}) {
