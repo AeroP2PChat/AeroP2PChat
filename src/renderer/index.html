@@ -1864,11 +1864,14 @@
       <section class="modal-panel changelog-modal-panel">
         <header class="modal-header changelog-header">
           <div>
-            <h2 id="changelog-title">Changelog</h2>
+            <div class="changelog-title-row">
+              <h2 id="changelog-title">Changelog</h2>
+              <span id="changelog-installed-version" class="changelog-installed-pill">Installed</span>
+            </div>
             <p id="changelog-subtitle">What changed in Aero P2P Chat</p>
           </div>
           <div class="changelog-header-actions">
-            <button id="changelog-refresh" class="ghost-button" type="button"><i class="fa-solid fa-rotate" aria-hidden="true"></i><span>Refresh</span></button>
+            <button id="changelog-refresh" class="ghost-button icon-only-button" type="button" aria-label="Refresh changelog" title="Refresh"><i class="fa-solid fa-rotate" aria-hidden="true"></i></button>
             <button id="changelog-close" class="ghost-button icon-only-button" type="button" aria-label="Close changelog" title="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
           </div>
         </header>

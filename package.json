@@ -54,10 +54,12 @@
     "@noble/hashes": "^2.3.0",
     "blobatar": "^2.7.0",
     "country-flag-emoji-polyfill": "^0.1.10",
+    "dompurify": "^3.4.17",
     "emoji-picker-element": "^1.29.1",
     "emoji-picker-element-data": "^1.8.0",
     "file-type": "^22.0.2",
     "jsqr": "^1.4.0",
+    "marked": "^18.1.1",
     "qrcode": "^1.5.4",
     "tldts": "^7.4.10"
   }

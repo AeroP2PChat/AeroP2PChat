@@ -5,6 +5,8 @@ import countryFlagEmojiFontUrl from "../../node_modules/country-flag-emoji-polyf
 import { getDomain } from "tldts";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { _parts as getBlobatarParts } from "blobatar/internal";
+import DOMPurify from "dompurify";
+import { marked } from "marked";
 import "blobatar/motion.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import appLogo from "../../assets/app.png";
@@ -88,6 +90,9 @@ const changelogRefresh = document.querySelector("#changelog-refresh");
 const changelogRetry = document.querySelector("#changelog-retry");
 const changelogSource = document.querySelector("#changelog-source");
 const changelogSubtitle = document.querySelector("#changelog-subtitle");
+const changelogInstalledVersion = document.querySelector(
+  "#changelog-installed-version",
+);
 const changelogCount = document.querySelector("#changelog-count");
 const changelogVersionList = document.querySelector("#changelog-version-list");
 const changelogLoading = document.querySelector("#changelog-loading");
@@ -16196,140 +16201,89 @@ function expandChangelogEmoji(text) {
   );
 }
 
-function appendChangelogInline(parent, source) {
-  const text = expandChangelogEmoji(source);
-  const tokenPattern = /(`[^`\n]+`|\*\*[^*\n]+\*\*|__[^_\n]+__|\*[^*\n]+\*|_[^_\n]+_|\[[^\]\n]+\]\([^\s)]+\))/g;
-  let offset = 0;
-  for (const match of text.matchAll(tokenPattern)) {
-    if (match.index > offset) parent.append(document.createTextNode(text.slice(offset, match.index)));
-    const token = match[0];
-    let element = null;
-    let content = "";
-    if (token.startsWith("`")) {
-      element = document.createElement("code");
-      content = token.slice(1, -1);
-    } else if (token.startsWith("**") || token.startsWith("__")) {
-      element = document.createElement("strong");
-      content = token.slice(2, -2);
-    } else if (token.startsWith("*") || token.startsWith("_")) {
-      element = document.createElement("em");
-      content = token.slice(1, -1);
-    } else {
-      const linkMatch = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(token);
-      try {
-        const url = new URL(linkMatch?.[2] || "");
-        if (!["https:", "http:"].includes(url.protocol)) throw new Error("Unsafe link");
-        element = document.createElement("a");
-        element.href = url.toString();
-        element.rel = "noopener noreferrer";
-        element.addEventListener("click", (event) => {
-          event.preventDefault();
-          void platformApi.openExternalLink(element.href);
-        });
-        content = linkMatch[1];
-      } catch {
-        parent.append(document.createTextNode(token));
-      }
+function getSafeChangelogUrl(value, { image = false } = {}) {
+  try {
+    const url = new URL(String(value || "").trim(), changelogSourceUrl || "https://gist.github.com/");
+    if (
+      !["http:", "https:"].includes(url.protocol) ||
+      (image && url.protocol !== "https:") ||
+      !url.hostname ||
+      url.username ||
+      url.password
+    ) {
+      return "";
     }
-    if (element) {
-      element.textContent = content;
-      parent.append(element);
-    }
-    offset = match.index + token.length;
+    return url.toString();
+  } catch {
+    return "";
   }
-  if (offset < text.length) parent.append(document.createTextNode(text.slice(offset)));
+}
+
+function expandChangelogEmojiText(root) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+  while (walker.nextNode()) textNodes.push(walker.currentNode);
+  for (const node of textNodes) {
+    if (node.parentElement?.closest("code, pre")) continue;
+    node.nodeValue = expandChangelogEmoji(node.nodeValue);
+  }
+}
+
+function prepareChangelogMarkdown(container) {
+  for (const link of container.querySelectorAll("a[href]")) {
+    const safeUrl = getSafeChangelogUrl(link.getAttribute("href"));
+    if (!safeUrl) {
+      link.removeAttribute("href");
+      continue;
+    }
+    link.href = safeUrl;
+    link.rel = "noopener noreferrer";
+    link.title ||= `Open ${safeUrl}`;
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      void openExternalLinkWithConfirmation(safeUrl);
+    });
+  }
+
+  for (const markdownImage of container.querySelectorAll("img[src]")) {
+    const safeUrl = getSafeChangelogUrl(markdownImage.getAttribute("src"), { image: true });
+    if (!safeUrl) {
+      markdownImage.remove();
+      continue;
+    }
+    markdownImage.src = safeUrl;
+    markdownImage.loading = "lazy";
+    markdownImage.decoding = "async";
+    markdownImage.referrerPolicy = "no-referrer";
+  }
+
+  for (const checkbox of container.querySelectorAll('input[type="checkbox"]')) {
+    checkbox.disabled = true;
+    checkbox.tabIndex = -1;
+  }
+  for (const input of container.querySelectorAll("input:not([type=\"checkbox\"])")) input.remove();
+
+  for (const table of [...container.querySelectorAll("table")]) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "changelog-table-wrap";
+    table.before(wrapper);
+    wrapper.append(table);
+  }
+  expandChangelogEmojiText(container);
 }
 
 function renderChangelogMarkdown(container, markdown) {
-  container.replaceChildren();
-  const lines = String(markdown || "").replace(/\r/g, "").split("\n");
-  let paragraphLines = [];
-  let list = null;
-  let listType = "";
-  let codeBlock = null;
-
-  const flushParagraph = () => {
-    if (!paragraphLines.length) return;
-    const paragraph = document.createElement("p");
-    appendChangelogInline(paragraph, paragraphLines.join(" "));
-    container.append(paragraph);
-    paragraphLines = [];
-  };
-  const closeList = () => {
-    list = null;
-    listType = "";
-  };
-
-  for (const line of lines) {
-    if (line.trim().startsWith("```")) {
-      flushParagraph();
-      closeList();
-      if (codeBlock) {
-        container.append(codeBlock.wrapper);
-        codeBlock = null;
-      } else {
-        const wrapper = document.createElement("pre");
-        const code = document.createElement("code");
-        wrapper.append(code);
-        codeBlock = { wrapper, code, lines: [] };
-      }
-      continue;
-    }
-    if (codeBlock) {
-      codeBlock.lines.push(line);
-      codeBlock.code.textContent = codeBlock.lines.join("\n");
-      continue;
-    }
-    if (!line.trim()) {
-      flushParagraph();
-      closeList();
-      continue;
-    }
-
-    const headingMatch = /^(#{1,6})\s+(.+)$/.exec(line);
-    if (headingMatch) {
-      flushParagraph();
-      closeList();
-      const heading = document.createElement(`h${headingMatch[1].length}`);
-      appendChangelogInline(heading, headingMatch[2]);
-      container.append(heading);
-      continue;
-    }
-    if (/^\s*(?:---+|___+|\*\*\*+)\s*$/.test(line)) {
-      flushParagraph();
-      closeList();
-      container.append(document.createElement("hr"));
-      continue;
-    }
-    const listMatch = /^\s*(?:([-+*])|(\d+)\.)\s+(.+)$/.exec(line);
-    if (listMatch) {
-      flushParagraph();
-      const nextListType = listMatch[2] ? "ol" : "ul";
-      if (!list || listType !== nextListType) {
-        closeList();
-        listType = nextListType;
-        list = document.createElement(nextListType);
-        container.append(list);
-      }
-      const item = document.createElement("li");
-      appendChangelogInline(item, listMatch[3]);
-      list.append(item);
-      continue;
-    }
-    const quoteMatch = /^>\s?(.*)$/.exec(line);
-    if (quoteMatch) {
-      flushParagraph();
-      closeList();
-      const quote = document.createElement("blockquote");
-      appendChangelogInline(quote, quoteMatch[1]);
-      container.append(quote);
-      continue;
-    }
-    closeList();
-    paragraphLines.push(line.trim());
-  }
-  flushParagraph();
-  if (codeBlock) container.append(codeBlock.wrapper);
+  const rendered = marked.parse(String(markdown || ""), {
+    gfm: true,
+    breaks: false,
+    pedantic: false,
+  });
+  container.innerHTML = DOMPurify.sanitize(rendered, {
+    USE_PROFILES: { html: true },
+    FORBID_TAGS: ["audio", "button", "embed", "form", "iframe", "object", "select", "style", "textarea", "video"],
+    FORBID_ATTR: ["srcset", "style"],
+  });
+  prepareChangelogMarkdown(container);
 }
 
 function selectChangelogVersion(version) {
@@ -16358,7 +16312,32 @@ function selectChangelogVersion(version) {
   changelogDocument.parentElement.scrollTop = 0;
 }
 
+function compareChangelogVersions(left, right) {
+  const parse = (value) => {
+    const match = /^v?(\d+)\.(\d+)\.(\d+)/i.exec(String(value || ""));
+    return match ? match.slice(1, 4).map(Number) : [0, 0, 0];
+  };
+  const leftParts = parse(left);
+  const rightParts = parse(right);
+  for (let index = 0; index < 3; index += 1) {
+    if (leftParts[index] !== rightParts[index]) {
+      return leftParts[index] - rightParts[index];
+    }
+  }
+  return 0;
+}
+
+function createChangelogVersionBadge(label, variant) {
+  const badge = document.createElement("small");
+  badge.textContent = label;
+  badge.classList.add(`is-${variant}`);
+  return badge;
+}
+
 function renderChangelogVersions() {
+  if (changelogInstalledVersion) {
+    changelogInstalledVersion.textContent = `Installed ${currentVersion}`;
+  }
   changelogCount.textContent = String(changelogEntries.length);
   changelogVersionList.replaceChildren(
     ...changelogEntries.map((entry, index) => {
@@ -16369,14 +16348,18 @@ function renderChangelogVersions() {
       const version = document.createElement("strong");
       version.textContent = entry.version;
       const badges = document.createElement("span");
-      if (entry.version === currentVersion) {
-        const current = document.createElement("small");
-        current.textContent = "Current";
-        badges.append(current);
+      const comparedToInstalled = compareChangelogVersions(
+        entry.version,
+        currentVersion,
+      );
+      if (comparedToInstalled === 0) {
+        badges.append(createChangelogVersionBadge("Installed", "installed"));
+      } else if (index === 0 && comparedToInstalled > 0) {
+        badges.append(createChangelogVersionBadge("Update", "update"));
+      } else if (comparedToInstalled > 0) {
+        badges.append(createChangelogVersionBadge("Newer", "newer"));
       } else if (index === 0) {
-        const latest = document.createElement("small");
-        latest.textContent = "Latest";
-        badges.append(latest);
+        badges.append(createChangelogVersionBadge("Latest notes", "latest"));
       }
       button.append(version, badges);
       button.addEventListener("click", () => selectChangelogVersion(entry.version));
@@ -16407,11 +16390,16 @@ async function loadChangelog({ force = false } = {}) {
       : "What changed in Aero P2P Chat";
     renderChangelogVersions();
     if (!changelogEntries.length) throw new Error("The Gist has no versioned Markdown files.");
+    const installedEntry = changelogEntries.find(
+      (entry) => compareChangelogVersions(entry.version, currentVersion) === 0,
+    );
     const preferredVersion = changelogEntries.some((entry) => entry.version === selectedChangelogVersion)
       ? selectedChangelogVersion
-      : changelogEntries.some((entry) => entry.version === currentVersion)
-        ? currentVersion
-        : changelogEntries[0].version;
+      : installedEntry
+        ? installedEntry.version
+        : changelogEntries.find(
+            (entry) => compareChangelogVersions(entry.version, currentVersion) <= 0,
+          )?.version || changelogEntries[0].version;
     selectChangelogVersion(preferredVersion);
   } catch (error) {
     if (!changelogEntries.length) {
