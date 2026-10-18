@@ -298,7 +298,7 @@ async function executeRelease(options, reporter = {}) {
     setVersion(nextVersion);
     writeJson(policyPath, { minimumVersion });
 
-    step("Build Windows NSIS setup and Microsoft Store MSIX natively");
+    step("Build native Windows MSI setup and Microsoft Store MSIX");
     run("node", [
       "scripts/ci-build-release.cjs",
       "--platform=windows",

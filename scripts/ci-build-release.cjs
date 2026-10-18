@@ -113,7 +113,7 @@ function buildWindows(version) {
   run("node", ["scripts/run-electron-vite.cjs", "build"]);
   run(process.execPath, [
     electronBuilderCli, "--config", "electron-builder.config.cjs",
-    "--win", "nsis", "--x64", "--publish", "never",
+    "--win", "msi", "--x64", "--publish", "never",
     "--config.directories.output=dist/build/windows/setup",
   ]);
   run(process.execPath, [

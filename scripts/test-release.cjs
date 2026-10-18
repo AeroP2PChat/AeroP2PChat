@@ -31,6 +31,12 @@ const packageInfo = require("../package.json");
 const projectConfig = require("../config.json");
 const builderConfig = require("../electron-builder.config.cjs");
 assert.match(packageInfo.scripts.build, /--platform=windows/);
+assert.deepEqual(builderConfig.win.target, ["msi"]);
+assert.equal(builderConfig.msi.perMachine, true);
+assert.equal(
+  projectConfig.release.windowsSetupAsset,
+  "Aero-P2P-Chat-Windows-x64-Setup.msi",
+);
 assert.equal(
   projectConfig.release.windowsStoreMsixAsset,
   "Aero-P2P-Chat-Microsoft-Store-x64.msix",

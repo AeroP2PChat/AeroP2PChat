@@ -31,19 +31,18 @@ module.exports = {
     },
   ],
   win: {
-    target: ["nsis"],
+    target: ["msi"],
     icon: "assets/app.ico",
     artifactName: "Aero-P2P-Chat-Windows-${arch}-Setup.${ext}",
   },
-  nsis: {
+  msi: {
     oneClick: false,
-    perMachine: false,
-    allowToChangeInstallationDirectory: true,
+    // Keep one canonical installation in Program Files. User settings remain
+    // in Electron's per-user userData directory and are never stored here.
+    perMachine: true,
     createDesktopShortcut: "always",
     createStartMenuShortcut: true,
     shortcutName: projectConfig.app.name,
-    uninstallDisplayName: projectConfig.app.name,
-    deleteAppDataOnUninstall: false,
     runAfterFinish: true,
   },
   // This identity is assigned to Aero P2P Chat in Microsoft Partner Center.

@@ -65,6 +65,10 @@ const {
   verifyAppLockCredential,
 } = require("./app-lock");
 const { normalizeChangelogGist } = require("./changelog-gist");
+const {
+  hasMixedInstallerTypes,
+  parseUninstallRegistry,
+} = require("./windows-installations");
 const projectConfig = __PROJECT_CONFIG__;
 
 const packagedWindowIconPath = join(
@@ -2624,6 +2628,62 @@ function runStatusCommand(command, args) {
   }
 }
 
+function findWindowsInstallations() {
+  if (process.platform !== "win32") return [];
+  const registryPath = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+  const queries = [
+    ["HKCU", registryPath],
+    ["HKLM", registryPath, "/reg:64"],
+    ["HKLM", registryPath, "/reg:32"],
+  ];
+  const entries = queries.flatMap(([hive, key, registryView]) =>
+    parseUninstallRegistry(
+      runStatusCommand("reg.exe", [
+        "query",
+        `${hive}\\${key}`,
+        "/s",
+        ...(registryView ? [registryView] : []),
+      ]),
+      appDisplayName,
+    ),
+  );
+  return [...new Map(entries.map((entry) => [entry.key, entry])).values()];
+}
+
+async function warnAboutMixedWindowsInstallers() {
+  if (process.platform !== "win32" || !app.isPackaged || process.windowsStore) {
+    return;
+  }
+  const installations = findWindowsInstallations();
+  if (!hasMixedInstallerTypes(installations)) return;
+
+  const signature = installations
+    .map((entry) => `${entry.kind}:${entry.key.toLowerCase()}`)
+    .sort()
+    .join("|");
+  if (appConfig.maintenance?.installerConflictWarning === signature) return;
+
+  appConfig.maintenance = {
+    ...(appConfig.maintenance || {}),
+    installerConflictWarning: signature,
+  };
+  await saveConfig(appConfig);
+  const result = await dialog.showMessageBox(mainWindow, {
+    type: "warning",
+    title: "Duplicate Aero installation detected",
+    message: "An old EXE installation and the new MSI installation are both registered.",
+    detail:
+      "Your chats and settings are safe. Open Windows Installed apps and remove the older Aero P2P Chat entry. If two identical entries are shown, remove the one whose uninstall confirmation does not mention Windows Installer. If Aero no longer starts afterward, run the MSI once more to repair it.",
+    buttons: ["Open Installed apps", "Later"],
+    defaultId: 0,
+    cancelId: 1,
+    noLink: true,
+  });
+  if (result.response === 0) {
+    await shell.openExternal("ms-settings:appsfeatures");
+  }
+}
+
 function isWindowsNotificationDisabled() {
   const shellState = runStatusCommand("powershell.exe", [
     "-NoProfile",
@@ -3478,12 +3538,12 @@ async function installWindowsUpdate(
     for (let attempt = 1; attempt <= 10; attempt += 1) {
       try {
         updater = spawn(
-          setupPath,
-          [],
+          "msiexec.exe",
+          ["/i", setupPath],
           {
             detached: true,
             stdio: "ignore",
-            // The user explicitly requested the update. Keep the native NSIS
+            // The user explicitly requested the update. Keep the native MSI
             // wizard visible so Windows security prompts and install progress
             // cannot disappear behind a silent background update.
             windowsHide: false,
@@ -4414,6 +4474,9 @@ app.whenReady().then(async () => {
   appStartupReady = true;
   createTray();
   createWindow({ hidden: shouldStartHidden() && !appLockRecord?.enabled });
+  void warnAboutMixedWindowsInstallers().catch((error) => {
+    console.warn("Could not check Windows installer registrations.", error.message);
+  });
   startAutoLockMonitor();
 
   powerMonitor.on("shutdown", () => {

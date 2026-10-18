@@ -198,7 +198,7 @@ async function main() {
     [
       `Version       ${state.currentVersion} → ${nextVersion}`,
       `Mindestversion ${minimumVersion}`,
-      "Windows       NSIS + MSIX (lokal)",
+      "Windows       MSI + MSIX (lokal)",
       "Linux         AppImage + RPM + DEB (GitHub Actions)",
       `Chrome        ${chromeLabel}`,
       `GitHub        ${publishRelease ? "Automatisch veröffentlichen" : "Als Entwurf behalten"}`,

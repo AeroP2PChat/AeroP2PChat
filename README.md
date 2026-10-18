@@ -51,8 +51,10 @@ Local development and release preparation use Windows with Node.js 22, Git,
 GitHub CLI and npm. Check the workstation with `npm run doctor`.
 
 - `npm run dev` starts the Electron development build.
-- `npm run build` or `npm run build:windows` builds the Windows NSIS setup and
+- `npm run build` or `npm run build:windows` builds the native Windows MSI setup and
   Microsoft Store MSIX locally.
+- The MSI installs system-wide in `Program Files`; user settings remain in the
+  current Windows user's Electron `userData` directory.
 - `npm run build:store` builds only the Microsoft Store MSIX.
 - `npm run release` builds and uploads the Windows setup locally, keeps the MSIX
   for Partner Center, and starts the Linux GitHub Actions workflow.
@@ -88,7 +90,7 @@ diagnostics; they intentionally fail on Windows instead of cross-compiling.
 [badge-appimage]: https://img.shields.io/badge/Linux-AppImage-F9C440?style=for-the-badge&logo=linux&logoColor=black
 [badge-rpm]: https://img.shields.io/badge/Fedora%20%2F%20Nobara-RPM-51A2DA?style=for-the-badge&logo=fedora&logoColor=white
 [badge-deb]: https://img.shields.io/badge/Debian%20%2F%20Ubuntu-DEB-A81D33?style=for-the-badge&logo=debian&logoColor=white
-[download-windows]: https://github.com/AeroP2PChat/AeroP2PChat/releases/latest/download/Aero-P2P-Chat-Windows-x64-Setup.exe
+[download-windows]: https://github.com/AeroP2PChat/AeroP2PChat/releases/latest/download/Aero-P2P-Chat-Windows-x64-Setup.msi
 [download-store]: https://apps.microsoft.com/detail/9MTXC0M7P403
 [download-appimage]: https://github.com/AeroP2PChat/AeroP2PChat/releases/latest/download/Aero-P2P-Chat-Linux-x64.AppImage
 [download-rpm]: https://github.com/AeroP2PChat/AeroP2PChat/releases/latest/download/Aero-P2P-Chat-Linux-x64.rpm

@@ -7,7 +7,7 @@ import {
 } from "../src/renderer/update-security.mjs";
 
 const repo = "AeroP2PChat/AeroP2PChat";
-const asset = "Aero-P2P-Chat-Windows-x64-Setup.exe";
+const asset = "Aero-P2P-Chat-Windows-x64-Setup.msi";
 const validUrl =
   `https://github.com/${repo}/releases/download/v26.52.2/${asset}`;
 
@@ -51,7 +51,8 @@ const windowsUpdaterSource = mainSource.slice(
   mainSource.indexOf("async function installWindowsUpdate("),
   mainSource.indexOf("async function installLinuxAppImageUpdate("),
 );
-assert.doesNotMatch(windowsUpdaterSource, /\["\/S"\]/);
+assert.match(windowsUpdaterSource, /spawn\(\s*"msiexec\.exe"/);
+assert.match(windowsUpdaterSource, /\["\/i", setupPath\]/);
 assert.match(windowsUpdaterSource, /windowsHide:\s*false/);
 assert.match(windowsUpdaterSource, /phase:\s*"launched"/);
 
