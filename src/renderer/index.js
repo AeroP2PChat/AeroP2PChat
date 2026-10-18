@@ -66,6 +66,7 @@ let qrScannerSession = 0;
 let qrScannerCanvas = null;
 let qrScannerContext = null;
 let qrScannerDecoder = null;
+let connectionPanelCloseTimer = null;
 let qrEncoderPromise = null;
 let qrDecoderPromise = null;
 let ownIdQrBlob = null;
@@ -16010,8 +16011,15 @@ titlebarLogo.addEventListener("contextmenu", openAppMenu);
 function closeConnectionPanel() {
   stopAeroIdQrScanner();
   hideOwnIdQrCode();
-  ownIdModal?.classList.add("hidden");
   openConnectionModalButton?.setAttribute("aria-expanded", "false");
+  if (!ownIdModal || ownIdModal.classList.contains("hidden")) return;
+  window.clearTimeout(connectionPanelCloseTimer);
+  ownIdModal.classList.add("is-closing");
+  connectionPanelCloseTimer = window.setTimeout(() => {
+    ownIdModal.classList.add("hidden");
+    ownIdModal.classList.remove("is-closing");
+    connectionPanelCloseTimer = null;
+  }, 130);
 }
 
 function positionConnectionPanel() {
@@ -16019,7 +16027,7 @@ function positionConnectionPanel() {
   const anchor = openConnectionModalButton.getBoundingClientRect();
   const gap = 8;
   const edge = 12;
-  const preferredWidth = Math.min(390, window.innerWidth - edge * 2);
+  const preferredWidth = Math.min(360, window.innerWidth - edge * 2);
   const left = Math.min(
     Math.max(edge, anchor.left),
     Math.max(edge, window.innerWidth - preferredWidth - edge),
@@ -16031,7 +16039,9 @@ function positionConnectionPanel() {
 }
 
 openConnectionModalButton?.addEventListener("click", () => {
-  const willOpen = ownIdModal?.classList.contains("hidden");
+  const willOpen =
+    ownIdModal?.classList.contains("hidden") ||
+    ownIdModal?.classList.contains("is-closing");
   if (!willOpen) {
     closeConnectionPanel();
     return;
@@ -16042,6 +16052,9 @@ openConnectionModalButton?.addEventListener("click", () => {
   stopAeroIdQrScanner();
   isRemoteIdBlurred = true;
   renderRemoteIdPrivacy();
+  window.clearTimeout(connectionPanelCloseTimer);
+  connectionPanelCloseTimer = null;
+  ownIdModal?.classList.remove("is-closing");
   ownIdModal?.classList.remove("hidden");
   openConnectionModalButton.setAttribute("aria-expanded", "true");
   requestAnimationFrame(positionConnectionPanel);

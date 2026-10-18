@@ -7717,22 +7717,25 @@ body.platform-android .incoming-call-screen {
   padding: 16px;
 }
 .sidebar-connection-card {
+  --sidebar-action-width: 32px;
+  --sidebar-control-height: 34px;
+  --sidebar-control-gap: 6px;
   position: fixed;
   z-index: 590;
   display: grid;
-  gap: 10px;
-  width: min(390px, calc(100vw - 24px));
+  gap: 8px;
+  width: min(360px, calc(100vw - 24px));
   min-height: 0;
   max-height: calc(100dvh - var(--titlebar-height) - 24px);
-  padding: 10px;
+  padding: 9px;
   overflow-x: hidden;
   overflow-y: auto;
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--surface-raised) 97%, transparent);
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--surface-raised) 96%, transparent);
+  box-shadow: 0 16px 42px rgb(0 0 0 / 24%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   transform-origin: top left;
   animation: sidebar-connect-open 160ms cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -7740,12 +7743,29 @@ body.platform-android .incoming-call-screen {
   min-width: 0;
 }
 .sidebar-connection-section + .sidebar-connection-section {
-  padding-top: 10px;
+  padding-top: 8px;
   border-top: 1px solid var(--line);
+}
+.sidebar-connection-card .id-card,
+.sidebar-connection-card .connect-form {
+  padding-inline: 2px;
+}
+.sidebar-connection-card .id-card > .label,
+.sidebar-connection-card .connect-form > label {
+  margin-bottom: 6px;
+  font-size: 9px;
+}
+.sidebar-connection-card.is-closing {
+  pointer-events: none;
+  animation: sidebar-connect-close 130ms ease-in forwards;
 }
 @keyframes sidebar-connect-open {
   from { opacity: 0; transform: translateY(-5px) scale(0.985); }
   to { opacity: 1; transform: translateY(0); }
+}
+@keyframes sidebar-connect-close {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-4px) scale(0.988); }
 }
 .sidebar-action-modal .id-card,
 .sidebar-action-modal .connect-form {
