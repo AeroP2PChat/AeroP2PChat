@@ -58,4 +58,14 @@ assert.match(workflow, /Aero-P2P-Chat-Linux-x64\.AppImage/);
 assert.match(workflow, /Aero-P2P-Chat-Linux-x64\.rpm/);
 assert.match(workflow, /Aero-P2P-Chat-Linux-x64\.deb/);
 
+const mainSource = fs.readFileSync(
+  path.join(root, "src", "main", "index.js"),
+  "utf8",
+);
+assert.match(
+  mainSource,
+  /app\.setPath\("userData", join\(app\.getPath\("appData"\), "AeroP2PChat"\)\)/,
+);
+assert.doesNotMatch(mainSource, /migratePackagedUserData/);
+
 console.log("Release workflow tests passed.");

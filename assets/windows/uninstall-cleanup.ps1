@@ -12,10 +12,7 @@ if ($choice -ne [System.Windows.MessageBoxResult]::Yes) {
   exit 0
 }
 
-$dataPaths = @(
-  (Join-Path $env:APPDATA "zorblock\userData\Aero P2P Chat"),
-  (Join-Path $env:APPDATA "Aero P2P Chat")
-)
+$dataPaths = @((Join-Path $env:APPDATA "AeroP2PChat"))
 
 foreach ($dataPath in $dataPaths) {
   if (Test-Path -LiteralPath $dataPath) {
