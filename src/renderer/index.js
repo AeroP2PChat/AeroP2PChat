@@ -16191,6 +16191,13 @@ function getSafeChangelogUrl(value, { image = false, baseUrl = "" } = {}) {
       baseUrl || changelogSourceUrl || "https://gist.github.com/",
     );
     if (
+      image &&
+      url.hostname === "gist.github.com" &&
+      url.pathname.startsWith("/user-attachments/assets/")
+    ) {
+      url.hostname = "github.com";
+    }
+    if (
       !["http:", "https:"].includes(url.protocol) ||
       (image && url.protocol !== "https:") ||
       !url.hostname ||
@@ -16300,8 +16307,11 @@ function prepareChangelogMarkdown(container, { baseUrl = "" } = {}) {
     markdownImage.referrerPolicy = "no-referrer";
     markdownImage.alt ||= "Changelog image";
     markdownImage.addEventListener("error", () => {
-      markdownImage.classList.add("is-unavailable");
-      markdownImage.title = "Image could not be loaded";
+      const unavailable = document.createElement("span");
+      unavailable.className = "changelog-image-unavailable";
+      unavailable.textContent = `${markdownImage.alt} could not be loaded`;
+      unavailable.title = safeUrl;
+      markdownImage.replaceWith(unavailable);
     }, { once: true });
   }
 

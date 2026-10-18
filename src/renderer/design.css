@@ -5828,11 +5828,17 @@ body.reduce-motion *::after {
   border-radius: var(--radius-sm);
   object-fit: contain;
 }
-.changelog-markdown img.is-unavailable {
+.changelog-image-unavailable {
+  display: grid;
   min-height: 72px;
+  margin: 12px 0 16px;
   padding: 18px;
+  place-items: center;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
   background: var(--surface-subtle);
   color: var(--faint);
+  text-align: center;
 }
 .changelog-markdown code {
   padding: 2px 5px;
