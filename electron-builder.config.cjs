@@ -34,6 +34,12 @@ module.exports = {
     target: ["msi"],
     icon: "assets/app.ico",
     artifactName: "Aero-P2P-Chat-Windows-${arch}-Setup.${ext}",
+    extraResources: [
+      {
+        from: "assets/windows/uninstall-cleanup.ps1",
+        to: "uninstall-cleanup.ps1",
+      },
+    ],
   },
   msi: {
     oneClick: false,
@@ -45,6 +51,7 @@ module.exports = {
     shortcutName: projectConfig.app.name,
     runAfterFinish: true,
   },
+  msiProjectCreated: "scripts/customize-msi.cjs",
   // This identity is assigned to Aero P2P Chat in Microsoft Partner Center.
   // The Store replaces the package signature after certification.
   // electron-builder 26 uses its stable AppX/MakeAppx backend for both AppX

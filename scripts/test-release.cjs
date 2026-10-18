@@ -33,6 +33,8 @@ const builderConfig = require("../electron-builder.config.cjs");
 assert.match(packageInfo.scripts.build, /--platform=windows/);
 assert.deepEqual(builderConfig.win.target, ["msi"]);
 assert.equal(builderConfig.msi.perMachine, true);
+assert.equal(builderConfig.msi.createDesktopShortcut, "always");
+assert.equal(builderConfig.msiProjectCreated, "scripts/customize-msi.cjs");
 assert.equal(
   projectConfig.release.windowsSetupAsset,
   "Aero-P2P-Chat-Windows-x64-Setup.msi",
