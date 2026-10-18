@@ -113,16 +113,14 @@ function buildWindows(version) {
   run("node", ["scripts/run-electron-vite.cjs", "build"]);
   run(process.execPath, [
     electronBuilderCli, "--config", "electron-builder.config.cjs",
-    "--win", "msi", "--x64", "--publish", "never",
-    "--config.directories.output=dist/build/windows/setup",
+    // Build both installers from one packaged app. Separate invocations make
+    // electron-builder rebuild dependencies and win-unpacked twice.
+    "--win", "msi", "appx", "--x64", "--publish", "never",
+    "--config.directories.output=dist/build/windows",
   ]);
-  run(process.execPath, [
-    electronBuilderCli, "--config", "electron-builder.config.cjs",
-    "--win", "appx", "--x64", "--publish", "never",
-    "--config.directories.output=dist/build/windows/store",
-  ]);
-  const setup = copyArtifact(path.join(buildDir, "windows", "setup"), config.release.windowsSetupAsset);
-  copyArtifact(path.join(buildDir, "windows", "store"), config.release.windowsStoreMsixAsset);
+  const output = path.join(buildDir, "windows");
+  const setup = copyArtifact(output, config.release.windowsSetupAsset);
+  copyArtifact(output, config.release.windowsStoreMsixAsset);
   fs.writeFileSync(
     path.join(artifactsDir, "update_manifest_windows.json"),
     `${JSON.stringify({ version, platform: "windows", asset: setup }, null, 2)}\n`,
