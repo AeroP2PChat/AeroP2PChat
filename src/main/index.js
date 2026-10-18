@@ -63,7 +63,10 @@ const {
   replaceAppLockPin,
   verifyAppLockCredential,
 } = require("./app-lock");
-const { normalizeChangelogGist } = require("./changelog-gist");
+const {
+  extractChangelogAttachmentUrls,
+  normalizeChangelogGist,
+} = require("./changelog-gist");
 const {
   hasMixedInstallerTypes,
   parseUninstallRegistry,
@@ -105,7 +108,7 @@ const releasePathPrefix = `/${projectConfig.repo}/releases/`;
 const latestManifestUrl = `https://${releaseHost}${releasePathPrefix}latest/download/latest.yml`;
 const changelogGistId = "57f4fc6d54f13b545152c76312d8554f";
 const changelogGistApiUrl = `https://api.github.com/gists/${changelogGistId}`;
-const changelogCacheLifetimeMs = 5 * 60 * 1000;
+const changelogCacheLifetimeMs = 4 * 60 * 1000;
 const allowedAutoLockSeconds = new Set([60, 300, 600, 900, 1800, 3600]);
 let changelogCache = null;
 let changelogRequest = null;
@@ -3328,6 +3331,20 @@ async function fetchChangelogGist({ force = false } = {}) {
       },
     );
     const data = normalizeChangelogGist(JSON.parse(responseText));
+    if (data.sourceUrl) {
+      try {
+        const renderedGist = await fetchTextWithRetry(new URL(data.sourceUrl), 2, {
+          maxBytes: 4 * 1024 * 1024,
+          headers: {
+            Accept: "text/html",
+            "User-Agent": `${projectConfig.app.packageName}/${app.getVersion()}`,
+          },
+        });
+        data.attachmentUrls = extractChangelogAttachmentUrls(renderedGist);
+      } catch {
+        data.attachmentUrls = {};
+      }
+    }
     changelogCache = { data, fetchedAt: Date.now() };
     return data;
   })();

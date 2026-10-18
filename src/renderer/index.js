@@ -89,6 +89,17 @@ const changelogModal = document.querySelector("#changelog-modal");
 const changelogClose = document.querySelector("#changelog-close");
 const changelogRefresh = document.querySelector("#changelog-refresh");
 const changelogRetry = document.querySelector("#changelog-retry");
+const changelogImageViewer = document.querySelector("#changelog-image-viewer");
+const changelogImageViewport = document.querySelector("#changelog-image-viewport");
+const changelogImagePreview = document.querySelector("#changelog-image-preview");
+const changelogImageCounter = document.querySelector("#changelog-image-counter");
+const changelogImageCaption = document.querySelector("#changelog-image-caption");
+const changelogImagePrevious = document.querySelector("#changelog-image-previous");
+const changelogImageNext = document.querySelector("#changelog-image-next");
+const changelogImageZoomOut = document.querySelector("#changelog-image-zoom-out");
+const changelogImageZoomReset = document.querySelector("#changelog-image-zoom-reset");
+const changelogImageZoomIn = document.querySelector("#changelog-image-zoom-in");
+const changelogImageClose = document.querySelector("#changelog-image-close");
 const changelogSource = document.querySelector("#changelog-source");
 const changelogSubtitle = document.querySelector("#changelog-subtitle");
 const changelogInstalledVersion = document.querySelector(
@@ -1249,6 +1260,8 @@ const enhancedSelects = new Map();
 let changelogEntries = [];
 let selectedChangelogVersion = "";
 let changelogSourceUrl = "";
+let changelogAttachmentUrls = {};
+let changelogAttachmentRevision = "";
 let changelogLoadRequest = null;
 let changelogRenderId = 0;
 let changelogReadTimer = null;
@@ -16195,6 +16208,9 @@ function getSafeChangelogUrl(value, { image = false, baseUrl = "" } = {}) {
       url.hostname === "gist.github.com" &&
       url.pathname.startsWith("/user-attachments/assets/")
     ) {
+      const assetId = /\/([a-f0-9-]{36})\/?$/i.exec(url.pathname)?.[1]?.toLowerCase();
+      const resolvedAttachment = assetId && changelogAttachmentUrls[assetId];
+      if (resolvedAttachment) return resolvedAttachment;
       url.hostname = "github.com";
     }
     if (
@@ -16330,8 +16346,33 @@ function prepareChangelogMarkdown(container, { baseUrl = "" } = {}) {
   expandChangelogEmojiText(container);
 }
 
+function normalizeChangelogImageMarkup(markdown) {
+  return String(markdown || "").replace(/\\?<img\b([^>]*)\/?\s*>/gi, (tag, attributes) => {
+    const srcMatch = /\bsrc\s*=\s*(["'])(.*?)\1/i.exec(attributes);
+    if (!srcMatch) return tag;
+    const wrappedUrl = /^\[[^\]]*\]\((https?:\/\/[^\s)]+)\)$/i.exec(srcMatch[2]);
+    const wasEscaped = tag.startsWith("\\<");
+    if (!wrappedUrl && !wasEscaped) return tag;
+
+    const directUrl = wrappedUrl?.[1] || srcMatch[2];
+    const alt = /\balt\s*=\s*(["'])(.*?)\1/i.exec(attributes)?.[2] || "Changelog image";
+    const width = /^\d{1,4}$/.test(/\bwidth\s*=\s*(["'])(.*?)\1/i.exec(attributes)?.[2] || "")
+      ? /\bwidth\s*=\s*(["'])(.*?)\1/i.exec(attributes)[2]
+      : "";
+    const height = /^\d{1,4}$/.test(/\bheight\s*=\s*(["'])(.*?)\1/i.exec(attributes)?.[2] || "")
+      ? /\bheight\s*=\s*(["'])(.*?)\1/i.exec(attributes)[2]
+      : "";
+    const escapeAttribute = (value) => String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
+    return `<img${width ? ` width="${width}"` : ""}${height ? ` height="${height}"` : ""} alt="${escapeAttribute(alt)}" src="${escapeAttribute(directUrl)}">`;
+  });
+}
+
 function renderChangelogMarkdown(container, markdown, options = {}) {
-  const rendered = marked.parse(String(markdown || ""), {
+  const rendered = marked.parse(normalizeChangelogImageMarkup(markdown), {
     gfm: true,
     breaks: false,
     pedantic: false,
@@ -16350,7 +16391,11 @@ function yieldChangelogFrame() {
 
 function getChangelogMarkdownContent(entry) {
   const cached = changelogDocumentCache.get(entry.version);
-  if (cached?.markdown === entry.markdown && cached?.rawUrl === entry.rawUrl) {
+  if (
+    cached?.markdown === entry.markdown &&
+    cached?.rawUrl === entry.rawUrl &&
+    cached?.attachmentRevision === changelogAttachmentRevision
+  ) {
     return cached.element;
   }
 
@@ -16360,6 +16405,7 @@ function getChangelogMarkdownContent(entry) {
   changelogDocumentCache.set(entry.version, {
     markdown: entry.markdown,
     rawUrl: entry.rawUrl,
+    attachmentRevision: changelogAttachmentRevision,
     element,
   });
   return element;
@@ -16546,6 +16592,10 @@ async function loadChangelog({ force = false } = {}) {
     const result = await platformApi.fetchChangelog(changelogGistApiUrl, { force });
     changelogEntries = normalizeLoadedChangelogEntries(result);
     changelogSourceUrl = result?.sourceUrl || "";
+    changelogAttachmentUrls = result?.attachmentUrls && typeof result.attachmentUrls === "object"
+      ? result.attachmentUrls
+      : {};
+    changelogAttachmentRevision = JSON.stringify(changelogAttachmentUrls);
     changelogSource.disabled = !changelogSourceUrl;
     changelogSubtitle.textContent = result?.updatedAt
       ? `Updated ${new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.updatedAt))}`
@@ -16612,6 +16662,10 @@ async function prefetchChangelogStatus() {
     const result = await platformApi.fetchChangelog(changelogGistApiUrl);
     changelogEntries = normalizeLoadedChangelogEntries(result);
     changelogSourceUrl = result?.sourceUrl || "";
+    changelogAttachmentUrls = result?.attachmentUrls && typeof result.attachmentUrls === "object"
+      ? result.attachmentUrls
+      : {};
+    changelogAttachmentRevision = JSON.stringify(changelogAttachmentUrls);
     updateChangelogReadIndicators();
   } catch {
     // Prefetch is best effort; opening the changelog exposes retry controls.
@@ -16654,6 +16708,117 @@ changelogVersionList?.addEventListener("keydown", (event) => {
 changelogModal?.addEventListener("click", (event) => {
   if (event.target === changelogModal) closeChangelog();
 });
+
+let changelogViewerImages = [];
+let changelogViewerIndex = 0;
+let changelogViewerZoom = 1;
+let changelogViewerDrag = null;
+
+function sizeChangelogViewerImage({ center = false } = {}) {
+  if (!changelogImagePreview.naturalWidth || !changelogImagePreview.naturalHeight) return;
+  const availableWidth = Math.max(100, changelogImageViewport.clientWidth - 24);
+  const availableHeight = Math.max(100, changelogImageViewport.clientHeight - 24);
+  const fitScale = Math.min(
+    1,
+    availableWidth / changelogImagePreview.naturalWidth,
+    availableHeight / changelogImagePreview.naturalHeight,
+  );
+  changelogImagePreview.style.width = `${Math.round(changelogImagePreview.naturalWidth * fitScale * changelogViewerZoom)}px`;
+  changelogImagePreview.style.height = `${Math.round(changelogImagePreview.naturalHeight * fitScale * changelogViewerZoom)}px`;
+  changelogImageZoomReset.textContent = `${Math.round(changelogViewerZoom * 100)}%`;
+  if (center) {
+    requestAnimationFrame(() => {
+      changelogImageViewport.scrollLeft = Math.max(0, (changelogImagePreview.offsetWidth - changelogImageViewport.clientWidth) / 2);
+      changelogImageViewport.scrollTop = Math.max(0, (changelogImagePreview.offsetHeight - changelogImageViewport.clientHeight) / 2);
+    });
+  }
+}
+
+function setChangelogViewerZoom(value, { center = true } = {}) {
+  changelogViewerZoom = Math.min(5, Math.max(0.25, Math.round(value * 4) / 4));
+  sizeChangelogViewerImage({ center });
+}
+
+function showChangelogViewerImage(index) {
+  if (!changelogViewerImages.length) return;
+  changelogViewerIndex = (index + changelogViewerImages.length) % changelogViewerImages.length;
+  const image = changelogViewerImages[changelogViewerIndex];
+  changelogViewerZoom = 1;
+  changelogImagePreview.alt = image.alt || "Changelog image";
+  changelogImageCaption.textContent = image.alt || "";
+  changelogImageCounter.textContent = `${changelogViewerIndex + 1} / ${changelogViewerImages.length}`;
+  changelogImagePrevious.classList.toggle("hidden", changelogViewerImages.length < 2);
+  changelogImageNext.classList.toggle("hidden", changelogViewerImages.length < 2);
+  changelogImagePreview.src = image.currentSrc || image.src;
+  if (changelogImagePreview.complete) sizeChangelogViewerImage({ center: true });
+}
+
+function openChangelogImageViewer(selectedImage) {
+  changelogViewerImages = [...changelogDocument.querySelectorAll(".changelog-markdown img[src]")];
+  const selectedIndex = changelogViewerImages.indexOf(selectedImage);
+  if (selectedIndex < 0) return;
+  changelogImageViewer.classList.remove("hidden");
+  showChangelogViewerImage(selectedIndex);
+  changelogImageClose.focus({ preventScroll: true });
+}
+
+function closeChangelogImageViewer() {
+  changelogImageViewer.classList.add("hidden");
+  changelogImagePreview.removeAttribute("src");
+  changelogViewerImages = [];
+  changelogViewerDrag = null;
+  changelogImageViewport.classList.remove("is-dragging");
+}
+
+changelogDocument?.addEventListener("click", (event) => {
+  const image = event.target.closest(".changelog-markdown img[src]");
+  if (image) openChangelogImageViewer(image);
+});
+changelogImagePreview?.addEventListener("load", () => sizeChangelogViewerImage({ center: true }));
+changelogImageClose?.addEventListener("click", closeChangelogImageViewer);
+changelogImagePrevious?.addEventListener("click", () => showChangelogViewerImage(changelogViewerIndex - 1));
+changelogImageNext?.addEventListener("click", () => showChangelogViewerImage(changelogViewerIndex + 1));
+changelogImageZoomOut?.addEventListener("click", () => setChangelogViewerZoom(changelogViewerZoom - 0.25));
+changelogImageZoomReset?.addEventListener("click", () => setChangelogViewerZoom(1));
+changelogImageZoomIn?.addEventListener("click", () => setChangelogViewerZoom(changelogViewerZoom + 0.25));
+changelogImageViewport?.addEventListener("wheel", (event) => {
+  event.preventDefault();
+  setChangelogViewerZoom(changelogViewerZoom + (event.deltaY < 0 ? 0.25 : -0.25));
+}, { passive: false });
+changelogImageViewport?.addEventListener("pointerdown", (event) => {
+  changelogViewerDrag = {
+    x: event.clientX,
+    y: event.clientY,
+    left: changelogImageViewport.scrollLeft,
+    top: changelogImageViewport.scrollTop,
+  };
+  changelogImageViewport.setPointerCapture(event.pointerId);
+  changelogImageViewport.classList.add("is-dragging");
+});
+changelogImageViewport?.addEventListener("pointermove", (event) => {
+  if (!changelogViewerDrag) return;
+  changelogImageViewport.scrollLeft = changelogViewerDrag.left - (event.clientX - changelogViewerDrag.x);
+  changelogImageViewport.scrollTop = changelogViewerDrag.top - (event.clientY - changelogViewerDrag.y);
+});
+changelogImageViewport?.addEventListener("pointerup", () => {
+  changelogViewerDrag = null;
+  changelogImageViewport.classList.remove("is-dragging");
+});
+window.addEventListener("resize", () => {
+  if (!changelogImageViewer.classList.contains("hidden")) sizeChangelogViewerImage();
+});
+document.addEventListener("keydown", (event) => {
+  if (changelogImageViewer.classList.contains("hidden")) return;
+  if (event.key === "Escape") closeChangelogImageViewer();
+  else if (event.key === "ArrowLeft") showChangelogViewerImage(changelogViewerIndex - 1);
+  else if (event.key === "ArrowRight") showChangelogViewerImage(changelogViewerIndex + 1);
+  else if (["+", "="].includes(event.key)) setChangelogViewerZoom(changelogViewerZoom + 0.25);
+  else if (event.key === "-") setChangelogViewerZoom(changelogViewerZoom - 0.25);
+  else if (event.key === "0") setChangelogViewerZoom(1);
+  else return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}, true);
 
 for (const item of settingsNavItems) {
   item.addEventListener("click", () => {

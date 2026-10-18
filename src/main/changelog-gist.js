@@ -60,7 +60,28 @@ function normalizeChangelogGist(payload) {
   };
 }
 
+function extractChangelogAttachmentUrls(html) {
+  const attachmentUrls = {};
+  const matches = String(html || "").matchAll(
+    /https:\/\/private-user-images\.githubusercontent\.com\/[^\s"'<>]+/gi,
+  );
+  for (const match of matches) {
+    const candidate = match[0].replaceAll("&amp;", "&");
+    const assetId = /([a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12})/i.exec(candidate)?.[1];
+    try {
+      const url = new URL(candidate);
+      if (assetId && url.protocol === "https:" && url.hostname === "private-user-images.githubusercontent.com") {
+        attachmentUrls[assetId.toLowerCase()] = url.toString();
+      }
+    } catch {
+      // Ignore malformed URLs in GitHub's rendered page.
+    }
+  }
+  return attachmentUrls;
+}
+
 module.exports = {
+  extractChangelogAttachmentUrls,
   normalizeChangelogGist,
   parseChangelogFileName,
 };

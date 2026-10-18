@@ -1,4 +1,5 @@
 const {
+  extractChangelogAttachmentUrls,
   normalizeChangelogGist,
   parseChangelogFileName,
 } = require("../src/main/changelog-gist");
@@ -29,5 +30,11 @@ assert(normalized.entries.length === 2, "Unexpected changelog files were include
 assert(normalized.entries[0].version === "26.66.0", "Changelog versions were not sorted newest first.");
 assert(normalized.entries[0].rawUrl.includes("gist.githubusercontent.com"), "Safe raw URL was not retained.");
 assert(normalized.entries[1].fileName === "26.9.md", "Filename normalization failed.");
+
+const attachmentId = "7309d23d-e7ac-4046-b203-d94363a0f04f";
+const attachments = extractChangelogAttachmentUrls(
+  `<img src="https://private-user-images.githubusercontent.com/92232204/123-${attachmentId}.png?jwt=test&amp;key=value">`,
+);
+assert(attachments[attachmentId]?.includes("jwt=test&key=value"), "Signed Gist attachment URL extraction failed.");
 
 console.log("GitHub Gist changelog normalization checks passed.");

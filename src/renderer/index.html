@@ -1885,6 +1885,26 @@
       </section>
     </div>
 
+    <div id="changelog-image-viewer" class="changelog-image-viewer hidden" role="dialog" aria-modal="true" aria-label="Changelog image viewer">
+      <header class="changelog-image-viewer-toolbar">
+        <span id="changelog-image-counter">1 / 1</span>
+        <div class="changelog-image-viewer-actions">
+          <button id="changelog-image-zoom-out" type="button" aria-label="Zoom out" title="Zoom out"><i class="fa-solid fa-minus" aria-hidden="true"></i></button>
+          <button id="changelog-image-zoom-reset" type="button" aria-label="Reset zoom" title="Reset zoom">100%</button>
+          <button id="changelog-image-zoom-in" type="button" aria-label="Zoom in" title="Zoom in"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>
+          <button id="changelog-image-close" type="button" aria-label="Close image viewer" title="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+        </div>
+      </header>
+      <button id="changelog-image-previous" class="changelog-image-navigation previous" type="button" aria-label="Previous image"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+      <div id="changelog-image-viewport" class="changelog-image-viewport">
+        <div class="changelog-image-stage">
+          <img id="changelog-image-preview" alt="" draggable="false" />
+        </div>
+      </div>
+      <button id="changelog-image-next" class="changelog-image-navigation next" type="button" aria-label="Next image"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+      <footer id="changelog-image-caption" class="changelog-image-caption"></footer>
+    </div>
+
     <div id="custom-sound-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="custom-sound-title">
       <section class="modal-panel custom-sound-modal-panel">
         <header class="modal-header">
