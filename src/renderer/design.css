@@ -4037,10 +4037,10 @@ body.reduce-motion *::after {
   display: grid;
   /* The overlay already has padding, so use its available width instead of
      viewport units. This keeps the dialog genuinely centered at every size. */
-  width: min(960px, 100%);
-  max-width: 100%;
-  height: min(760px, calc(100dvh - var(--titlebar-height) - 32px));
-  max-height: min(760px, calc(100dvh - var(--titlebar-height) - 32px));
+  width: min(1120px, calc(100vw - 36px));
+  max-width: calc(100vw - 36px);
+  height: min(860px, calc(100dvh - var(--titlebar-height) - 36px));
+  max-height: calc(100dvh - var(--titlebar-height) - 36px);
   grid-template-rows: auto minmax(0, 1fr);
   min-width: 0;
 }
@@ -6628,6 +6628,10 @@ input[type="range"]:active::-webkit-slider-thumb {
   z-index: 800;
   display: grid;
   min-width: 196px;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100dvh - var(--titlebar-height) - 16px);
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 6px;
   border: 1px solid var(--line-strong);
   border-radius: 12px;
@@ -7694,6 +7698,154 @@ body.platform-android .incoming-call-screen {
 .sidebar-action-modal #scan-aero-id {
   width: 38px;
   height: 38px;
+}
+
+/* Responsive dialog and menu foundation */
+.modal-layer:not(#settings-modal):not(#changelog-modal) > .modal-panel {
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - var(--titlebar-height) - 24px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.modal-header .icon-only-button,
+.stream-dialog-header .icon-only-button {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  line-height: 1;
+}
+.modal-header .icon-only-button > i,
+.stream-dialog-header .icon-only-button > i {
+  display: block;
+  width: 1em;
+  margin: 0;
+  line-height: 1;
+  text-align: center;
+}
+
+@media (max-width: 700px) {
+  .modal-layer,
+  .incoming-call-screen {
+    padding: 10px;
+  }
+  .modal-panel,
+  .stream-dialog,
+  .incoming-call-content,
+  .custom-sound-modal-panel,
+  .details-modal-panel,
+  .sidebar-action-modal {
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+    max-height: calc(100dvh - var(--titlebar-height) - 20px);
+    border-radius: 13px;
+  }
+  #settings-modal .modal-panel,
+  #changelog-modal .changelog-modal-panel {
+    width: calc(100vw - 20px);
+    max-width: calc(100vw - 20px);
+    height: calc(100dvh - var(--titlebar-height) - 20px);
+    max-height: calc(100dvh - var(--titlebar-height) - 20px);
+  }
+  .modal-header,
+  .stream-dialog-header {
+    gap: 9px;
+  }
+  .stream-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .stream-audio-toggle {
+    grid-column: 1 / -1;
+    min-height: 38px;
+  }
+  .screen-source-list {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    max-height: calc(100dvh - var(--titlebar-height) - 300px);
+  }
+  .details-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .details-row > strong {
+    text-align: left;
+  }
+  .context-menu,
+  .app-menu {
+    width: min(280px, calc(100vw - 12px));
+    min-width: min(196px, calc(100vw - 12px));
+    max-width: calc(100vw - 12px);
+    max-height: calc(100dvh - var(--titlebar-height) - 12px);
+  }
+}
+
+@media (max-width: 430px) {
+  .modal-panel,
+  .stream-dialog {
+    padding: 12px;
+  }
+  .modal-header,
+  .stream-dialog-header {
+    align-items: flex-start;
+  }
+  .stream-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .stream-audio-toggle {
+    grid-column: auto;
+  }
+  .stream-source-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .sidebar-action-modal .id-row,
+  .sidebar-action-modal .connect-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .sidebar-action-modal .id-row code,
+  .sidebar-action-modal .connect-row input {
+    grid-column: 1 / -1;
+  }
+  .sidebar-action-modal .id-row .icon-button,
+  .sidebar-action-modal #connect-button,
+  .sidebar-action-modal #toggle-remote-id-privacy,
+  .sidebar-action-modal #scan-aero-id {
+    width: 100%;
+  }
+  .app-dialog-actions,
+  .update-actions {
+    flex-wrap: wrap;
+  }
+  .app-dialog-actions > button,
+  .update-actions > button {
+    flex: 1 1 120px;
+  }
+}
+
+@media (max-height: 650px) {
+  .modal-layer,
+  .incoming-call-screen {
+    padding-block: 8px;
+  }
+  .modal-panel,
+  .stream-dialog,
+  .incoming-call-content,
+  #settings-modal .modal-panel,
+  #changelog-modal .changelog-modal-panel {
+    max-height: calc(100dvh - var(--titlebar-height) - 16px);
+  }
+  #settings-modal .modal-panel,
+  #changelog-modal .changelog-modal-panel {
+    height: calc(100dvh - var(--titlebar-height) - 16px);
+  }
+  .modal-header,
+  .stream-dialog-header {
+    min-height: 38px;
+    margin-bottom: 9px;
+    padding-bottom: 9px;
+  }
+  .screen-source-list {
+    max-height: calc(100dvh - var(--titlebar-height) - 240px);
+  }
 }
 .own-id-qr-panel {
   display: grid;
