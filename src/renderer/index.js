@@ -497,7 +497,6 @@ const appMenuUpdateIgnore = document.querySelector("#app-menu-update-ignore");
 
 
 const appMenuSettings = document.querySelector("#app-menu-settings");
-const appMenuProfile = document.querySelector("#app-menu-profile");
 
 const contactMenu = document.querySelector("#contact-menu");
 const menuTrust = document.querySelector("#menu-trust");
@@ -16080,18 +16079,6 @@ function populateProfileSettings() {
   profileId.replaceChildren(createAeroIdReveal(identity.id));
   renderProfileAvatarPreview();
 }
-
-appMenuProfile.addEventListener("click", () => {
-  if (!switchPrimaryModal(settingsModal)) {
-    closeAppMenu();
-    return;
-  }
-  populateProfileSettings();
-  settingsModal.classList.remove("hidden");
-  selectSettingsPage("profile");
-  closeAppMenu();
-  profileNickname.focus();
-});
 
 profileClose.addEventListener("click", () => {
   profileModal.classList.add("hidden");

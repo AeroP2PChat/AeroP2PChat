@@ -308,15 +308,6 @@
               <span id="update-available-badge" class="update-menu-badge hidden" aria-label="Update available"></span>
             </button>
             <button
-              id="app-menu-profile"
-              type="button"
-              title="Profile settings"
-              aria-label="Profile settings"
-            >
-              <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
-              <span class="titlebar-action-label">Profile</span>
-            </button>
-            <button
               id="changelog-button"
               type="button"
               title="Changelog"
@@ -1221,12 +1212,11 @@
 
     <div
       id="settings-modal"
-      class="modal-layer hidden"
-      role="dialog"
-      aria-modal="true"
+      class="workspace-page hidden"
+      role="region"
       aria-labelledby="settings-title"
     >
-      <section class="modal-panel">
+      <section class="modal-panel workspace-page-surface">
         <header class="modal-header">
           <div class="settings-modal-title">
             <h2 id="settings-title">Settings</h2>
@@ -1855,8 +1845,8 @@
       </section>
     </div>
 
-    <div id="changelog-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="changelog-title">
-      <section class="modal-panel changelog-modal-panel">
+    <div id="changelog-modal" class="workspace-page hidden" role="region" aria-labelledby="changelog-title">
+      <section class="modal-panel workspace-page-surface changelog-modal-panel">
         <header class="modal-header changelog-header">
           <div>
             <div class="changelog-title-row">

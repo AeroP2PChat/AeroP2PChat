@@ -3004,6 +3004,33 @@ body:has(> .modal-layer:not(.hidden)) {
   height: 100dvh;
   overflow: hidden;
 }
+body:has(> .workspace-page:not(.hidden)) {
+  height: 100dvh;
+  overflow: hidden;
+}
+.workspace-page {
+  position: fixed;
+  z-index: 450;
+  top: var(--titlebar-height);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: block;
+  min-width: 0;
+  min-height: 0;
+  padding: 12px;
+  overflow: hidden;
+  background: var(--canvas);
+}
+.workspace-page-surface {
+  width: 100% !important;
+  min-width: 0;
+  max-width: none !important;
+  height: 100% !important;
+  min-height: 0;
+  max-height: none !important;
+  margin: 0;
+}
 .modal-panel,
 .stream-dialog,
 .incoming-call-content {
@@ -7863,6 +7890,9 @@ body:not(.platform-android) .modal-layer > .stream-dialog {
   height: calc(100dvh - var(--titlebar-height) - 24px) !important;
   min-height: 0;
   max-height: none !important;
+}
+body:not(.platform-android) .workspace-page {
+  padding: 12px;
 }
 .own-id-qr-panel {
   display: grid;
