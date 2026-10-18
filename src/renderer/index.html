@@ -388,8 +388,11 @@
       <main class="app-shell">
         <section class="connection-panel" aria-label="Connection">
           <div class="sidebar-quick-actions">
-            <button id="open-own-id-modal" type="button"><i class="fa-regular fa-id-card" aria-hidden="true"></i>My ID</button>
-            <button id="open-connect-modal" type="button"><i class="fa-solid fa-user-plus" aria-hidden="true"></i>Add user</button>
+            <button id="open-connection-modal" type="button" aria-expanded="false" aria-controls="connection-panel"><i class="fa-solid fa-user-plus" aria-hidden="true"></i><span>Connect</span><i class="fa-solid fa-chevron-down sidebar-connect-chevron" aria-hidden="true"></i></button>
+          </div>
+          <div id="connection-panel" class="sidebar-connection-card hidden">
+            <section class="sidebar-connection-section" aria-label="My Aero ID"><div id="own-id-modal-mount"></div></section>
+            <section class="sidebar-connection-section" aria-label="Add user"><div id="connect-modal-mount"></div></section>
           </div>
           <div class="id-card">
             <span class="label">My Aero ID</span>
@@ -1977,19 +1980,6 @@
     </aside>
     <input id="custom-sound-file-input" type="file" accept="audio/ogg,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/aac,audio/flac" hidden />
     <input id="custom-wallpaper-file-input" type="file" accept="image/png,image/jpeg,image/webp" hidden />
-
-    <div id="own-id-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="own-id-modal-title">
-      <section class="modal-panel sidebar-action-modal">
-        <header class="modal-header"><h2 id="own-id-modal-title">My Aero ID</h2><button class="ghost-button icon-only-button" type="button" data-close-sidebar-modal aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
-        <div id="own-id-modal-mount"></div>
-      </section>
-    </div>
-    <div id="connect-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="connect-modal-title">
-      <section class="modal-panel sidebar-action-modal">
-        <header class="modal-header"><h2 id="connect-modal-title">Add user</h2><button class="ghost-button icon-only-button" type="button" data-close-sidebar-modal aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></header>
-        <div id="connect-modal-mount"></div>
-      </section>
-    </div>
 
     <div id="profile-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="profile-title">
       <section class="profile-panel">

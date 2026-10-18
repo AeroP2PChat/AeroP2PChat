@@ -52,12 +52,11 @@ const qrScannerVideo = document.querySelector("#qr-scanner-video");
 const qrScannerStatus = document.querySelector("#qr-scanner-status");
 const stopQrScannerButton = document.querySelector("#stop-qr-scanner");
 const connectButton = document.querySelector("#connect-button");
-const ownIdModal = document.querySelector("#own-id-modal");
-const connectModal = document.querySelector("#connect-modal");
+const ownIdModal = document.querySelector("#connection-panel");
+const connectModal = ownIdModal;
 const ownIdModalMount = document.querySelector("#own-id-modal-mount");
 const connectModalMount = document.querySelector("#connect-modal-mount");
-const openOwnIdModalButton = document.querySelector("#open-own-id-modal");
-const openConnectModalButton = document.querySelector("#open-connect-modal");
+const openConnectionModalButton = document.querySelector("#open-connection-modal");
 let isOwnIdBlurred = true;
 let isRemoteIdBlurred = true;
 let qrScannerStream = null;
@@ -14374,8 +14373,7 @@ function switchPrimaryModal(targetModal) {
   closeStreamSetup();
   stopAeroIdQrScanner();
   hideOwnIdQrCode();
-  ownIdModal?.classList.add("hidden");
-  connectModal?.classList.add("hidden");
+  closeConnectionPanel();
   return true;
 }
 
@@ -14560,7 +14558,7 @@ connectForm.addEventListener("submit", (event) => {
   remoteIdInput.value = "";
   refreshPeers();
   stopAeroIdQrScanner();
-  connectModal?.classList.add("hidden");
+  closeConnectionPanel();
 });
 
 retryConnectButton?.addEventListener("click", () => {
@@ -16009,18 +16007,55 @@ copyUpdateCommands.forEach((button) => {
 
 titlebarLogo.addEventListener("contextmenu", openAppMenu);
 
-openOwnIdModalButton?.addEventListener("click", () => {
+function closeConnectionPanel() {
+  stopAeroIdQrScanner();
+  hideOwnIdQrCode();
+  ownIdModal?.classList.add("hidden");
+  openConnectionModalButton?.setAttribute("aria-expanded", "false");
+}
+
+function positionConnectionPanel() {
+  if (!ownIdModal || !openConnectionModalButton || ownIdModal.classList.contains("hidden")) return;
+  const anchor = openConnectionModalButton.getBoundingClientRect();
+  const gap = 8;
+  const edge = 12;
+  const preferredWidth = Math.min(390, window.innerWidth - edge * 2);
+  const left = Math.min(
+    Math.max(edge, anchor.left),
+    Math.max(edge, window.innerWidth - preferredWidth - edge),
+  );
+  ownIdModal.style.left = `${Math.round(left)}px`;
+  ownIdModal.style.top = `${Math.round(anchor.bottom + gap)}px`;
+  ownIdModal.style.width = `${Math.round(preferredWidth)}px`;
+  ownIdModal.style.maxHeight = `${Math.max(180, Math.round(window.innerHeight - anchor.bottom - gap - edge))}px`;
+}
+
+openConnectionModalButton?.addEventListener("click", () => {
+  const willOpen = ownIdModal?.classList.contains("hidden");
+  if (!willOpen) {
+    closeConnectionPanel();
+    return;
+  }
   isOwnIdBlurred = true;
   renderOwnIdPrivacy();
   hideOwnIdQrCode();
-  ownIdModal?.classList.remove("hidden");
-});
-openConnectModalButton?.addEventListener("click", () => {
   stopAeroIdQrScanner();
   isRemoteIdBlurred = true;
   renderRemoteIdPrivacy();
-  connectModal?.classList.remove("hidden");
-  document.querySelector("#remote-id")?.focus();
+  ownIdModal?.classList.remove("hidden");
+  openConnectionModalButton.setAttribute("aria-expanded", "true");
+  requestAnimationFrame(positionConnectionPanel);
+});
+window.addEventListener("resize", positionConnectionPanel);
+document.addEventListener("pointerdown", (event) => {
+  if (
+    ownIdModal?.classList.contains("hidden") ||
+    ownIdModal?.contains(event.target) ||
+    openConnectionModalButton?.contains(event.target)
+  ) {
+    return;
+  }
+  closeConnectionPanel();
 });
 showOwnIdQrButton?.addEventListener("click", () => {
   void showOwnIdQrCode();
@@ -17384,8 +17419,7 @@ document.addEventListener("keydown", (event) => {
     changelogModal.classList.add("hidden");
     stopAeroIdQrScanner();
     hideOwnIdQrCode();
-    ownIdModal?.classList.add("hidden");
-    connectModal?.classList.add("hidden");
+    closeConnectionPanel();
     closeStreamSetup();
   }
 });

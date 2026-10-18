@@ -552,8 +552,12 @@ body.app-boot-finish .window-frame {
 }
 .window-controls .window-close:hover,
 .window-controls .window-close:focus-visible {
-  background: #c83d52;
-  color: #ffffff;
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+}
+.window-controls .window-close:active {
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+  color: var(--danger-hover);
 }
 .window-controls .header-update-button {
   align-self: center;
@@ -7674,7 +7678,7 @@ body.platform-android .incoming-call-screen {
 /* Settings actions share one quiet accent-outline treatment. */
 .sidebar-quick-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 7px;
   margin-bottom: 10px;
 }
@@ -7692,6 +7696,17 @@ body.platform-android .incoming-call-screen {
   font-size: 12px;
   font-weight: 700;
 }
+.sidebar-quick-actions button > span {
+  flex: 1;
+  text-align: left;
+}
+.sidebar-connect-chevron {
+  font-size: 9px;
+  transition: transform 150ms ease;
+}
+.sidebar-quick-actions button[aria-expanded="true"] .sidebar-connect-chevron {
+  transform: rotate(180deg);
+}
 .sidebar-quick-actions button:hover {
   border-color: var(--line-accent);
   background: color-mix(in srgb, var(--accent) 8%, transparent);
@@ -7700,6 +7715,37 @@ body.platform-android .incoming-call-screen {
 .sidebar-action-modal {
   width: min(620px, calc(100vw - 32px));
   padding: 16px;
+}
+.sidebar-connection-card {
+  position: fixed;
+  z-index: 590;
+  display: grid;
+  gap: 10px;
+  width: min(390px, calc(100vw - 24px));
+  min-height: 0;
+  max-height: calc(100dvh - var(--titlebar-height) - 24px);
+  padding: 10px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface-raised) 97%, transparent);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transform-origin: top left;
+  animation: sidebar-connect-open 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.sidebar-connection-section {
+  min-width: 0;
+}
+.sidebar-connection-section + .sidebar-connection-section {
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+@keyframes sidebar-connect-open {
+  from { opacity: 0; transform: translateY(-5px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .sidebar-action-modal .id-card,
 .sidebar-action-modal .connect-form {
