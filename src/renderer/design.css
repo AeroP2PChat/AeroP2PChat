@@ -538,7 +538,7 @@ body.app-boot-finish .window-frame {
   padding: 0 12px;
   place-items: center;
   border: 0;
-  border-radius: var(--radius-xs);
+  border-radius: 0;
   background: transparent;
   color: var(--text-soft);
   font-size: 12px;
@@ -554,9 +554,6 @@ body.app-boot-finish .window-frame {
 .window-controls .window-close:focus-visible {
   background: #c83d52;
   color: #ffffff;
-}
-.window-controls .window-close {
-  border-radius: 0;
 }
 .window-controls .header-update-button {
   align-self: center;
