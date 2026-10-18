@@ -332,6 +332,7 @@ body.app-boot-finish .window-frame {
   -webkit-app-region: no-drag;
 }
 .titlebar-actions button {
+  position: relative;
   display: grid;
   width: 30px;
   height: 30px;
@@ -344,6 +345,19 @@ body.app-boot-finish .window-frame {
   font-size: 12px;
   cursor: pointer;
   transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+}
+.changelog-menu-badge,
+.update-menu-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  border: 2px solid var(--surface);
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 18%, transparent);
+  pointer-events: none;
 }
 .titlebar-actions button:hover,
 .titlebar-actions button:focus-visible {
@@ -5604,6 +5618,8 @@ body.reduce-motion *::after {
   flex-direction: column;
   gap: 4px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 .changelog-version-list button {
   display: flex;
@@ -5627,6 +5643,17 @@ body.reduce-motion *::after {
   border-color: var(--line-accent);
   background: var(--accent-soft);
   color: var(--accent);
+}
+.changelog-version-list button.is-unread strong::before {
+  width: 6px;
+  height: 6px;
+  display: inline-block;
+  margin-right: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+  content: "";
+  vertical-align: 1px;
 }
 .changelog-version-list strong {
   font-size: 11px;
@@ -5682,6 +5709,8 @@ body.reduce-motion *::after {
   padding: 22px clamp(18px, 3vw, 36px) 30px;
   overflow: auto;
   background: var(--surface-raised);
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 .changelog-state {
   display: grid;
@@ -5708,6 +5737,29 @@ body.reduce-motion *::after {
 .changelog-document {
   max-width: 680px;
   margin: 0 auto;
+  animation: changelog-document-in 160ms ease-out;
+  contain: layout paint style;
+}
+.changelog-document-pending {
+  display: grid;
+  gap: 9px;
+}
+.changelog-document-pending span {
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--surface-subtle), var(--surface-hover), var(--surface-subtle));
+  background-size: 220% 100%;
+  animation: changelog-skeleton 1.1s ease-in-out infinite;
+}
+.changelog-document-pending span:nth-child(2) { width: 86%; }
+.changelog-document-pending span:nth-child(3) { width: 62%; }
+@keyframes changelog-document-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes changelog-skeleton {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
 }
 .changelog-document-heading {
   display: flex;
@@ -5733,6 +5785,10 @@ body.reduce-motion *::after {
   font-size: 12px;
   line-height: 1.6;
   user-select: text;
+}
+.changelog-markdown > * {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 40px;
 }
 .changelog-markdown h1,
 .changelog-markdown h2,
@@ -5903,6 +5959,12 @@ body.reduce-motion *::after {
   }
   .changelog-version-list button { flex: 0 0 auto; }
   .changelog-content { padding: 22px 17px 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .changelog-document,
+  .changelog-document-pending span {
+    animation: none;
+  }
 }
 
 .custom-sound-modal-panel {

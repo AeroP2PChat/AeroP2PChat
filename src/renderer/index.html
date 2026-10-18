@@ -305,6 +305,7 @@
             >
               <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
               <span class="titlebar-action-label">Check for updates</span>
+              <span id="update-available-badge" class="update-menu-badge hidden" aria-label="Update available"></span>
             </button>
             <button
               id="app-menu-profile"
@@ -323,6 +324,7 @@
             >
               <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
               <span class="titlebar-action-label">Changelog</span>
+              <span id="changelog-unread-badge" class="changelog-menu-badge hidden" aria-label="Unread changelog entries"></span>
             </button>
             <button
               id="app-menu-settings"
@@ -1511,13 +1513,6 @@
                     <span>Auto-download</span>
                   </label>
                 </div>
-                <div class="update-settings-group">
-                  <div class="update-settings-heading"><h4>Prompt</h4></div>
-                  <label class="settings-check">
-                    <input id="update-modal-toggle" type="checkbox" />
-                    <span>Show update window</span>
-                  </label>
-                </div>
               </div>
             </section>
 
@@ -1881,9 +1876,9 @@
             <div id="changelog-version-list" class="changelog-version-list" role="listbox"></div>
             <button id="changelog-source" class="changelog-source-button" type="button"><i class="fa-brands fa-github" aria-hidden="true"></i><span>View source Gist</span></button>
           </aside>
-          <main class="changelog-content">
-            <div id="changelog-loading" class="changelog-state"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i><strong>Loading changelog…</strong></div>
-            <div id="changelog-error" class="changelog-state hidden"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><strong>Could not load the changelog</strong><span></span><button id="changelog-retry" class="ghost-button" type="button">Try again</button></div>
+          <main class="changelog-content" aria-live="polite">
+            <div id="changelog-loading" class="changelog-state"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i><strong>Loading changelog…</strong><span>Fetching the latest release notes</span></div>
+            <div id="changelog-error" class="changelog-state hidden" role="status"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><strong>Could not load the changelog</strong><span></span><button id="changelog-retry" class="ghost-button" type="button">Try again</button></div>
             <article id="changelog-document" class="changelog-document hidden"></article>
           </main>
         </div>

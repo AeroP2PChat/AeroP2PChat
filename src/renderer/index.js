@@ -84,6 +84,7 @@ const sidebarResizer = document.querySelector("#sidebar-resizer");
 const contactSearchInput = document.querySelector("#contact-search");
 const peerList = document.querySelector("#peer-list");
 const changelogButton = document.querySelector("#changelog-button");
+const changelogUnreadBadge = document.querySelector("#changelog-unread-badge");
 const changelogModal = document.querySelector("#changelog-modal");
 const changelogClose = document.querySelector("#changelog-close");
 const changelogRefresh = document.querySelector("#changelog-refresh");
@@ -212,7 +213,6 @@ const startupUpdateButton = document.querySelector("#startup-update-button");
 const checkUpdatesButton = document.querySelector("#check-updates-button");
 const updateCheckStatus = document.querySelector("#update-check-status");
 const autoDownloadUpdatesToggle = document.querySelector("#auto-download-updates-toggle");
-const updateModalToggle = document.querySelector("#update-modal-toggle");
 const updatePlatformNote = document.querySelector("#update-platform-note");
 let startupUpdateModalShownForVersion = "";
 let updateSettingsStatus = "";
@@ -478,6 +478,7 @@ const appMenuOnline = document.querySelector("#app-menu-online");
 const appMenuDnd = document.querySelector("#app-menu-dnd");
 const appMenuOffline = document.querySelector("#app-menu-offline");
 const appMenuUpdate = document.querySelector("#app-menu-update");
+const updateAvailableBadge = document.querySelector("#update-available-badge");
 const appMenuUpdateIgnore = document.querySelector("#app-menu-update-ignore");
 
 
@@ -1248,6 +1249,10 @@ const enhancedSelects = new Map();
 let changelogEntries = [];
 let selectedChangelogVersion = "";
 let changelogSourceUrl = "";
+let changelogLoadRequest = null;
+let changelogRenderId = 0;
+let changelogReadTimer = null;
+const changelogDocumentCache = new Map();
 let currentAppLockStatus = { enabled: false, remainingRecoveryCodes: 0 };
 let appLockPinChangeMode = false;
 let appLockBusy = false;
@@ -3187,7 +3192,6 @@ function renderAppSettings() {
   );
   closeToTrayToggle.checked = appConfig.appSettings.closeToTray;
   const updateChecksSupported = platformApi.supportsUpdateChecks;
-  const updateModalSupported = updateChecksSupported && !platformApi.isWindowsStore;
   const updatePlatformMessage = platformApi.isWindowsStore
     ? "Microsoft Store manages downloads and installation."
     : platform === "win32"
@@ -3212,11 +3216,6 @@ function renderAppSettings() {
   autoDownloadUpdatesToggle
     .closest(".settings-check")
     ?.classList.toggle("disabled", autoDownloadUpdatesToggle.disabled);
-  updateModalToggle.checked = appConfig.appSettings.showUpdateModal;
-  updateModalToggle.disabled = !updateModalSupported;
-  updateModalToggle
-    .closest(".settings-check")
-    ?.classList.toggle("disabled", updateModalToggle.disabled);
   updateCheckStatus.textContent = updateSettingsStatus ||
     (updateChecksSupported ? "" : "Updates are unavailable on this platform.");
   updatePlatformNote.textContent = updatePlatformMessage;
@@ -6447,6 +6446,7 @@ function clearUpdateAvailableUi() {
   startupUpdateFallbackButton.classList.add("hidden");
   titlebarLogo.classList.remove("update-available");
   titlebarLogo.removeAttribute("title");
+  updateAvailableBadge.classList.add("hidden");
   appMenuUpdate.classList.remove("hidden");
   appMenuUpdate.disabled = false;
   setTitlebarActionLabel(
@@ -6508,13 +6508,12 @@ function syncAvailableUpdateUi() {
   updateIgnoreButton.disabled = isIgnored;
   updateIgnoreButton.classList.toggle("hidden", isMandatory);
   headerUpdateButton.classList.add("hidden");
-  updateCard.classList.remove("hidden");
-  titlebarLogo.classList.add("update-available");
-  const shouldOpenModal =
-    isMandatory || appConfig.appSettings.showUpdateModal !== false;
+  updateCard.classList.add("hidden");
+  titlebarLogo.classList.remove("update-available");
+  titlebarLogo.removeAttribute("title");
+  updateAvailableBadge.classList.toggle("hidden", isIgnored);
   if (
-    shouldOpenModal &&
-    (isMandatory || !isIgnored) &&
+    isMandatory &&
     startupUpdateModalShownForVersion !== availableUpdate.version
   ) {
     startupUpdateModalShownForVersion = availableUpdate.version;
@@ -6539,21 +6538,9 @@ function syncAvailableUpdateUi() {
     "hidden",
     !directInstallUnavailable,
   );
-  titlebarLogo.title = isIgnored
-    ? `Update ${availableUpdate.version} available`
-    : `Update ${availableUpdate.version} available`;
   appMenuUpdate.classList.remove("hidden");
   appMenuUpdate.disabled = false;
-  appMenuUpdate.querySelector("i").className =
-    useLinuxCommand
-      ? "fa-solid fa-terminal"
-      : directInstallUnavailable
-      ? "fa-solid fa-arrow-up-right-from-square"
-      : platformApi.supportsNativeUpdateInstall
-      ? "fa-solid fa-download"
-      : platform === "linux"
-        ? "fa-solid fa-arrow-up-right-from-square"
-        : "fa-solid fa-arrow-up-right-from-square";
+  appMenuUpdate.querySelector("i").className = "fa-solid fa-rotate-right";
   appMenuUpdateIgnore.classList.toggle("hidden", isMandatory);
   setTitlebarActionLabel(
     appMenuUpdate,
@@ -15226,10 +15213,6 @@ autoDownloadUpdatesToggle.addEventListener("change", async () => {
   }
 });
 
-updateModalToggle.addEventListener("change", () => {
-  saveAppSettings({ showUpdateModal: updateModalToggle.checked });
-});
-
 themeLight.addEventListener("change", () => {
   if (themeLight.checked) {
     saveAppSettings({ theme: "light" });
@@ -16286,16 +16269,36 @@ function renderChangelogMarkdown(container, markdown) {
   prepareChangelogMarkdown(container);
 }
 
-function selectChangelogVersion(version) {
+function yieldChangelogFrame() {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
+
+function getChangelogMarkdownContent(entry) {
+  const cached = changelogDocumentCache.get(entry.version);
+  if (cached?.markdown === entry.markdown) return cached.element;
+
+  const element = document.createElement("div");
+  element.className = "changelog-markdown";
+  renderChangelogMarkdown(element, entry.markdown);
+  changelogDocumentCache.set(entry.version, {
+    markdown: entry.markdown,
+    element,
+  });
+  return element;
+}
+
+async function selectChangelogVersion(version) {
   const entry = changelogEntries.find((item) => item.version === version);
   if (!entry) return;
+  const renderId = ++changelogRenderId;
   selectedChangelogVersion = entry.version;
   for (const button of changelogVersionList.querySelectorAll("button")) {
     const active = button.dataset.version === entry.version;
     button.classList.toggle("active", active);
     button.setAttribute("aria-selected", String(active));
+    button.tabIndex = active ? 0 : -1;
   }
-  changelogDocument.replaceChildren();
+  changelogDocument.setAttribute("aria-busy", "true");
   const heading = document.createElement("div");
   heading.className = "changelog-document-heading";
   const title = document.createElement("h1");
@@ -16303,13 +16306,18 @@ function selectChangelogVersion(version) {
   const file = document.createElement("span");
   file.textContent = entry.fileName;
   heading.append(title, file);
-  changelogDocument.append(heading);
-  const markdownContent = document.createElement("div");
-  markdownContent.className = "changelog-markdown";
-  renderChangelogMarkdown(markdownContent, entry.markdown);
-  changelogDocument.append(markdownContent);
+  const pending = document.createElement("div");
+  pending.className = "changelog-document-pending";
+  pending.innerHTML = "<span></span><span></span><span></span>";
+  changelogDocument.replaceChildren(heading, pending);
   changelogDocument.classList.remove("hidden");
   changelogDocument.parentElement.scrollTop = 0;
+
+  await yieldChangelogFrame();
+  if (renderId !== changelogRenderId || selectedChangelogVersion !== entry.version) return;
+  const markdownContent = getChangelogMarkdownContent(entry);
+  changelogDocument.replaceChildren(heading, markdownContent);
+  changelogDocument.removeAttribute("aria-busy");
 }
 
 function compareChangelogVersions(left, right) {
@@ -16334,13 +16342,88 @@ function createChangelogVersionBadge(label, variant) {
   return badge;
 }
 
-function renderChangelogVersions() {
+function getReadChangelogVersions() {
+  const versions = Array.isArray(appConfig.changelog?.readVersions)
+    ? appConfig.changelog.readVersions
+    : [];
+  return new Set(versions.filter((version) => /^\d+\.\d+\.0$/.test(version)));
+}
+
+function updateChangelogReadIndicators() {
+  const readVersions = getReadChangelogVersions();
+  const unreadVersions = changelogEntries
+    .map((entry) => entry.version)
+    .filter((version) => !readVersions.has(version));
+  changelogUnreadBadge?.classList.toggle("hidden", unreadVersions.length === 0);
+  if (changelogButton) {
+    changelogButton.title = unreadVersions.length
+      ? `Changelog · ${unreadVersions.length} unread`
+      : "Changelog";
+    changelogButton.setAttribute(
+      "aria-label",
+      unreadVersions.length
+        ? `Open changelog, ${unreadVersions.length} unread`
+        : "Open changelog",
+    );
+  }
+  for (const button of changelogVersionList.querySelectorAll("button[data-version]")) {
+    const unread = !readVersions.has(button.dataset.version);
+    button.classList.toggle("is-unread", unread);
+    button.setAttribute(
+      "aria-label",
+      `Version ${button.dataset.version}${unread ? ", unread" : ", read"}`,
+    );
+  }
+}
+
+function markChangelogVersionRead(version) {
+  if (!/^\d+\.\d+\.0$/.test(version)) return;
+  const readVersions = getReadChangelogVersions();
+  if (readVersions.has(version)) return;
+  readVersions.add(version);
+  const knownVersions = new Set(changelogEntries.map((entry) => entry.version));
+  appConfig.changelog = {
+    ...(appConfig.changelog || {}),
+    readVersions: [...readVersions]
+      .filter((entry) => knownVersions.has(entry))
+      .slice(-200),
+  };
+  updateChangelogReadIndicators();
+  void saveAppConfig();
+}
+
+function scheduleChangelogRead(version) {
+  window.clearTimeout(changelogReadTimer);
+  changelogReadTimer = window.setTimeout(() => {
+    if (
+      selectedChangelogVersion === version &&
+      !changelogModal.classList.contains("hidden") &&
+      document.visibilityState === "visible"
+    ) {
+      markChangelogVersionRead(version);
+    }
+  }, 1100);
+}
+
+function normalizeLoadedChangelogEntries(result) {
+  return Array.isArray(result?.entries)
+    ? result.entries.filter(
+        (entry) => /^\d+\.\d+\.0$/.test(entry?.version) && typeof entry.markdown === "string",
+      ).slice(0, 100)
+    : [];
+}
+
+async function renderChangelogVersions() {
   if (changelogInstalledVersion) {
     changelogInstalledVersion.textContent = `Installed ${currentVersion}`;
   }
   changelogCount.textContent = String(changelogEntries.length);
-  changelogVersionList.replaceChildren(
-    ...changelogEntries.map((entry, index) => {
+  changelogVersionList.replaceChildren();
+  const batchSize = 16;
+  for (let start = 0; start < changelogEntries.length; start += batchSize) {
+    const fragment = document.createDocumentFragment();
+    changelogEntries.slice(start, start + batchSize).forEach((entry, offset) => {
+      const index = start + offset;
       const button = document.createElement("button");
       button.type = "button";
       button.dataset.version = entry.version;
@@ -16362,13 +16445,18 @@ function renderChangelogVersions() {
         badges.append(createChangelogVersionBadge("Latest notes", "latest"));
       }
       button.append(version, badges);
-      button.addEventListener("click", () => selectChangelogVersion(entry.version));
-      return button;
-    }),
-  );
+      button.tabIndex = -1;
+      fragment.append(button);
+    });
+    changelogVersionList.append(fragment);
+    if (start + batchSize < changelogEntries.length) await yieldChangelogFrame();
+  }
+  updateChangelogReadIndicators();
 }
 
 async function loadChangelog({ force = false } = {}) {
+  if (changelogLoadRequest && !force) return changelogLoadRequest;
+  const request = (async () => {
   changelogError.classList.add("hidden");
   changelogRefresh.disabled = true;
   changelogRefresh.querySelector("i")?.classList.add("fa-spin");
@@ -16378,17 +16466,18 @@ async function loadChangelog({ force = false } = {}) {
   }
   try {
     const result = await platformApi.fetchChangelog(changelogGistApiUrl, { force });
-    changelogEntries = Array.isArray(result?.entries)
-      ? result.entries.filter(
-          (entry) => /^\d+\.\d+\.0$/.test(entry?.version) && typeof entry.markdown === "string",
-        ).slice(0, 100)
-      : [];
+    changelogEntries = normalizeLoadedChangelogEntries(result);
     changelogSourceUrl = result?.sourceUrl || "";
     changelogSource.disabled = !changelogSourceUrl;
     changelogSubtitle.textContent = result?.updatedAt
       ? `Updated ${new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.updatedAt))}`
       : "What changed in Aero P2P Chat";
-    renderChangelogVersions();
+    changelogDocumentCache.forEach((cached, version) => {
+      if (!changelogEntries.some((entry) => entry.version === version && entry.markdown === cached.markdown)) {
+        changelogDocumentCache.delete(version);
+      }
+    });
+    await renderChangelogVersions();
     if (!changelogEntries.length) throw new Error("The Gist has no versioned Markdown files.");
     const installedEntry = changelogEntries.find(
       (entry) => compareChangelogVersions(entry.version, currentVersion) === 0,
@@ -16400,7 +16489,8 @@ async function loadChangelog({ force = false } = {}) {
         : changelogEntries.find(
             (entry) => compareChangelogVersions(entry.version, currentVersion) <= 0,
           )?.version || changelogEntries[0].version;
-    selectChangelogVersion(preferredVersion);
+    await selectChangelogVersion(preferredVersion);
+    scheduleChangelogRead(preferredVersion);
   } catch (error) {
     if (!changelogEntries.length) {
       changelogError.querySelector("span").textContent = error?.message || "Check your internet connection and try again.";
@@ -16413,15 +16503,36 @@ async function loadChangelog({ force = false } = {}) {
     changelogRefresh.disabled = false;
     changelogRefresh.querySelector("i")?.classList.remove("fa-spin");
   }
+  })();
+  changelogLoadRequest = request;
+  try {
+    return await request;
+  } finally {
+    if (changelogLoadRequest === request) changelogLoadRequest = null;
+  }
 }
 
 function openChangelog() {
   changelogModal.classList.remove("hidden");
-  void loadChangelog();
+  changelogClose.focus({ preventScroll: true });
+  requestAnimationFrame(() => void loadChangelog());
 }
 
 function closeChangelog() {
+  window.clearTimeout(changelogReadTimer);
   changelogModal.classList.add("hidden");
+}
+
+async function prefetchChangelogStatus() {
+  if (changelogEntries.length || changelogLoadRequest) return;
+  try {
+    const result = await platformApi.fetchChangelog(changelogGistApiUrl);
+    changelogEntries = normalizeLoadedChangelogEntries(result);
+    changelogSourceUrl = result?.sourceUrl || "";
+    updateChangelogReadIndicators();
+  } catch {
+    // Prefetch is best effort; opening the changelog exposes retry controls.
+  }
 }
 
 changelogButton?.addEventListener("click", openChangelog);
@@ -16430,6 +16541,32 @@ changelogRefresh?.addEventListener("click", () => void loadChangelog({ force: tr
 changelogRetry?.addEventListener("click", () => void loadChangelog({ force: true }));
 changelogSource?.addEventListener("click", () => {
   if (changelogSourceUrl) void platformApi.openExternalLink(changelogSourceUrl);
+});
+changelogVersionList?.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-version]");
+  if (button) {
+    window.clearTimeout(changelogReadTimer);
+    markChangelogVersionRead(button.dataset.version);
+    void selectChangelogVersion(button.dataset.version);
+  }
+});
+changelogVersionList?.addEventListener("keydown", (event) => {
+  if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+  const buttons = [...changelogVersionList.querySelectorAll("button[data-version]")];
+  const current = buttons.indexOf(document.activeElement);
+  const next = event.key === "Home"
+    ? 0
+    : event.key === "End"
+      ? buttons.length - 1
+      : (Math.max(0, current) + (["ArrowDown", "ArrowRight"].includes(event.key) ? 1 : -1) + buttons.length) % buttons.length;
+  event.preventDefault();
+  buttons[next]?.focus({ preventScroll: true });
+  buttons[next]?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  if (buttons[next]?.dataset.version) {
+    window.clearTimeout(changelogReadTimer);
+    markChangelogVersionRead(buttons[next].dataset.version);
+    void selectChangelogVersion(buttons[next].dataset.version);
+  }
 });
 changelogModal?.addEventListener("click", (event) => {
   if (event.target === changelogModal) closeChangelog();
@@ -17143,6 +17280,7 @@ async function finishBootScreen() {
     window.setTimeout(() => {
       if (debugBootSimulation) return;
       document.body.classList.remove("app-loading", "app-boot-finish");
+      window.setTimeout(() => void prefetchChangelogStatus(), 900);
     }, 280);
   });
 }

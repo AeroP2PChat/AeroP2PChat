@@ -108,6 +108,7 @@ const changelogGistApiUrl = `https://api.github.com/gists/${changelogGistId}`;
 const changelogCacheLifetimeMs = 5 * 60 * 1000;
 const allowedAutoLockSeconds = new Set([60, 300, 600, 900, 1800, 3600]);
 let changelogCache = null;
+let changelogRequest = null;
 const appDisplayName = projectConfig.app.name;
 const userConfigFileName = "config.aero";
 const userConfigKeyFileName = "config.key";
@@ -3311,21 +3312,31 @@ async function fetchChangelogGist({ force = false } = {}) {
     return changelogCache.data;
   }
 
-  const responseText = await fetchTextWithRetry(
-    new URL(changelogGistApiUrl),
-    2,
-    {
-      maxBytes: 2 * 1024 * 1024,
-      headers: {
-        Accept: "application/vnd.github+json",
-        "User-Agent": `${projectConfig.app.packageName}/${app.getVersion()}`,
-        "X-GitHub-Api-Version": "2022-11-28",
+  if (changelogRequest) return changelogRequest;
+
+  changelogRequest = (async () => {
+    const responseText = await fetchTextWithRetry(
+      new URL(changelogGistApiUrl),
+      2,
+      {
+        maxBytes: 2 * 1024 * 1024,
+        headers: {
+          Accept: "application/vnd.github+json",
+          "User-Agent": `${projectConfig.app.packageName}/${app.getVersion()}`,
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
       },
-    },
-  );
-  const data = normalizeChangelogGist(JSON.parse(responseText));
-  changelogCache = { data, fetchedAt: Date.now() };
-  return data;
+    );
+    const data = normalizeChangelogGist(JSON.parse(responseText));
+    changelogCache = { data, fetchedAt: Date.now() };
+    return data;
+  })();
+
+  try {
+    return await changelogRequest;
+  } finally {
+    changelogRequest = null;
+  }
 }
 
 function downloadFile(url, targetPath, onProgress = () => {}, redirects = 0) {
