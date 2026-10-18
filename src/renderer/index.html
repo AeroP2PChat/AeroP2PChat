@@ -388,11 +388,19 @@
       <main class="app-shell">
         <section class="connection-panel" aria-label="Connection">
           <div class="sidebar-quick-actions">
-            <button id="open-connection-modal" type="button" aria-expanded="false" aria-controls="connection-panel"><i class="fa-solid fa-user-plus" aria-hidden="true"></i><span>Connect</span><i class="fa-solid fa-chevron-down sidebar-connect-chevron" aria-hidden="true"></i></button>
+            <button id="open-connection-modal" class="connection-hub-trigger" type="button" aria-expanded="false" aria-controls="connection-panel">
+              <span class="connection-hub-icon"><i class="fa-solid fa-link" aria-hidden="true"></i></span>
+              <span class="connection-hub-copy"><strong>Connect</strong></span>
+              <i class="fa-solid fa-chevron-down sidebar-connect-chevron" aria-hidden="true"></i>
+            </button>
           </div>
           <div id="connection-panel" class="sidebar-connection-card hidden">
-            <section class="sidebar-connection-section" aria-label="My Aero ID"><div id="own-id-modal-mount"></div></section>
-            <section class="sidebar-connection-section" aria-label="Add user"><div id="connect-modal-mount"></div></section>
+            <div class="connection-hub-tabs" role="tablist" aria-label="Connection options">
+              <button class="active" type="button" role="tab" aria-selected="true" data-connection-tab="add"><i class="fa-solid fa-user-plus" aria-hidden="true"></i>Add user</button>
+              <button type="button" role="tab" aria-selected="false" data-connection-tab="share"><i class="fa-regular fa-id-card" aria-hidden="true"></i>My ID</button>
+            </div>
+            <section class="sidebar-connection-section" role="tabpanel" data-connection-panel="add" aria-label="Add user"><div id="connect-modal-mount"></div></section>
+            <section class="sidebar-connection-section hidden" role="tabpanel" data-connection-panel="share" aria-label="My Aero ID"><div id="own-id-modal-mount"></div></section>
           </div>
           <div class="id-card">
             <span class="label">My Aero ID</span>
@@ -422,23 +430,6 @@
               >
                 <i class="fa-regular fa-copy" aria-hidden="true"></i>
               </button>
-              <button
-                id="show-own-id-qr"
-                class="icon-button"
-                type="button"
-                title="Show QR code"
-                aria-label="Show QR code"
-                aria-expanded="false"
-                aria-controls="own-id-qr-panel"
-              >
-                <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
-              </button>
-            </div>
-            <div id="own-id-qr-panel" class="own-id-qr-panel hidden">
-              <div class="own-id-qr-code">
-                <canvas id="own-id-qr-canvas" aria-label="QR code containing your Aero ID"></canvas>
-              </div>
-              <p>Let your friend scan this code in Add user.</p>
             </div>
           </div>
 
@@ -463,17 +454,6 @@
                 <i class="fa-regular fa-eye-slash" aria-hidden="true"></i>
               </button>
               <button
-                id="scan-aero-id"
-                class="icon-button"
-                type="button"
-                title="Scan Aero ID"
-                aria-label="Scan Aero ID"
-                aria-expanded="false"
-                aria-controls="qr-scanner-panel"
-              >
-                <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
-              </button>
-              <button
                 id="connect-button"
                 class="icon-only-button"
                 type="submit"
@@ -485,16 +465,6 @@
                 <span>Connect</span>
               </button>
             </div>
-            <section id="qr-scanner-panel" class="qr-scanner-panel hidden" aria-label="Aero ID QR scanner">
-              <div class="qr-scanner-camera">
-                <video id="qr-scanner-video" autoplay muted playsinline></video>
-                <span class="qr-scanner-frame" aria-hidden="true"></span>
-              </div>
-              <div class="qr-scanner-footer">
-                <span id="qr-scanner-status" role="status" aria-live="polite">Point the camera at an Aero QR code.</span>
-                <button id="stop-qr-scanner" class="ghost-button" type="button">Cancel</button>
-              </div>
-            </section>
           </form>
 
           <div id="update-card" class="update-card hidden">
@@ -2182,17 +2152,6 @@
         </header>
         <div id="details-modal-content" class="details-modal-content"></div>
       </section>
-    </div>
-
-    <div id="qr-code-menu" class="context-menu hidden" role="menu" aria-label="QR code actions">
-      <button id="qr-menu-save" type="button" role="menuitem">
-        <i class="fa-solid fa-download" aria-hidden="true"></i>
-        <span>Save QR code…</span>
-      </button>
-      <button id="qr-menu-copy-id" type="button" role="menuitem">
-        <i class="fa-regular fa-copy" aria-hidden="true"></i>
-        <span>Copy Aero ID</span>
-      </button>
     </div>
 
     <div

@@ -159,6 +159,7 @@ const updateSetupDirectoryPrefix = "aero-p2p-setup-";
 const defaultSidebarWidth = 360;
 const minSidebarWidth = 170;
 const maxSidebarWidth = 360;
+const sidebarWidthDefaultVersion = 1;
 const defaultMicBoost = 100;
 const defaultMicSensitivity = 55;
 const defaultMicNoiseReduction = 55;
@@ -1419,7 +1420,9 @@ function normalizeConfig(config = {}) {
     customAccentColor: /^#[0-9a-f]{6}$/i.test(settings.customAccentColor)
       ? settings.customAccentColor
       : "#147fa6",
-    sidebarWidth: Number.isFinite(settings.sidebarWidth)
+    sidebarWidth:
+      settings.sidebarWidthDefaultVersion === sidebarWidthDefaultVersion &&
+      Number.isFinite(settings.sidebarWidth)
       ? Math.round(
           Math.max(
             minSidebarWidth,
@@ -1427,6 +1430,7 @@ function normalizeConfig(config = {}) {
           ),
         )
       : defaultSidebarWidth,
+    sidebarWidthDefaultVersion,
   };
 
   // This is a temporary dialog state, not a user preference. Remove the

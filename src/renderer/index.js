@@ -40,37 +40,20 @@ const windowClose = document.querySelector("#window-close");
 const ownId = document.querySelector("#own-id");
 const ownIdPrivacyToggle = document.querySelector("#toggle-own-id-privacy");
 const copyId = document.querySelector("#copy-id");
-const showOwnIdQrButton = document.querySelector("#show-own-id-qr");
-const ownIdQrPanel = document.querySelector("#own-id-qr-panel");
-const ownIdQrCanvas = document.querySelector("#own-id-qr-canvas");
 const connectForm = document.querySelector("#connect-form");
 const remoteIdInput = document.querySelector("#remote-id");
 const remoteIdPrivacyToggle = document.querySelector("#toggle-remote-id-privacy");
-const scanAeroIdButton = document.querySelector("#scan-aero-id");
-const qrScannerPanel = document.querySelector("#qr-scanner-panel");
-const qrScannerVideo = document.querySelector("#qr-scanner-video");
-const qrScannerStatus = document.querySelector("#qr-scanner-status");
-const stopQrScannerButton = document.querySelector("#stop-qr-scanner");
 const connectButton = document.querySelector("#connect-button");
 const ownIdModal = document.querySelector("#connection-panel");
 const connectModal = ownIdModal;
 const ownIdModalMount = document.querySelector("#own-id-modal-mount");
 const connectModalMount = document.querySelector("#connect-modal-mount");
 const openConnectionModalButton = document.querySelector("#open-connection-modal");
+const connectionTabs = [...document.querySelectorAll("[data-connection-tab]")];
+const connectionPanels = [...document.querySelectorAll("[data-connection-panel]")];
 let isOwnIdBlurred = true;
 let isRemoteIdBlurred = true;
-let qrScannerStream = null;
-let qrScannerFrame = 0;
-let qrScannerLastDecodeAt = 0;
-let qrScannerSession = 0;
-let qrScannerCanvas = null;
-let qrScannerContext = null;
-let qrScannerDecoder = null;
 let connectionPanelCloseTimer = null;
-let qrEncoderPromise = null;
-let qrDecoderPromise = null;
-let ownIdQrBlob = null;
-let ownIdQrSha256 = "";
 const sidebarIdCard = document.querySelector(".connection-panel .id-card");
 const sidebarConnectForm = document.querySelector(".connection-panel .connect-form");
 if (ownIdModalMount && sidebarIdCard) ownIdModalMount.append(sidebarIdCard);
@@ -517,9 +500,6 @@ const detailsModalKicker = document.querySelector("#details-modal-kicker");
 const detailsModalTitle = document.querySelector("#details-modal-title");
 const detailsModalContent = document.querySelector("#details-modal-content");
 const detailsModalClose = document.querySelector("#details-modal-close");
-const qrCodeMenu = document.querySelector("#qr-code-menu");
-const qrMenuSave = document.querySelector("#qr-menu-save");
-const qrMenuCopyId = document.querySelector("#qr-menu-copy-id");
 const participantMenu = document.querySelector("#participant-menu");
 const participantVolumeSlider = document.querySelector(
   "#participant-volume-slider",
@@ -1773,223 +1753,6 @@ function normalizeAeroId(value) {
   return String(value || "")
     .trim()
     .toLowerCase();
-}
-
-function loadQrEncoder() {
-  qrEncoderPromise ||= import("qrcode").then((module) => module.default || module);
-  return qrEncoderPromise;
-}
-
-function loadQrDecoder() {
-  qrDecoderPromise ||= import("jsqr").then((module) => module.default || module);
-  return qrDecoderPromise;
-}
-
-async function showOwnIdQrCode() {
-  if (!showOwnIdQrButton || !ownIdQrPanel || !ownIdQrCanvas) return;
-  const opening = ownIdQrPanel.classList.contains("hidden");
-  if (!opening) {
-    ownIdQrPanel.classList.add("hidden");
-    showOwnIdQrButton.setAttribute("aria-expanded", "false");
-    showOwnIdQrButton.setAttribute("aria-label", "Show QR code");
-    return;
-  }
-
-  showOwnIdQrButton.disabled = true;
-  try {
-    const QRCode = await loadQrEncoder();
-    await QRCode.toCanvas(ownIdQrCanvas, identity.id, {
-      width: 256,
-      margin: 2,
-      errorCorrectionLevel: "M",
-      color: { dark: "#101114", light: "#ffffff" },
-    });
-    ownIdQrBlob = await new Promise((resolve) =>
-      ownIdQrCanvas.toBlob(resolve, "image/png"),
-    );
-    if (!ownIdQrBlob) throw new Error("QR image export is unavailable.");
-    ownIdQrSha256 = await sha256Hex(ownIdQrBlob);
-    ownIdQrPanel.classList.remove("hidden");
-    showOwnIdQrButton.setAttribute("aria-expanded", "true");
-    showOwnIdQrButton.setAttribute("aria-label", "Hide QR code");
-  } catch {
-    setStatus("offline", "Your Aero ID QR code could not be created.");
-  } finally {
-    showOwnIdQrButton.disabled = false;
-  }
-}
-
-function hideOwnIdQrCode() {
-  closeQrCodeMenu();
-  ownIdQrPanel?.classList.add("hidden");
-  showOwnIdQrButton?.setAttribute("aria-expanded", "false");
-  showOwnIdQrButton?.setAttribute("aria-label", "Show QR code");
-}
-
-function closeQrCodeMenu() {
-  qrCodeMenu?.classList.add("hidden");
-}
-
-function openQrCodeMenu(event) {
-  if (!ownIdQrBlob || ownIdQrPanel?.classList.contains("hidden")) return;
-  event.preventDefault();
-  event.stopPropagation();
-  closeContactMenu();
-  closeAppMenu();
-  closeMessageMenu();
-  closeParticipantMenu();
-  closeStreamMenu();
-
-  qrCodeMenu.classList.remove("hidden");
-  const viewportPadding = 10;
-  const rect = event.currentTarget.getBoundingClientRect();
-  const anchorX = event.clientX || rect.right;
-  const anchorY = event.clientY || rect.bottom;
-  qrCodeMenu.style.left = `${Math.max(
-    viewportPadding,
-    Math.min(anchorX, window.innerWidth - qrCodeMenu.offsetWidth - viewportPadding),
-  )}px`;
-  qrCodeMenu.style.top = `${Math.max(
-    viewportPadding,
-    Math.min(anchorY, window.innerHeight - qrCodeMenu.offsetHeight - viewportPadding),
-  )}px`;
-}
-
-async function saveOwnIdQrCode() {
-  if (!ownIdQrBlob || !ownIdQrSha256) {
-    setStatus("offline", "The QR code image is not ready yet.");
-    return;
-  }
-  const result = await platformApi.saveReceivedFile({
-    blob: ownIdQrBlob,
-    name: "aero-id-qr.png",
-    mimeType: "image/png",
-    sha256: ownIdQrSha256,
-    mode: "ask",
-    directory: "",
-  }).catch((error) => ({ ok: false, error: error?.message || "The QR code could not be saved." }));
-  if (result?.canceled) return;
-  if (!result?.ok) {
-    await showAppDialog({
-      title: "QR code was not saved",
-      message: result?.error || "The selected destination is unavailable.",
-      confirmText: "OK",
-      cancelText: "Close",
-    });
-    return;
-  }
-  setStatus("online", "Aero ID QR code saved.");
-}
-
-function stopAeroIdQrScanner({ hidePanel = true, status = "" } = {}) {
-  qrScannerSession += 1;
-  if (qrScannerFrame) cancelAnimationFrame(qrScannerFrame);
-  qrScannerFrame = 0;
-  qrScannerLastDecodeAt = 0;
-  qrScannerStream?.getTracks().forEach((track) => track.stop());
-  qrScannerStream = null;
-  if (qrScannerVideo) {
-    qrScannerVideo.pause();
-    qrScannerVideo.srcObject = null;
-  }
-  scanAeroIdButton?.removeAttribute("disabled");
-  scanAeroIdButton?.setAttribute("aria-expanded", hidePanel ? "false" : "true");
-  qrScannerPanel?.classList.toggle("hidden", hidePanel);
-  if (qrScannerStatus) {
-    qrScannerStatus.textContent = status || "Point the camera at an Aero QR code.";
-  }
-}
-
-function acceptScannedAeroId(value) {
-  const payload = String(value || "").trim();
-  const remoteId = payload.length <= 64 ? normalizeAeroId(payload) : "";
-  if (!isValidAeroId(remoteId)) {
-    qrScannerStatus.textContent = "This QR code does not contain a valid Aero ID.";
-    return false;
-  }
-  if (remoteId === identity.id) {
-    qrScannerStatus.textContent = "This is your own Aero ID.";
-    return false;
-  }
-
-  stopAeroIdQrScanner();
-  remoteIdInput.value = remoteId;
-  isRemoteIdBlurred = false;
-  renderRemoteIdPrivacy();
-  remoteIdInput.dispatchEvent(new Event("input", { bubbles: true }));
-  platformApi.vibrate("light");
-  setStatus("online", "Aero ID scanned. Review it, then connect.");
-  connectButton.focus();
-  return true;
-}
-
-function scanAeroIdQrFrame(sessionId, timestamp) {
-  if (sessionId !== qrScannerSession || !qrScannerStream || !qrScannerVideo) return;
-  qrScannerFrame = requestAnimationFrame((nextTimestamp) =>
-    scanAeroIdQrFrame(sessionId, nextTimestamp),
-  );
-  if (timestamp - qrScannerLastDecodeAt < 110 || qrScannerVideo.readyState < 2) return;
-  qrScannerLastDecodeAt = timestamp;
-
-  const sourceWidth = qrScannerVideo.videoWidth;
-  const sourceHeight = qrScannerVideo.videoHeight;
-  if (!sourceWidth || !sourceHeight) return;
-  const scale = Math.min(1, 720 / Math.max(sourceWidth, sourceHeight));
-  const width = Math.max(1, Math.round(sourceWidth * scale));
-  const height = Math.max(1, Math.round(sourceHeight * scale));
-  if (!qrScannerCanvas) {
-    qrScannerCanvas = document.createElement("canvas");
-    qrScannerContext = qrScannerCanvas.getContext("2d", { willReadFrequently: true });
-  }
-  if (!qrScannerContext) return;
-  if (qrScannerCanvas.width !== width || qrScannerCanvas.height !== height) {
-    qrScannerCanvas.width = width;
-    qrScannerCanvas.height = height;
-  }
-  qrScannerContext.drawImage(qrScannerVideo, 0, 0, width, height);
-  const image = qrScannerContext.getImageData(0, 0, width, height);
-  const result = qrScannerDecoder?.(image.data, width, height, {
-    inversionAttempts: "dontInvert",
-  });
-  if (result?.data) acceptScannedAeroId(result.data);
-}
-
-async function startAeroIdQrScanner() {
-  if (!navigator.mediaDevices?.getUserMedia) {
-    setStatus("offline", "Camera scanning is unavailable on this device.");
-    return;
-  }
-
-  stopAeroIdQrScanner({ hidePanel: false, status: "Requesting camera access..." });
-  const sessionId = qrScannerSession;
-  scanAeroIdButton.disabled = true;
-  try {
-    qrScannerStatus.textContent = "Starting secure local scanner...";
-    qrScannerDecoder = await loadQrDecoder();
-    if (sessionId !== qrScannerSession) return;
-    const stream = await getUserMediaWithDeviceFallback(
-      () => ({ audio: false, video: createCameraVideoConstraints() }),
-      "cameraDeviceId",
-    );
-    if (sessionId !== qrScannerSession) {
-      stream.getTracks().forEach((track) => track.stop());
-      return;
-    }
-    qrScannerStream = stream;
-    qrScannerVideo.srcObject = stream;
-    await qrScannerVideo.play();
-    qrScannerStatus.textContent = "Point the camera at an Aero QR code.";
-    qrScannerFrame = requestAnimationFrame((timestamp) =>
-      scanAeroIdQrFrame(sessionId, timestamp),
-    );
-  } catch (error) {
-    if (sessionId !== qrScannerSession) return;
-    stopAeroIdQrScanner({ hidePanel: false, status: formatCameraError(error) });
-  } finally {
-    if (sessionId === qrScannerSession && qrScannerStream) {
-      scanAeroIdButton.disabled = false;
-    }
-  }
 }
 
 function getKnownPreviousIdentityIds(value, ownId = "") {
@@ -12057,7 +11820,6 @@ function getPeerNameStyle(peerId, identityId) {
 function openContactMenu(event, id) {
   event.preventDefault();
   event.stopPropagation?.();
-  closeQrCodeMenu();
   closeMessageMenu();
   closeAppMenu();
   closeParticipantMenu();
@@ -12108,7 +11870,6 @@ function openAppMenu(event) {
     closeAppMenu();
     return;
   }
-  closeQrCodeMenu();
   closeContactMenu();
   closeMessageMenu();
   closeParticipantMenu();
@@ -12239,7 +12000,6 @@ function openChatMoreMenu(event) {
 
 function openMessageMenu(event, messageItem) {
   event.preventDefault();
-  closeQrCodeMenu();
   closeContactMenu();
   closeAppMenu();
   closeParticipantMenu();
@@ -12369,7 +12129,6 @@ function openParticipantMenu(event, target) {
   }
 
   event.preventDefault();
-  closeQrCodeMenu();
   closeContactMenu();
   closeAppMenu();
   closeMessageMenu();
@@ -12419,7 +12178,6 @@ function openStreamSizeMenu(anchor, target) {
   }
 
   const bounds = anchor.getBoundingClientRect();
-  closeQrCodeMenu();
   closeContactMenu();
   closeAppMenu();
   closeMessageMenu();
@@ -12458,7 +12216,6 @@ function openStreamMenu(event, target) {
     return;
   }
 
-  closeQrCodeMenu();
   closeContactMenu();
   closeAppMenu();
   closeMessageMenu();
@@ -14372,8 +14129,6 @@ function switchPrimaryModal(targetModal) {
   closeChangelogImageViewer();
   closeDetailsModal();
   closeStreamSetup();
-  stopAeroIdQrScanner();
-  hideOwnIdQrCode();
   closeConnectionPanel();
   return true;
 }
@@ -14558,7 +14313,6 @@ connectForm.addEventListener("submit", (event) => {
   }
   remoteIdInput.value = "";
   refreshPeers();
-  stopAeroIdQrScanner();
   closeConnectionPanel();
 });
 
@@ -16009,8 +15763,6 @@ copyUpdateCommands.forEach((button) => {
 titlebarLogo.addEventListener("contextmenu", openAppMenu);
 
 function closeConnectionPanel() {
-  stopAeroIdQrScanner();
-  hideOwnIdQrCode();
   openConnectionModalButton?.setAttribute("aria-expanded", "false");
   if (!ownIdModal || ownIdModal.classList.contains("hidden")) return;
   window.clearTimeout(connectionPanelCloseTimer);
@@ -16027,7 +15779,8 @@ function positionConnectionPanel() {
   const anchor = openConnectionModalButton.getBoundingClientRect();
   const gap = 8;
   const edge = 12;
-  const preferredWidth = Math.min(360, window.innerWidth - edge * 2);
+  const availableWidth = window.innerWidth - edge * 2;
+  const preferredWidth = Math.min(anchor.width, availableWidth);
   const left = Math.min(
     Math.max(edge, anchor.left),
     Math.max(edge, window.innerWidth - preferredWidth - edge),
@@ -16036,6 +15789,19 @@ function positionConnectionPanel() {
   ownIdModal.style.top = `${Math.round(anchor.bottom + gap)}px`;
   ownIdModal.style.width = `${Math.round(preferredWidth)}px`;
   ownIdModal.style.maxHeight = `${Math.max(180, Math.round(window.innerHeight - anchor.bottom - gap - edge))}px`;
+}
+
+function selectConnectionTab(tab) {
+  const selectedTab = tab === "share" ? "share" : "add";
+  for (const button of connectionTabs) {
+    const active = button.dataset.connectionTab === selectedTab;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+    button.tabIndex = active ? 0 : -1;
+  }
+  for (const panel of connectionPanels) {
+    panel.classList.toggle("hidden", panel.dataset.connectionPanel !== selectedTab);
+  }
 }
 
 openConnectionModalButton?.addEventListener("click", () => {
@@ -16048,8 +15814,6 @@ openConnectionModalButton?.addEventListener("click", () => {
   }
   isOwnIdBlurred = true;
   renderOwnIdPrivacy();
-  hideOwnIdQrCode();
-  stopAeroIdQrScanner();
   isRemoteIdBlurred = true;
   renderRemoteIdPrivacy();
   window.clearTimeout(connectionPanelCloseTimer);
@@ -16059,6 +15823,9 @@ openConnectionModalButton?.addEventListener("click", () => {
   openConnectionModalButton.setAttribute("aria-expanded", "true");
   requestAnimationFrame(positionConnectionPanel);
 });
+for (const button of connectionTabs) {
+  button.addEventListener("click", () => selectConnectionTab(button.dataset.connectionTab));
+}
 window.addEventListener("resize", positionConnectionPanel);
 document.addEventListener("pointerdown", (event) => {
   if (
@@ -16070,38 +15837,11 @@ document.addEventListener("pointerdown", (event) => {
   }
   closeConnectionPanel();
 });
-showOwnIdQrButton?.addEventListener("click", () => {
-  void showOwnIdQrCode();
-});
-ownIdQrCanvas?.addEventListener("contextmenu", openQrCodeMenu);
-qrMenuSave?.addEventListener("click", () => {
-  closeQrCodeMenu();
-  void saveOwnIdQrCode();
-});
-qrMenuCopyId?.addEventListener("click", () => {
-  closeQrCodeMenu();
-  void writeClipboardText(identity.id)
-    .then(() => setStatus("online", "Aero ID copied."))
-    .catch(() => setStatus("offline", "Aero ID could not be copied."));
-});
-scanAeroIdButton?.addEventListener("click", () => {
-  if (!qrScannerPanel?.classList.contains("hidden")) {
-    stopAeroIdQrScanner();
-    return;
-  }
-  void startAeroIdQrScanner();
-});
-stopQrScannerButton?.addEventListener("click", () => {
-  stopAeroIdQrScanner();
-  scanAeroIdButton?.focus();
-});
 startupUpdateFallbackButton.addEventListener("click", openManualUpdateFallback);
 updateFallbackButton.addEventListener("click", openManualUpdateFallback);
 document.querySelectorAll("[data-close-sidebar-modal]").forEach((button) => {
   button.addEventListener("click", () => {
     const modal = button.closest(".modal-layer");
-    if (modal === connectModal) stopAeroIdQrScanner();
-    if (modal === ownIdModal) hideOwnIdQrCode();
     modal?.classList.add("hidden");
   });
 });
@@ -17373,9 +17113,6 @@ menuDeleteEveryone.addEventListener("click", async () => {
 });
 
 document.addEventListener("click", (event) => {
-  if (!qrCodeMenu?.contains(event.target)) {
-    closeQrCodeMenu();
-  }
   if (!contactMenu.contains(event.target)) {
     closeContactMenu();
   }
@@ -17411,7 +17148,6 @@ document.addEventListener("keydown", (event) => {
     return;
   }
   if (event.key === "Escape") {
-    closeQrCodeMenu();
     closeAppMenu();
     closeContactMenu();
     closeMessageMenu();
@@ -17430,8 +17166,6 @@ document.addEventListener("keydown", (event) => {
     callHealthPopover.classList.add("hidden");
     settingsModal.classList.add("hidden");
     changelogModal.classList.add("hidden");
-    stopAeroIdQrScanner();
-    hideOwnIdQrCode();
     closeConnectionPanel();
     closeStreamSetup();
   }
@@ -17446,11 +17180,7 @@ window.addEventListener("blur", refreshNotificationState);
 
 document.addEventListener("visibilitychange", () => {
   refreshNotificationState();
-  if (document.visibilityState === "visible") {
-    sendReadReceiptsForActiveChat();
-  } else if (qrScannerStream) {
-    stopAeroIdQrScanner();
-  }
+  if (document.visibilityState === "visible") sendReadReceiptsForActiveChat();
 });
 
 refreshNotificationState();
@@ -17521,7 +17251,6 @@ platformApi.onSystemShutdown(() => {
 
 window.addEventListener("beforeunload", () => {
   stopRingtonePreview();
-  stopAeroIdQrScanner();
   cleanupRealtimeConnections();
 });
 
