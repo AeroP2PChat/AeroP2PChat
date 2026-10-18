@@ -2993,13 +2993,16 @@ body.reduce-motion *::after {
   z-index: 500;
   display: grid;
   padding: clamp(12px, 3vh, 24px);
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   overscroll-behavior: contain;
   place-items: center;
   background: var(--overlay);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+}
+body:has(> .modal-layer:not(.hidden)) {
+  height: 100dvh;
+  overflow: hidden;
 }
 .modal-panel,
 .stream-dialog,
@@ -7846,6 +7849,20 @@ body.platform-android .incoming-call-screen {
   .screen-source-list {
     max-height: calc(100dvh - var(--titlebar-height) - 240px);
   }
+}
+
+/* Desktop modals follow the Aero window instead of using fixed size caps. */
+body:not(.platform-android) .modal-layer {
+  padding: 12px;
+}
+body:not(.platform-android) .modal-layer > .modal-panel,
+body:not(.platform-android) .modal-layer > .stream-dialog {
+  width: calc(100vw - 24px) !important;
+  min-width: 0;
+  max-width: none !important;
+  height: calc(100dvh - var(--titlebar-height) - 24px) !important;
+  min-height: 0;
+  max-height: none !important;
 }
 .own-id-qr-panel {
   display: grid;

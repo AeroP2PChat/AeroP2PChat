@@ -14355,7 +14355,33 @@ function openSettingsSearchResult(result) {
   });
 }
 
+function switchPrimaryModal(targetModal) {
+  const requiredUpdateModal = [startupUpdateModal, updateModal].find(
+    (modal) =>
+      modal !== targetModal &&
+      !modal.classList.contains("hidden") &&
+      modal.dataset.required === "true",
+  );
+  if (requiredUpdateModal) return false;
+
+  if (targetModal !== changelogModal) closeChangelog();
+  if (targetModal !== settingsModal) settingsModal.classList.add("hidden");
+  if (targetModal !== profileModal) profileModal.classList.add("hidden");
+  if (targetModal !== startupUpdateModal) startupUpdateModal.classList.add("hidden");
+  if (targetModal !== updateModal) updateModal.classList.add("hidden");
+  if (!customSoundModal.classList.contains("hidden")) closeCustomSoundEditor();
+  closeChangelogImageViewer();
+  closeDetailsModal();
+  closeStreamSetup();
+  stopAeroIdQrScanner();
+  hideOwnIdQrCode();
+  ownIdModal?.classList.add("hidden");
+  connectModal?.classList.add("hidden");
+  return true;
+}
+
 function openSettings(focusContactId = "") {
+  if (!switchPrimaryModal(settingsModal)) return;
   refreshAudioDevices();
   renderAppSettings();
   void refreshCustomThemes();
@@ -15844,6 +15870,10 @@ startupUpdateIgnoreButton.addEventListener("click", () => {
 
 appMenuUpdate.addEventListener("click", () => {
     if (availableUpdate) {
+      if (!switchPrimaryModal(startupUpdateModal)) {
+        closeAppMenu();
+        return;
+      }
       const directInstallUnavailable = Boolean(
         availableUpdate.directInstallUnavailable,
       );
@@ -16052,6 +16082,10 @@ function populateProfileSettings() {
 }
 
 appMenuProfile.addEventListener("click", () => {
+  if (!switchPrimaryModal(settingsModal)) {
+    closeAppMenu();
+    return;
+  }
   populateProfileSettings();
   settingsModal.classList.remove("hidden");
   selectSettingsPage("profile");
@@ -16646,6 +16680,7 @@ async function loadChangelog({ force = false } = {}) {
 }
 
 function openChangelog() {
+  if (!switchPrimaryModal(changelogModal)) return;
   changelogModal.classList.remove("hidden");
   changelogClose.focus({ preventScroll: true });
   requestAnimationFrame(() => void loadChangelog());
