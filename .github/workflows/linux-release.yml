@@ -41,11 +41,21 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Restore Electron packaging caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+          key: electron-linux-${{ runner.arch }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            electron-linux-${{ runner.arch }}-
+
       - name: Install native packaging tools
         run: sudo apt-get update && sudo apt-get install --yes fakeroot rpm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit --no-fund
 
       - name: Validate release input
         env:
@@ -89,16 +99,3 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.tag }}
         run: gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
-
-      - name: Retain Linux packages as workflow artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-packages-${{ inputs.tag }}
-          path: |
-            dist/build/artifacts/Aero-P2P-Chat-Linux-x64.AppImage
-            dist/build/artifacts/Aero-P2P-Chat-Linux-x64.rpm
-            dist/build/artifacts/Aero-P2P-Chat-Linux-x64.deb
-            dist/build/artifacts/update_manifest_linux.json
-            dist/build/artifacts/latest.yml
-          if-no-files-found: error
-          retention-days: 14

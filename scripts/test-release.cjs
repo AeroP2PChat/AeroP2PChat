@@ -57,6 +57,9 @@ assert.match(workflow, /--platform=linux/);
 assert.match(workflow, /Aero-P2P-Chat-Linux-x64\.AppImage/);
 assert.match(workflow, /Aero-P2P-Chat-Linux-x64\.rpm/);
 assert.match(workflow, /Aero-P2P-Chat-Linux-x64\.deb/);
+assert.match(workflow, /~\/\.cache\/electron-builder/);
+assert.match(workflow, /npm ci --prefer-offline --no-audit --no-fund/);
+assert.doesNotMatch(workflow, /actions\/upload-artifact/);
 
 const mainSource = fs.readFileSync(
   path.join(root, "src", "main", "index.js"),

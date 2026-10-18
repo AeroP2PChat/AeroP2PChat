@@ -9,6 +9,12 @@ const config = JSON.parse(
 const packageJson = JSON.parse(
   fs.readFileSync(path.join(root, "package.json"), "utf8"),
 );
+const electronBuilderCli = path.join(
+  root,
+  "node_modules",
+  "electron-builder",
+  "cli.js",
+);
 
 function parseArgs() {
   const options = {
@@ -75,8 +81,8 @@ function main() {
     run("node", ["scripts/run-electron-vite.cjs", "build"]);
   }
 
-  run("npx", [
-    "electron-builder",
+  run(process.execPath, [
+    electronBuilderCli,
     "--config",
     "electron-builder.config.cjs",
     "--win",

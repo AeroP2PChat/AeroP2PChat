@@ -3,6 +3,12 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const root = path.resolve(__dirname, "..");
+const electronBuilderCli = path.join(
+  root,
+  "node_modules",
+  "electron-builder",
+  "cli.js",
+);
 const allowedTargets = new Map([
   ["appimage", "AppImage"],
   ["rpm", "rpm"],
@@ -35,8 +41,8 @@ function main() {
   const outputDir = path.join(root, "dist", "build", "linux");
   fs.mkdirSync(outputDir, { recursive: true });
   run("node", ["scripts/run-electron-vite.cjs", "build"]);
-  run("npx", [
-    "electron-builder", "--config", "electron-builder.config.cjs",
+  run(process.execPath, [
+    electronBuilderCli, "--config", "electron-builder.config.cjs",
     "--linux", ...targetsFromArgs(), "--x64", "--publish", "never",
     `--config.directories.output=${path.relative(root, outputDir)}`,
   ]);
