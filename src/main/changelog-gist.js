@@ -39,6 +39,11 @@ function normalizeChangelogGist(payload) {
         version: parsed.version,
         versionParts: parsed.versionParts,
         markdown: content,
+        rawUrl:
+          typeof file.raw_url === "string" &&
+          /^https:\/\/gist\.githubusercontent\.com\//i.test(file.raw_url)
+            ? file.raw_url
+            : "",
       };
     })
     .filter(Boolean)

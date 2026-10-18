@@ -5828,6 +5828,12 @@ body.reduce-motion *::after {
   border-radius: var(--radius-sm);
   object-fit: contain;
 }
+.changelog-markdown img.is-unavailable {
+  min-height: 72px;
+  padding: 18px;
+  background: var(--surface-subtle);
+  color: var(--faint);
+}
 .changelog-markdown code {
   padding: 2px 5px;
   border-radius: 5px;
@@ -5861,6 +5867,27 @@ body.reduce-motion *::after {
 }
 .changelog-markdown blockquote > :first-child { margin-top: 0; }
 .changelog-markdown blockquote > :last-child { margin-bottom: 0; }
+.changelog-markdown .changelog-alert {
+  border-left-color: var(--accent);
+  border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+}
+.changelog-markdown .changelog-alert-title {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--accent);
+}
+.changelog-markdown .changelog-alert-warning,
+.changelog-markdown .changelog-alert-caution {
+  border-left-color: #d97706;
+  background: color-mix(in srgb, #d97706 10%, var(--surface));
+}
+.changelog-markdown .changelog-alert-warning .changelog-alert-title,
+.changelog-markdown .changelog-alert-caution .changelog-alert-title { color: #d97706; }
+.changelog-markdown .changelog-alert-important {
+  border-left-color: #8b5cf6;
+  background: color-mix(in srgb, #8b5cf6 10%, var(--surface));
+}
+.changelog-markdown .changelog-alert-important .changelog-alert-title { color: #8b5cf6; }
 .changelog-markdown a {
   color: var(--accent);
   font-weight: 650;

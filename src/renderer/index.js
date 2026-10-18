@@ -16184,9 +16184,12 @@ function expandChangelogEmoji(text) {
   );
 }
 
-function getSafeChangelogUrl(value, { image = false } = {}) {
+function getSafeChangelogUrl(value, { image = false, baseUrl = "" } = {}) {
   try {
-    const url = new URL(String(value || "").trim(), changelogSourceUrl || "https://gist.github.com/");
+    const url = new URL(
+      String(value || "").trim(),
+      baseUrl || changelogSourceUrl || "https://gist.github.com/",
+    );
     if (
       !["http:", "https:"].includes(url.protocol) ||
       (image && url.protocol !== "https:") ||
@@ -16212,9 +16215,63 @@ function expandChangelogEmojiText(root) {
   }
 }
 
-function prepareChangelogMarkdown(container) {
+function createChangelogHeadingIds(container) {
+  const usedIds = new Set();
+  for (const heading of container.querySelectorAll("h1, h2, h3, h4, h5, h6")) {
+    const baseId = String(heading.textContent || "section")
+      .trim()
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s-]/gu, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-") || "section";
+    let id = baseId;
+    let suffix = 1;
+    while (usedIds.has(id)) id = `${baseId}-${suffix++}`;
+    usedIds.add(id);
+    heading.id = id;
+  }
+}
+
+function prepareChangelogAlerts(container) {
+  const alertTypes = new Map([
+    ["NOTE", "Note"],
+    ["TIP", "Tip"],
+    ["IMPORTANT", "Important"],
+    ["WARNING", "Warning"],
+    ["CAUTION", "Caution"],
+  ]);
+  for (const quote of container.querySelectorAll("blockquote")) {
+    const firstParagraph = quote.querySelector(":scope > p:first-child");
+    const match = /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*/i.exec(
+      firstParagraph?.textContent || "",
+    );
+    if (!match) continue;
+    const type = match[1].toUpperCase();
+    const label = document.createElement("strong");
+    label.className = "changelog-alert-title";
+    label.textContent = alertTypes.get(type);
+    firstParagraph.innerHTML = firstParagraph.innerHTML.replace(
+      /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*/i,
+      "",
+    );
+    quote.classList.add("changelog-alert", `changelog-alert-${type.toLowerCase()}`);
+    quote.prepend(label);
+  }
+}
+
+function prepareChangelogMarkdown(container, { baseUrl = "" } = {}) {
+  createChangelogHeadingIds(container);
+  prepareChangelogAlerts(container);
   for (const link of container.querySelectorAll("a[href]")) {
-    const safeUrl = getSafeChangelogUrl(link.getAttribute("href"));
+    const originalHref = link.getAttribute("href");
+    if (originalHref?.startsWith("#")) {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        container.querySelector(`#${CSS.escape(originalHref.slice(1))}`)?.scrollIntoView({ behavior: "smooth" });
+      });
+      continue;
+    }
+    const safeUrl = getSafeChangelogUrl(originalHref, { baseUrl });
     if (!safeUrl) {
       link.removeAttribute("href");
       continue;
@@ -16229,7 +16286,10 @@ function prepareChangelogMarkdown(container) {
   }
 
   for (const markdownImage of container.querySelectorAll("img[src]")) {
-    const safeUrl = getSafeChangelogUrl(markdownImage.getAttribute("src"), { image: true });
+    const safeUrl = getSafeChangelogUrl(markdownImage.getAttribute("src"), {
+      image: true,
+      baseUrl,
+    });
     if (!safeUrl) {
       markdownImage.remove();
       continue;
@@ -16238,6 +16298,11 @@ function prepareChangelogMarkdown(container) {
     markdownImage.loading = "lazy";
     markdownImage.decoding = "async";
     markdownImage.referrerPolicy = "no-referrer";
+    markdownImage.alt ||= "Changelog image";
+    markdownImage.addEventListener("error", () => {
+      markdownImage.classList.add("is-unavailable");
+      markdownImage.title = "Image could not be loaded";
+    }, { once: true });
   }
 
   for (const checkbox of container.querySelectorAll('input[type="checkbox"]')) {
@@ -16255,7 +16320,7 @@ function prepareChangelogMarkdown(container) {
   expandChangelogEmojiText(container);
 }
 
-function renderChangelogMarkdown(container, markdown) {
+function renderChangelogMarkdown(container, markdown, options = {}) {
   const rendered = marked.parse(String(markdown || ""), {
     gfm: true,
     breaks: false,
@@ -16266,7 +16331,7 @@ function renderChangelogMarkdown(container, markdown) {
     FORBID_TAGS: ["audio", "button", "embed", "form", "iframe", "object", "select", "style", "textarea", "video"],
     FORBID_ATTR: ["srcset", "style"],
   });
-  prepareChangelogMarkdown(container);
+  prepareChangelogMarkdown(container, options);
 }
 
 function yieldChangelogFrame() {
@@ -16275,13 +16340,16 @@ function yieldChangelogFrame() {
 
 function getChangelogMarkdownContent(entry) {
   const cached = changelogDocumentCache.get(entry.version);
-  if (cached?.markdown === entry.markdown) return cached.element;
+  if (cached?.markdown === entry.markdown && cached?.rawUrl === entry.rawUrl) {
+    return cached.element;
+  }
 
   const element = document.createElement("div");
   element.className = "changelog-markdown";
-  renderChangelogMarkdown(element, entry.markdown);
+  renderChangelogMarkdown(element, entry.markdown, { baseUrl: entry.rawUrl });
   changelogDocumentCache.set(entry.version, {
     markdown: entry.markdown,
+    rawUrl: entry.rawUrl,
     element,
   });
   return element;
@@ -16473,7 +16541,12 @@ async function loadChangelog({ force = false } = {}) {
       ? `Updated ${new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.updatedAt))}`
       : "What changed in Aero P2P Chat";
     changelogDocumentCache.forEach((cached, version) => {
-      if (!changelogEntries.some((entry) => entry.version === version && entry.markdown === cached.markdown)) {
+      if (!changelogEntries.some(
+        (entry) =>
+          entry.version === version &&
+          entry.markdown === cached.markdown &&
+          entry.rawUrl === cached.rawUrl,
+      )) {
         changelogDocumentCache.delete(version);
       }
     });

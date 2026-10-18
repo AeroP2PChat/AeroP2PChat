@@ -17,13 +17,17 @@ const normalized = normalizeChangelogGist({
   html_url: "https://gist.github.com/Tenkayro/example",
   files: {
     "26.9.md": { content: "Older" },
-    "26.66.md": { content: "Newest" },
+    "26.66.md": {
+      content: "Newest",
+      raw_url: "https://gist.githubusercontent.com/Tenkayro/example/raw/26.66.md",
+    },
     "README.md": { content: "Ignored" },
     "26.70.md": { content: "Too large", truncated: true },
   },
 });
 assert(normalized.entries.length === 2, "Unexpected changelog files were included.");
 assert(normalized.entries[0].version === "26.66.0", "Changelog versions were not sorted newest first.");
+assert(normalized.entries[0].rawUrl.includes("gist.githubusercontent.com"), "Safe raw URL was not retained.");
 assert(normalized.entries[1].fileName === "26.9.md", "Filename normalization failed.");
 
 console.log("GitHub Gist changelog normalization checks passed.");

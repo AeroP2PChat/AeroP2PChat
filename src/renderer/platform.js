@@ -544,6 +544,11 @@ export function createPlatformApi() {
                 fileName,
                 version: `${Number(match[1])}.${Number(match[2])}.0`,
                 markdown: file.content,
+                rawUrl:
+                  typeof file.raw_url === "string" &&
+                  /^https:\/\/gist\.githubusercontent\.com\//i.test(file.raw_url)
+                    ? file.raw_url
+                    : "",
               }
             : null;
         })
