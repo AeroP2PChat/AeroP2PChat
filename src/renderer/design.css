@@ -304,7 +304,7 @@ body.app-boot-finish .window-frame {
   align-items: center;
   min-width: 0;
   height: var(--titlebar-height);
-  padding: 0 6px 0 12px;
+  padding: 0 0 0 12px;
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--frame) 90%, transparent);
   backdrop-filter: blur(18px) saturate(1.1);
@@ -554,6 +554,9 @@ body.app-boot-finish .window-frame {
 .window-controls .window-close:focus-visible {
   background: #c83d52;
   color: #ffffff;
+}
+.window-controls .window-close {
+  border-radius: 0;
 }
 .window-controls .header-update-button {
   align-self: center;
@@ -5820,10 +5823,27 @@ body:has(> .workspace-page:not(.hidden)) {
   color: var(--text);
   font-size: 21px;
 }
-.changelog-document-heading span {
+.changelog-document-file {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
+  background: var(--surface-subtle);
   color: var(--faint);
   font-family: "Cascadia Mono", Consolas, monospace;
   font-size: 9px;
+}
+.changelog-document-file:hover,
+.changelog-document-file:focus-visible {
+  border-color: var(--line-accent);
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.changelog-document-file i {
+  font-size: 12px;
 }
 .changelog-markdown {
   color: var(--text-soft);

@@ -16448,8 +16448,22 @@ async function selectChangelogVersion(version) {
   heading.className = "changelog-document-heading";
   const title = document.createElement("h1");
   title.textContent = `Version ${entry.version}`;
-  const file = document.createElement("span");
-  file.textContent = entry.fileName;
+  const file = document.createElement("button");
+  file.type = "button";
+  file.className = "changelog-document-file";
+  file.title = `Open ${entry.fileName} on GitHub Gist`;
+  file.setAttribute("aria-label", `Open ${entry.fileName} on GitHub Gist`);
+  const fileName = document.createElement("span");
+  fileName.textContent = entry.fileName;
+  const githubIcon = document.createElement("i");
+  githubIcon.className = "fa-brands fa-github";
+  githubIcon.setAttribute("aria-hidden", "true");
+  file.append(fileName, githubIcon);
+  file.addEventListener("click", () => {
+    if (!changelogSourceUrl) return;
+    const fileAnchor = `file-${entry.fileName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+    void openExternalLinkWithConfirmation(`${changelogSourceUrl}#${fileAnchor}`);
+  });
   heading.append(title, file);
   const pending = document.createElement("div");
   pending.className = "changelog-document-pending";
