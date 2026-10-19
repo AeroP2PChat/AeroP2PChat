@@ -653,13 +653,13 @@ body.app-boot-finish .window-frame {
   content: "";
   position: absolute;
   top: 50%;
-  left: 3px;
+  left: 50%;
   width: 2px;
   height: 52px;
   border-radius: 999px;
   background: var(--line-strong);
   opacity: 0.55;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   transition:
     height 140ms ease,
     background 140ms ease,
@@ -8434,7 +8434,12 @@ body:has(#update-modal:not(.hidden)) #app-menu-update {
 }
 .sidebar-resizer {
   width: 8px;
-  margin-inline: -5px;
+}
+.sidebar-resizer::after {
+  content: "";
+  position: absolute;
+  inset: 0 -10px;
+  cursor: col-resize;
 }
 .sidebar-resizer::before {
   width: 1px;
