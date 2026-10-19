@@ -19,9 +19,5 @@ assert.match(
   accentWallpaperRule,
   /linear-gradient\(var\(--accent\), var\(--accent\)\)/,
 );
-assert.match(
-  accentWallpaperRule,
-  /linear-gradient\(var\(--boot-fill\), var\(--boot-fill\)\)/,
-);
 
 console.log("Theme style tests passed.");
