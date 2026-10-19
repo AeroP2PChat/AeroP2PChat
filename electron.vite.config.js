@@ -53,9 +53,11 @@ module.exports = defineConfig({
               if (
                 id.includes("node_modules/qrcode/") ||
                 id.includes("node_modules/jsqr/") ||
-                id.includes("node_modules/dijkstrajs/")
+                id.includes("node_modules/dijkstrajs/") ||
+                id.includes("node_modules/pica/")
               ) {
-                // Keep opt-in QR features out of the renderer's startup chunk.
+                // Keep opt-in QR and image-processing features out of the
+                // renderer's startup chunk.
                 return undefined;
               }
               return "vendor";

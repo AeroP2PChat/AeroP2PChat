@@ -30,7 +30,6 @@ import {
   loadStoredConversations,
   storeConversation,
 } from "./chat-history-store.mjs";
-import { optimizeImageForTransfer } from "./image-optimization.mjs";
 import {
   DEFAULT_MESSAGE_WINDOW,
   getMessageWindow,
@@ -656,6 +655,7 @@ const chatHistory = new Map();
 const chatHistorySaveTimers = new Map();
 let renderedMessageLimit = DEFAULT_MESSAGE_WINDOW;
 let contactSearchMatches = null;
+let imageOptimizationModulePromise = null;
 const unreadCounts = new Map();
 const remoteIdentities = new Map();
 const remoteReadReceiptsEnabled = new Map();
@@ -1915,7 +1915,7 @@ if (hasCustomWallpaper) {
 setBootProgress(50, "Wallpaper ready");
 const identity = loadIdentity();
 setBootProgress(55, "Loading identity");
-await hydrateChatHistory();
+void hydrateChatHistory();
 setBootProgress(58, "Loading conversations");
 
 setAeroIdText(ownId, identity.id);
@@ -5577,14 +5577,20 @@ async function hydrateChatHistory() {
     const conversations = await loadStoredConversations(identity.id);
     for (const { peerId, messages: storedMessages } of conversations) {
       if (!isValidAeroId(peerId)) continue;
+      const liveMessages = chatHistory.get(peerId) || [];
+      const mergedMessages = new Map();
+      for (const item of [...storedMessages, ...liveMessages]) {
+        if (item?.id && ["me", "them"].includes(item.sender)) {
+          mergedMessages.set(item.id, item);
+        }
+      }
       chatHistory.set(
         peerId,
-        storedMessages
-          .filter((item) => item?.id && ["me", "them"].includes(item.sender))
-          .slice(-MAX_CHAT_HISTORY_ITEMS),
+        [...mergedMessages.values()].slice(-MAX_CHAT_HISTORY_ITEMS),
       );
     }
     writeDevLog(`Loaded ${conversations.length} stored conversation(s).`);
+    if (activePeerId) renderChatHistory();
   } catch (error) {
     writeDevLog(`Chat history load failed: ${error.message}`);
   }
@@ -8664,6 +8670,8 @@ async function sendSelectedFile(selectedFile, peerId = activePeerId) {
   if (["image/jpeg", "image/png"].includes(selectedFile.type)) {
     setStatus("pending", `Optimizing ${selectedFile.name || "image"}...`);
     try {
+      imageOptimizationModulePromise ||= import("./image-optimization.mjs");
+      const { optimizeImageForTransfer } = await imageOptimizationModulePromise;
       const optimized = await optimizeImageForTransfer(selectedFile);
       if (optimized.optimized) {
         selectedFile = optimized.file;
