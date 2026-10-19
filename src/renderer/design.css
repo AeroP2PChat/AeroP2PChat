@@ -8123,20 +8123,29 @@ body {
 }
 .titlebar-actions {
   height: 100%;
-  gap: 1px;
+  gap: 5px;
 }
 .titlebar-actions button {
-  border: 0;
-  border-left: 1px solid transparent;
-  border-radius: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 50%;
   background: transparent;
   color: var(--muted);
 }
 .titlebar-actions button:hover:not(:disabled),
 .titlebar-actions button:focus-visible {
-  border-left-color: var(--line);
+  border-color: var(--line);
   background: var(--surface-hover);
   color: var(--text);
+  transform: none;
+}
+body:has(#settings-modal:not(.hidden)) #app-menu-settings,
+body:has(#changelog-modal:not(.hidden)) #changelog-button,
+body:has(#update-modal:not(.hidden)) #app-menu-update {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .app-shell {
