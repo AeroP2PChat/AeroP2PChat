@@ -8531,7 +8531,7 @@ textarea:focus,
   height: 28px;
   border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
   border-radius: 8px;
-  background: var(--accent-soft);
+  background: transparent;
 }
 .peers-card {
   padding-top: 14px;
