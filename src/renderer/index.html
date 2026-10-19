@@ -50,12 +50,12 @@
       }
 
       html:is([data-theme="dark"], [data-theme="ultra-dark"]) {
-        --boot-bg: #232428;
-        --boot-panel: #313338;
-        --boot-line: #41434a;
-        --boot-text: #f2f3f5;
-        --boot-muted: #b5bac1;
-        --boot-track: #41434a;
+        --boot-bg: #080909;
+        --boot-panel: #080909;
+        --boot-line: #242525;
+        --boot-text: #f4f4f4;
+        --boot-muted: #8d8e8e;
+        --boot-track: #242525;
         --boot-fill: #f2f2f2;
       }
 
@@ -95,77 +95,38 @@
         z-index: 9999;
         display: grid;
         place-items: center;
-        background-color: var(--boot-bg);
-        background-image:
-          linear-gradient(
-            color-mix(in srgb, var(--boot-bg) 24%, transparent),
-            color-mix(in srgb, var(--boot-bg) 24%, transparent)
-          ),
-          linear-gradient(var(--boot-fill), var(--boot-fill)),
-          linear-gradient(#ffffff, #ffffff),
-          url("../../assets/chat/background.png");
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-        background-blend-mode: normal, hue, difference, normal;
-      }
-
-      html:is([data-theme="dark"], [data-theme="ultra-dark"]) .boot-screen {
-        background-image:
-          linear-gradient(
-            color-mix(in srgb, var(--boot-bg) 32%, transparent),
-            color-mix(in srgb, var(--boot-bg) 32%, transparent)
-          ),
-                url("../../assets/chat/background.png");
-        background-blend-mode: normal, luminosity;
+        background: var(--boot-bg);
       }
 
       .boot-panel {
         display: grid;
-        justify-items: center;
-        gap: 14px;
-        min-width: 210px;
-        padding: 22px 24px;
-        border: 1px solid var(--boot-line);
-        border-radius: 24px;
-        background: var(--boot-panel);
-        box-shadow: 0 12px 32px rgba(18, 45, 58, 0.12);
-      }
-
-      html:is([data-theme="dark"], [data-theme="ultra-dark"]) .boot-panel {
-        box-shadow: 0 18px 46px rgba(0, 0, 0, 0.72);
-      }
-
-      .boot-logo {
-        width: 82px;
-        height: 82px;
-        border-radius: 50%;
-        object-fit: contain;
-        background: var(--boot-panel);
-        border: 1px solid var(--boot-line);
-        padding: 5px;
-        box-shadow: none;
+        justify-items: stretch;
+        gap: 8px;
+        width: min(220px, calc(100vw - 48px));
+        padding: 0;
+        border: 0;
+        background: transparent;
       }
 
       .boot-title {
         margin: 0;
         color: var(--boot-text);
-        font-size: 18px;
-        font-weight: 800;
-        letter-spacing: 0;
+        font-size: 15px;
+        font-weight: 720;
+        letter-spacing: -0.02em;
       }
 
       .boot-status {
         color: var(--boot-muted);
-        font-size: 12px;
-        font-weight: 800;
+        font-size: 10px;
+        font-weight: 600;
       }
 
       .boot-progress {
-        width: 178px;
-        height: 6px;
+        width: 100%;
+        height: 2px;
         overflow: hidden;
-        border: 1px solid rgba(41, 139, 171, 0.18);
+        border: 0;
         border-radius: 999px;
         background: var(--boot-track);
         box-shadow: none;
@@ -177,28 +138,7 @@
         border-radius: inherit;
         background: var(--boot-fill);
         box-shadow: none;
-        transition: width 360ms cubic-bezier(0.22, 0.8, 0.2, 1);
-      }
-
-      .boot-percent {
-        min-height: 12px;
-        color: var(--boot-muted);
-        font-size: 10px;
-        font-weight: 800;
-        line-height: 1;
-      }
-
-      .boot-dots {
-        display: flex;
-        gap: 5px;
-      }
-
-      .boot-dots span {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--boot-fill);
-        opacity: 0.42;
+        transition: width 180ms cubic-bezier(0.16, 1, 0.3, 1);
       }
 
       body:not(.app-loading) .boot-screen {
@@ -212,9 +152,7 @@
 
       body.app-boot-finish .boot-title,
       body.app-boot-finish .boot-status,
-      body.app-boot-finish .boot-progress,
-      body.app-boot-finish .boot-percent,
-      body.app-boot-finish .boot-dots {
+      body.app-boot-finish .boot-progress {
         opacity: 0;
         transition: opacity 160ms ease;
       }
@@ -240,17 +178,6 @@
           opacity: 0;
         }
       }
-      html[data-theme="ultra-dark"] .boot-screen {
-        background-image:
-          linear-gradient(
-            color-mix(in srgb, var(--boot-bg) 32%, transparent),
-            color-mix(in srgb, var(--boot-bg) 32%, transparent)
-          ),
-          linear-gradient(var(--boot-fill), var(--boot-fill)),
-          url("../../assets/chat/background.png");
-        background-blend-mode: normal, hue, normal;
-      }
-
     </style>
     <script type="module" src="/index.js"></script>
   </head>
@@ -264,12 +191,11 @@
       <section class="boot-panel">
         <h1 class="boot-title" data-app-name>App</h1>
         <span id="boot-status" class="boot-status">Loading interface</span>
-        <span id="boot-percent" class="boot-percent">0%</span>
         <div class="boot-progress" aria-hidden="true">
           <div id="boot-progress-fill" class="boot-progress-fill"></div>
         </div>
       </section>
-  </div>
+    </div>
     <div class="window-frame">
       <header class="titlebar">
         <div class="titlebar-left">

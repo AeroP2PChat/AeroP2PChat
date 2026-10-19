@@ -534,10 +534,8 @@ const streamTabScreens = document.querySelector("#stream-tab-screens");
 const streamTabWindows = document.querySelector("#stream-tab-windows");
 const screenSourceList = document.querySelector("#screen-source-list");
 const streamStartButton = document.querySelector("#stream-start-button");
-const bootLogo = document.querySelector(".boot-logo");
 const bootStatus = document.querySelector("#boot-status");
 const bootProgressFill = document.querySelector("#boot-progress-fill");
-const bootPercent = document.querySelector("#boot-percent");
 const autoFitTextNodes = Array.from(
   document.querySelectorAll(".auto-fit-text"),
 );
@@ -1001,9 +999,6 @@ function setBootProgress(percent, text) {
   if (bootProgressFill) {
     bootProgressFill.style.width = `${nextPercent}%`;
   }
-  if (bootPercent) {
-    bootPercent.textContent = `${nextPercent}%`;
-  }
   if (bootStatus && text) {
     bootStatus.textContent = text;
   }
@@ -1066,7 +1061,6 @@ function setBootSimulation(enabled) {
 setBootProgress(4, "Loading logo");
 
 titlebarLogo.src = appLogo;
-void waitForImageReady(bootLogo);
 setBootProgress(18, "Preparing interface");
 
 const currentVersion = packageInfo.version;

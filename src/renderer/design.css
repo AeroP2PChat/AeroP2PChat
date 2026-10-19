@@ -228,41 +228,21 @@ p {
 
 /* Boot and app transition */
 .boot-screen {
-  background-color: var(--canvas);
-  background-image: linear-gradient(
-      color-mix(in srgb, var(--surface) 24%, transparent),
-      color-mix(in srgb, var(--surface) 24%, transparent)
-    ),
-    linear-gradient(var(--boot-fill), var(--boot-fill)),
-    linear-gradient(#ffffff, #ffffff),
-    url("../../assets/chat/background.png");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-blend-mode: normal, hue, difference, normal;
-}
-html:is([data-theme="dark"], [data-theme="ultra-dark"]) .boot-screen,
-body:is([data-theme="dark"], [data-theme="ultra-dark"]) .boot-screen {
-  background-image: linear-gradient(
-      color-mix(in srgb, var(--surface) 32%, transparent),
-      color-mix(in srgb, var(--surface) 32%, transparent)
-    ),
-    url("../../assets/chat/background.png");
-  background-blend-mode: normal, luminosity;
+  background: var(--canvas);
 }
 .boot-panel {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   justify-items: stretch;
-  width: min(248px, calc(100vw - 48px));
+  width: min(220px, calc(100vw - 48px));
   min-width: 0;
   padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  gap: 8px 12px;
+  gap: 8px;
 }
 .boot-panel::before {
   content: "";
@@ -8108,17 +8088,6 @@ body:is([data-theme="dark"], [data-theme="ultra-dark"]).chat-wallpaper-ready .me
     url("../../assets/chat/background.png");
   background-blend-mode: normal, hue, normal;
 }
-html:is([data-theme="dark"], [data-theme="ultra-dark"]) .boot-screen,
-body:is([data-theme="dark"], [data-theme="ultra-dark"]) .boot-screen {
-  background-image: linear-gradient(
-      color-mix(in srgb, var(--surface) 32%, transparent),
-      color-mix(in srgb, var(--surface) 32%, transparent)
-    ),
-    linear-gradient(var(--boot-fill), var(--boot-fill)),
-    url("../../assets/chat/background.png");
-  background-blend-mode: normal, hue, normal;
-}
-
 @media (max-width: 700px) {
   .theme-switcher,
   .welcome-theme-options {
