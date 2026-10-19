@@ -3807,11 +3807,11 @@ function createWindow({ hidden = false } = {}) {
 }
 
 app.whenReady().then(async () => {
-  await cleanupOldDiagnosticLogs();
-  await cleanupCompletedUpdateSetups();
-  await cleanupIncomingTempDirectory();
   try {
-    appLockRecord = await loadAppLockRecord();
+    [appLockRecord, appConfig] = await Promise.all([
+      loadAppLockRecord(),
+      loadConfig(),
+    ]);
   } catch (error) {
     dialog.showErrorBox(
       `${appDisplayName} is locked`,
@@ -3822,7 +3822,6 @@ app.whenReady().then(async () => {
     return;
   }
   appUnlocked = !appLockRecord;
-  appConfig = await loadConfig();
   if (!appLockRecord && appConfig?.security?.appLockRequired === true) {
     dialog.showErrorBox(
       `${appDisplayName} is locked`,
@@ -3845,8 +3844,6 @@ app.whenReady().then(async () => {
     closeToTray: appConfig.appSettings?.closeToTray !== false,
     theme: appConfig.appSettings?.theme || "system",
   });
-  await applyAutostartSettings();
-
   session.defaultSession.setPermissionRequestHandler(
     (webContents, permission, callback) => {
       const requestingWindow = BrowserWindow.fromWebContents(webContents);
@@ -4461,8 +4458,16 @@ app.whenReady().then(async () => {
   appUnlocked = true;
   appUnlockedAt = Date.now();
   appStartupReady = true;
-  createTray();
   createWindow({ hidden: shouldStartHidden() && !appLockRecord?.enabled });
+  createTray();
+  setTimeout(() => {
+    void Promise.allSettled([
+      cleanupOldDiagnosticLogs(),
+      cleanupCompletedUpdateSetups(),
+      cleanupIncomingTempDirectory(),
+      applyAutostartSettings(),
+    ]);
+  }, 1200);
   void warnAboutMixedWindowsInstallers().catch((error) => {
     console.warn("Could not check Windows installer registrations.", error.message);
   });

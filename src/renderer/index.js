@@ -1025,10 +1025,7 @@ function waitForImageReady(image) {
 }
 
 async function waitForVisualReady() {
-  await Promise.all([
-    waitForImageReady(titlebarLogo),
-    document.fonts?.ready?.catch?.(() => {}) ?? Promise.resolve(),
-  ]);
+  await waitForImageReady(titlebarLogo);
 }
 
 const bootSimulationSteps = [
@@ -1069,7 +1066,7 @@ function setBootSimulation(enabled) {
 setBootProgress(4, "Loading logo");
 
 titlebarLogo.src = appLogo;
-await waitForImageReady(bootLogo);
+void waitForImageReady(bootLogo);
 setBootProgress(18, "Preparing interface");
 
 const currentVersion = packageInfo.version;
@@ -1710,9 +1707,10 @@ function migrateLocalStorageConfig() {
 }
 
 enhanceNativeSelects();
-renderLegalLicenses();
+let legalLicensesRendered = false;
 legalLicenseSearch?.addEventListener("input", () => {
   renderLegalLicenses(legalLicenseSearch.value);
+  legalLicensesRendered = true;
 });
 appConfig = await loadAppConfig();
 void refreshAppLockStatus();
@@ -1721,7 +1719,15 @@ if (stripRetiredIdentityData(appConfig)) {
 }
 normalizeAppSettings();
 applyAppearancePreferences();
-await refreshCustomThemes();
+const hasStartupCustomThemes = Boolean(
+  appConfig.appSettings.customTheme ||
+    appConfig.appSettings.onlineThemeUrls?.length,
+);
+if (hasStartupCustomThemes) {
+  await refreshCustomThemes();
+} else {
+  window.setTimeout(() => void refreshCustomThemes(), 600);
+}
 setBootProgress(42, "Loading settings");
 migrateLocalStorageConfig();
 if (stripRetiredIdentityData(appConfig)) {
@@ -1732,14 +1738,21 @@ applyAppearancePreferences();
 void refreshSystemAccentColor();
 void applyAllCustomSounds();
 setBootProgress(46, "Loading wallpaper");
-await applyAllCustomWallpapers();
+const hasCustomWallpaper = Object.values(
+  appConfig.wallpaperSettings?.custom || {},
+).some((metadata) => metadata?.sha256);
+if (hasCustomWallpaper) {
+  await applyAllCustomWallpapers();
+} else {
+  void applyAllCustomWallpapers();
+}
 setBootProgress(50, "Wallpaper ready");
 const identity = loadIdentity();
 setBootProgress(55, "Loading identity");
 
 setAeroIdText(ownId, identity.id);
-  updateTitlebarLogo();
-  normalizeAudioConfig();
+updateTitlebarLogo();
+normalizeAudioConfig();
 applySidebarWidth(appConfig.appSettings.sidebarWidth);
 renderAudioSettings();
 setupSidebarResizer();
@@ -13858,6 +13871,10 @@ function selectSettingsPage(page = "appearance") {
   if (selectedPage === "profile") {
     populateProfileSettings();
   }
+  if (selectedPage === "legal" && !legalLicensesRendered) {
+    renderLegalLicenses();
+    legalLicensesRendered = true;
+  }
   if (pageChanged && settingsContent) {
     settingsContent.scrollTop = 0;
   }
@@ -17341,7 +17358,7 @@ async function finishBootScreen() {
       if (debugBootSimulation) return;
       document.body.classList.remove("app-loading", "app-boot-finish");
       window.setTimeout(() => void prefetchChangelogStatus(), 900);
-    }, 280);
+    }, 150);
   });
 }
 
