@@ -8,6 +8,7 @@ import { _parts as getBlobatarParts } from "blobatar/internal";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
 import "blobatar/motion.css";
+import "@fontsource-variable/inter";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import appLogo from "../../assets/app.png";
 import packageInfo from "../../package.json" with { type: "json" };

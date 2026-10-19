@@ -1,7 +1,9 @@
 :root {
   color-scheme: light;
   font-family:
-    "Segoe UI Variable Text", "Segoe UI", Inter, system-ui, sans-serif;
+    "Inter Variable", Inter, "Segoe UI Variable Text", "Segoe UI", system-ui,
+    sans-serif;
+  font-optical-sizing: auto;
   font-synthesis: none;
   --canvas: #edf2f5;
   --frame: #f8fbfc;

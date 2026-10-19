@@ -1,4 +1,5 @@
 import { blobatarUri } from "blobatar/uri";
+import "@fontsource-variable/inter";
 
 const container = document.getElementById("toast-container");
 

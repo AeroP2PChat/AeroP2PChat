@@ -1,3 +1,5 @@
+import "@fontsource-variable/inter";
+
 const $ = (selector) => document.querySelector(selector);
 const fields = {
   quality: $("#quality"),

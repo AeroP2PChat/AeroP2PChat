@@ -1,8 +1,10 @@
 :root {
   color-scheme: light;
   font-family:
-    "Twemoji Country Flags", "Segoe UI Variable Text", "Segoe UI", Inter,
-    system-ui, sans-serif;
+    "Twemoji Country Flags", "Inter Variable", Inter, "Segoe UI Variable Text",
+    "Segoe UI", system-ui, sans-serif;
+  font-optical-sizing: auto;
+  font-variation-settings: "opsz" 14;
   font-synthesis: none;
   --titlebar-height: 44px;
   --canvas: #eff1f5;

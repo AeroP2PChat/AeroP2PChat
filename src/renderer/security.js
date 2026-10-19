@@ -1,3 +1,5 @@
+import "@fontsource-variable/inter";
+
 const parameters = new URLSearchParams(location.search);
 const requestedTheme = parameters.get("theme");
 document.documentElement.dataset.theme = ["dark", "ultra-dark"].includes(

@@ -9,7 +9,10 @@
   --warning: #dba13c;
   --danger: #e25871;
   color: var(--text);
-  font-family: "Segoe UI", system-ui, sans-serif;
+  font-family:
+    "Inter Variable", Inter, "Segoe UI Variable Text", "Segoe UI", system-ui,
+    sans-serif;
+  font-optical-sizing: auto;
 }
 * {
   box-sizing: border-box;
