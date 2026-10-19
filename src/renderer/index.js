@@ -6668,6 +6668,7 @@ function setMessageDeliveryState(
     if (item.sentAt && item.roundTripMs == null)
       item.roundTripMs = Math.max(0, now - item.sentAt);
   }
+  scheduleChatHistorySave(peerId);
   refreshMessageDeliveryState(peerId, messageId);
 }
 
@@ -8660,7 +8661,7 @@ async function sendSelectedFile(selectedFile, peerId = activePeerId) {
   ) {
     return;
   }
-  if (["image/jpeg", "image/png", "image/webp"].includes(selectedFile.type)) {
+  if (["image/jpeg", "image/png"].includes(selectedFile.type)) {
     setStatus("pending", `Optimizing ${selectedFile.name || "image"}...`);
     try {
       const optimized = await optimizeImageForTransfer(selectedFile);

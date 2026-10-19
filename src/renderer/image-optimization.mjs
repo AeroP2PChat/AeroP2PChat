@@ -13,7 +13,9 @@ function optimizedFileName(name, mimeType) {
 export async function optimizeImageForTransfer(file) {
   if (
     !(file instanceof Blob) ||
-    !["image/jpeg", "image/png", "image/webp"].includes(file.type)
+    // Do not process WebP here: createImageBitmap exposes only one frame and
+    // would silently turn an animated WebP into a static image.
+    !["image/jpeg", "image/png"].includes(file.type)
   ) {
     return { file, optimized: false };
   }
