@@ -3459,14 +3459,16 @@
     </div>
 
     <div id="message-menu" class="context-menu hidden" role="menu">
-      <button id="menu-message-info" type="button" role="menuitem">
-        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-        <span>Message info</span>
-      </button>
-      <button id="menu-reply" type="button" role="menuitem">
-        <i class="fa-solid fa-reply" aria-hidden="true"></i>
-        <span>Reply</span>
-      </button>
+      <div class="context-menu-group message-menu-primary">
+        <button id="menu-message-info" type="button" role="menuitem">
+          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+          <span>Message info</span>
+        </button>
+        <button id="menu-reply" type="button" role="menuitem">
+          <i class="fa-solid fa-reply" aria-hidden="true"></i>
+          <span>Reply</span>
+        </button>
+      </div>
       <div
         class="context-menu-group reaction-menu"
         aria-label="React with emoji"
@@ -3517,31 +3519,35 @@
           </button>
         </div>
       </div>
-      <button id="menu-save-file" class="hidden" type="button" role="menuitem">
-        <i class="fa-solid fa-download" aria-hidden="true"></i>
-        <span>Save file</span>
-      </button>
-      <button id="menu-scan-file" class="hidden" type="button" role="menuitem">
-        <i class="fa-solid fa-shield-virus" aria-hidden="true"></i>
-        <span>Scan for threats</span>
-      </button>
-      <button id="menu-copy" type="button" role="menuitem">
-        <i class="fa-solid fa-copy" aria-hidden="true"></i>
-        <span>Copy</span>
-      </button>
-      <button id="menu-delete" type="button" role="menuitem" class="danger">
-        <i class="fa-solid fa-trash" aria-hidden="true"></i>
-        <span>Delete for me</span>
-      </button>
-      <button
-        id="menu-delete-everyone"
-        type="button"
-        role="menuitem"
-        class="danger hidden"
-      >
-        <i class="fa-solid fa-users-slash" aria-hidden="true"></i>
-        <span>Delete for everyone</span>
-      </button>
+      <div class="context-menu-group message-menu-actions">
+        <button id="menu-save-file" class="hidden" type="button" role="menuitem">
+          <i class="fa-solid fa-download" aria-hidden="true"></i>
+          <span>Save file</span>
+        </button>
+        <button id="menu-scan-file" class="hidden" type="button" role="menuitem">
+          <i class="fa-solid fa-shield-virus" aria-hidden="true"></i>
+          <span>Scan for threats</span>
+        </button>
+        <button id="menu-copy" type="button" role="menuitem">
+          <i class="fa-solid fa-copy" aria-hidden="true"></i>
+          <span>Copy</span>
+        </button>
+      </div>
+      <div class="message-menu-danger">
+        <button id="menu-delete" type="button" role="menuitem" class="danger">
+          <i class="fa-solid fa-trash" aria-hidden="true"></i>
+          <span>Delete for me</span>
+        </button>
+        <button
+          id="menu-delete-everyone"
+          type="button"
+          role="menuitem"
+          class="danger hidden"
+        >
+          <i class="fa-solid fa-users-slash" aria-hidden="true"></i>
+          <span>Delete for everyone</span>
+        </button>
+      </div>
     </div>
 
     <div

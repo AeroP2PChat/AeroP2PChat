@@ -8853,10 +8853,14 @@ textarea:focus,
 }
 
 /* Refined contact list */
+.sidebar-quick-actions {
+  margin-inline: var(--sidebar-content-inset);
+}
 .peer-list {
   gap: 5px;
   margin-top: 12px;
-  padding-right: 2px;
+  padding-right: 0;
+  scrollbar-gutter: auto;
 }
 .peer-section-label {
   display: flex;
@@ -9020,4 +9024,115 @@ textarea:focus,
   font-size: 9px;
   font-weight: 800;
   box-shadow: none;
+}
+
+/* Message context menu */
+#message-menu {
+  width: 248px;
+  padding: 7px;
+  border-color: var(--line-strong);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--surface-raised) 97%, transparent);
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.28),
+    0 3px 10px rgba(0, 0, 0, 0.16) !important;
+}
+#message-menu .context-menu-group {
+  gap: 3px;
+  padding: 0 0 6px;
+  margin: 0 0 6px;
+  border-bottom: 1px solid var(--line);
+}
+#message-menu .context-menu-label {
+  padding: 5px 7px 4px;
+  font-size: 9px;
+  letter-spacing: 0.09em;
+}
+#message-menu button:not(.hidden) {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 38px;
+  padding: 4px 8px 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 11px;
+  font-weight: 680;
+  text-align: left;
+  box-shadow: none;
+}
+#message-menu button:not(.hidden) > i {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-subtle);
+  color: var(--muted);
+  font-size: 11px;
+}
+#message-menu button:not(.hidden):hover,
+#message-menu button:not(.hidden):focus-visible {
+  border-color: color-mix(in srgb, var(--line-strong) 72%, transparent);
+  background: var(--surface-hover);
+  color: var(--text);
+  outline: 0 !important;
+}
+#message-menu button:not(.hidden):focus-visible {
+  box-shadow: 0 0 0 2px var(--accent-ring);
+}
+#message-menu button:not(.hidden):hover > i,
+#message-menu button:not(.hidden):focus-visible > i {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+#message-menu .reaction-menu {
+  padding-inline: 0;
+}
+#message-menu .reaction-options {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+  padding: 0 2px;
+}
+#message-menu .reaction-options button:not(.hidden) {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 34px;
+  padding: 0;
+  place-items: center;
+  border-color: var(--line);
+  background: var(--surface-subtle);
+  font-family: "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  font-size: 17px;
+  font-weight: 400;
+}
+#message-menu .reaction-options button:not(.hidden):hover,
+#message-menu .reaction-options button:not(.hidden):focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+  background: var(--accent-soft);
+  transform: translateY(-1px) scale(1.04);
+}
+#message-menu .message-menu-danger {
+  display: grid;
+  gap: 3px;
+}
+#message-menu button.danger:not(.hidden) {
+  color: var(--danger);
+}
+#message-menu button.danger:not(.hidden) > i {
+  border-color: color-mix(in srgb, var(--danger) 24%, var(--line));
+  background: color-mix(in srgb, var(--danger-soft) 72%, var(--surface));
+  color: var(--danger);
+}
+#message-menu button.danger:not(.hidden):hover,
+#message-menu button.danger:not(.hidden):focus-visible {
+  border-color: color-mix(in srgb, var(--danger) 32%, var(--line));
+  background: color-mix(in srgb, var(--danger-soft) 72%, transparent);
+  color: var(--danger);
 }
