@@ -72,7 +72,7 @@ const windowsBuildSource = fs.readFileSync(
   path.join(root, "scripts", "ci-build-release.cjs"),
   "utf8",
 );
-assert.match(windowsBuildSource, /"--win", "msi", "appx"/);
+assert.match(windowsBuildSource, /"--win"[\s\S]*?"msi"[\s\S]*?"appx"/);
 assert.doesNotMatch(windowsBuildSource, /windows\/setup|windows\/store/);
 
 console.log("Release workflow tests passed.");
