@@ -1,5 +1,6 @@
 // deno-lint-ignore-file no-window no-window-prefix no-unused-vars require-await
 import Peer, { util } from "peerjs";
+import Fuse from "fuse.js";
 import emojiShortcodeDataUrl from "../../node_modules/emoji-picker-element-data/en/github/data.json?url";
 import countryFlagEmojiFontUrl from "../../node_modules/country-flag-emoji-polyfill/dist/TwemojiCountryFlags.woff2?url";
 import { getDomain } from "tldts";
@@ -24,6 +25,17 @@ import {
   hasValidUpdateChecksums,
   isValidReleaseAssetUrl,
 } from "./update-security.mjs";
+import {
+  deleteStoredConversation,
+  loadStoredConversations,
+  storeConversation,
+} from "./chat-history-store.mjs";
+import { optimizeImageForTransfer } from "./image-optimization.mjs";
+import {
+  DEFAULT_MESSAGE_WINDOW,
+  getMessageWindow,
+  MESSAGE_WINDOW_STEP,
+} from "./message-window.mjs";
 import "./design.css";
 
 const projectConfig = __PROJECT_CONFIG__;
@@ -641,6 +653,9 @@ const autoFitTextNodes = Array.from(
 const connections = new Map();
 const pendingConnections = new Map();
 const chatHistory = new Map();
+const chatHistorySaveTimers = new Map();
+let renderedMessageLimit = DEFAULT_MESSAGE_WINDOW;
+let contactSearchMatches = null;
 const unreadCounts = new Map();
 const remoteIdentities = new Map();
 const remoteReadReceiptsEnabled = new Map();
@@ -706,7 +721,7 @@ const SCREEN_STREAM_PROFILES = {
   native: { label: "Native", height: 0, bitrate: 5200000 },
 };
 const SCREEN_STREAM_FPS_OPTIONS = [15, 30, 60];
-const MAX_CHAT_HISTORY_ITEMS = 500;
+const MAX_CHAT_HISTORY_ITEMS = 2000;
 const MESSAGE_SEND_INTERVAL_MS = 180;
 const MESSAGE_TRANSITION_MS = 190;
 const CHAT_BOTTOM_THRESHOLD_PX = 48;
@@ -1900,6 +1915,8 @@ if (hasCustomWallpaper) {
 setBootProgress(50, "Wallpaper ready");
 const identity = loadIdentity();
 setBootProgress(55, "Loading identity");
+await hydrateChatHistory();
+setBootProgress(58, "Loading conversations");
 
 setAeroIdText(ownId, identity.id);
 updateTitlebarLogo();
@@ -4947,17 +4964,55 @@ function getVisibleContacts() {
 }
 
 function getContactSearchQuery() {
-  return normalizeAeroId(contactSearchInput?.value || "");
+  return String(contactSearchInput?.value || "").trim();
+}
+
+function updateContactSearchMatches() {
+  const query = getContactSearchQuery();
+  if (!query) {
+    contactSearchMatches = null;
+    return;
+  }
+
+  const candidates = new Map();
+  for (const contact of contacts) {
+    candidates.set(contact.id, {
+      id: contact.id,
+      label: contact.label || "",
+      nickname: contact.remoteNickname || "",
+    });
+  }
+  for (const [peerId, conn] of [...connections, ...pendingConnections]) {
+    const connection = conn?.conn || conn;
+    const identityId = getPeerIdentityId(peerId, connection);
+    candidates.set(identityId, {
+      id: identityId,
+      peerId,
+      label: getPeerLabel(peerId, connection),
+      nickname: findContact(identityId)?.remoteNickname || "",
+    });
+  }
+
+  const fuse = new Fuse([...candidates.values()], {
+    keys: [
+      { name: "label", weight: 0.55 },
+      { name: "nickname", weight: 0.25 },
+      { name: "id", weight: 0.15 },
+      { name: "peerId", weight: 0.05 },
+    ],
+    threshold: 0.36,
+    distance: 80,
+    ignoreLocation: true,
+  });
+  contactSearchMatches = new Set(
+    fuse.search(query).flatMap(({ item }) => [item.id, item.peerId].filter(Boolean)),
+  );
 }
 
 function contactMatchesSearch(peerId, connOrContact = null) {
-  const query = getContactSearchQuery();
-  if (!query) {
-    return true;
-  }
-
-  const label = getPeerLabel(peerId, connOrContact);
-  return normalizeAeroId(`${peerId} ${label}`).includes(query);
+  if (!contactSearchMatches) return true;
+  const identityId = getPeerIdentityId(peerId, connOrContact?.conn || connOrContact);
+  return contactSearchMatches.has(peerId) || contactSearchMatches.has(identityId);
 }
 
 function appendPeerSectionLabel(text) {
@@ -5503,8 +5558,48 @@ function ensureChatHistory(peerId) {
   return chatHistory.get(peerId);
 }
 
+function scheduleChatHistorySave(peerId) {
+  if (!peerId || !identity?.id) return;
+  clearTimeout(chatHistorySaveTimers.get(peerId));
+  chatHistorySaveTimers.set(
+    peerId,
+    setTimeout(() => {
+      chatHistorySaveTimers.delete(peerId);
+      void storeConversation(identity.id, peerId, ensureChatHistory(peerId)).catch(
+        (error) => writeDevLog(`Chat history save failed: ${error.message}`),
+      );
+    }, 250),
+  );
+}
+
+async function hydrateChatHistory() {
+  try {
+    const conversations = await loadStoredConversations(identity.id);
+    for (const { peerId, messages: storedMessages } of conversations) {
+      if (!isValidAeroId(peerId)) continue;
+      chatHistory.set(
+        peerId,
+        storedMessages
+          .filter((item) => item?.id && ["me", "them"].includes(item.sender))
+          .slice(-MAX_CHAT_HISTORY_ITEMS),
+      );
+    }
+    writeDevLog(`Loaded ${conversations.length} stored conversation(s).`);
+  } catch (error) {
+    writeDevLog(`Chat history load failed: ${error.message}`);
+  }
+}
+
 function updateEmptyChatState() {
-  if (!activePeerId) {
+  const searching = Boolean(
+    activePeerId &&
+    !chatSearchBar.classList.contains("hidden") &&
+    chatSearchInput.value.trim(),
+  );
+  messages.classList.toggle("search-empty", searching);
+  if (searching) {
+    messages.dataset.empty = "Try another name, phrase or file name.";
+  } else if (!activePeerId) {
     messages.dataset.empty = "Share your Aero ID or connect to a contact.";
   } else {
     const activeConn = connections.get(activePeerId);
@@ -6422,7 +6517,20 @@ function createChatMessage(item) {
     preview.textContent = String(item.replyTo.text || "Message").slice(0, 120);
     quote.append(author, preview);
     quote.addEventListener("click", () => {
-      findRenderedMessageRow(item.replyTo.id)?.scrollIntoView({
+      let target = findRenderedMessageRow(item.replyTo.id);
+      if (!target && activePeerId) {
+        const history = ensureChatHistory(activePeerId);
+        const index = history.findIndex((entry) => entry.id === item.replyTo.id);
+        if (index >= 0) {
+          renderedMessageLimit = Math.max(
+            renderedMessageLimit,
+            history.length - index + 20,
+          );
+          renderChatHistory();
+          target = findRenderedMessageRow(item.replyTo.id);
+        }
+      }
+      target?.scrollIntoView({
         behavior: "smooth",
         block: "center",
       });
@@ -6634,9 +6742,43 @@ function appendMessageRow(row, { animate = false } = {}) {
   updateEmptyChatState();
 }
 
+function getSearchedChatItems(history) {
+  const query = chatSearchInput.value.trim();
+  if (!query) return null;
+  const fuse = new Fuse(history, {
+    keys: [
+      { name: "text", weight: 0.7 },
+      { name: "file.name", weight: 0.2 },
+      { name: "replyTo.text", weight: 0.1 },
+    ],
+    threshold: 0.34,
+    distance: 120,
+    ignoreLocation: true,
+  });
+  return fuse.search(query).map(({ item }) => item);
+}
+
+function createLoadEarlierMessagesButton(hiddenCount) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "load-earlier-messages";
+  button.append(renderIcon("fa-solid fa-clock-rotate-left"));
+  const label = document.createElement("span");
+  label.textContent = `Show earlier messages (${hiddenCount})`;
+  button.append(label);
+  button.addEventListener("click", () => {
+    const previousHeight = messages.scrollHeight;
+    renderedMessageLimit += MESSAGE_WINDOW_STEP;
+    renderChatHistory();
+    messages.scrollTop = messages.scrollHeight - previousHeight;
+  });
+  return button;
+}
+
 function renderChatHistory({ scrollState = null } = {}) {
   const isSameChat = renderedChatPeerId === activePeerId;
   if (!isSameChat) {
+    renderedMessageLimit = DEFAULT_MESSAGE_WINDOW;
     selectingMessages = false;
     selectedMessageIds.clear();
     updateMessageSelectionUi();
@@ -6649,8 +6791,18 @@ function renderChatHistory({ scrollState = null } = {}) {
   messages.replaceChildren();
 
   if (activePeerId) {
-    for (const item of ensureChatHistory(activePeerId)) {
-      messages.append(createChatMessage(item));
+    const history = ensureChatHistory(activePeerId);
+    const searchedItems = getSearchedChatItems(history);
+    const windowed = searchedItems
+      ? { items: searchedItems, hiddenCount: 0 }
+      : getMessageWindow(history, renderedMessageLimit);
+    if (windowed.hiddenCount > 0) {
+      messages.append(createLoadEarlierMessagesButton(windowed.hiddenCount));
+    }
+    for (const item of windowed.items) {
+      const row = createChatMessage(item);
+      if (searchedItems) row.classList.add("search-match");
+      messages.append(row);
     }
   }
 
@@ -6662,7 +6814,8 @@ function renderChatHistory({ scrollState = null } = {}) {
   updateTypingIndicator();
   refreshCallStage();
   sendReadReceiptsForActiveChat();
-  if (!chatSearchBar.classList.contains("hidden")) updateChatSearch();
+  if (!chatSearchBar.classList.contains("hidden"))
+    updateChatSearch({ render: false });
 }
 
 function parseManifest(text) {
@@ -7217,9 +7370,14 @@ function addChatMessage({
     const removed = history.splice(0, history.length - MAX_CHAT_HISTORY_ITEMS);
     removed.forEach(disposeMessageAssets);
   }
+  scheduleChatHistorySave(peerId);
 
   if (activePeerId === peerId) {
-    if (trimmed) {
+    if (
+      trimmed ||
+      !chatSearchBar.classList.contains("hidden") ||
+      history.length > renderedMessageLimit
+    ) {
       renderChatHistory();
       return;
     }
@@ -8501,6 +8659,20 @@ async function sendSelectedFile(selectedFile, peerId = activePeerId) {
     !connections.get(peerId)?.open
   ) {
     return;
+  }
+  if (["image/jpeg", "image/png", "image/webp"].includes(selectedFile.type)) {
+    setStatus("pending", `Optimizing ${selectedFile.name || "image"}...`);
+    try {
+      const optimized = await optimizeImageForTransfer(selectedFile);
+      if (optimized.optimized) {
+        selectedFile = optimized.file;
+        writeDevLog(
+          `Image optimized (${formatFileSize(optimized.originalSize)} to ${formatFileSize(selectedFile.size)}).`,
+        );
+      }
+    } catch (error) {
+      writeDevLog(`Image optimization skipped: ${error.message}`);
+    }
   }
   const name = sanitizeTransferFileName(selectedFile.name || "file");
   setStatus("pending", `Checking ${name}...`);
@@ -13052,21 +13224,17 @@ function setMessageSelectionMode(enabled) {
   renderChatHistory();
 }
 
-function updateChatSearch() {
-  const query = chatSearchInput.value.trim().toLocaleLowerCase();
-  let matches = 0;
-  for (const item of activePeerId ? ensureChatHistory(activePeerId) : []) {
-    const row = findRenderedMessageRow(item.id);
-    const haystack =
-      `${item.text || ""} ${item.file?.name || ""}`.toLocaleLowerCase();
-    const match = !query || haystack.includes(query);
-    row?.classList.toggle("search-hidden", Boolean(query) && !match);
-    row?.classList.toggle("search-match", Boolean(query) && match);
-    if (query && match) matches += 1;
-  }
+function updateChatSearch({ render = true } = {}) {
+  const query = chatSearchInput.value.trim();
+  const matches = query
+    ? getSearchedChatItems(
+        activePeerId ? ensureChatHistory(activePeerId) : [],
+      )?.length || 0
+    : 0;
   chatSearchCount.textContent = query
     ? `${matches} result${matches === 1 ? "" : "s"}`
     : "";
+  if (render) renderChatHistory();
 }
 
 function setChatSearchOpen(open) {
@@ -13499,6 +13667,7 @@ async function deleteMessageLocally(peerId, messageId) {
     const item = history[index];
     disposeMessageAssets(item);
     history.splice(index, 1);
+    scheduleChatHistorySave(peerId);
     if (activePeerId === peerId) {
       renderChatHistory({ scrollState });
     }
@@ -13511,6 +13680,11 @@ function clearChatLocally(peerId) {
   if (!peerId) return;
   ensureChatHistory(peerId).forEach(disposeMessageAssets);
   chatHistory.set(peerId, []);
+  clearTimeout(chatHistorySaveTimers.get(peerId));
+  chatHistorySaveTimers.delete(peerId);
+  void deleteStoredConversation(identity.id, peerId).catch((error) =>
+    writeDevLog(`Chat history delete failed: ${error.message}`),
+  );
   unreadCounts.delete(peerId);
   selectedMessageIds.clear();
   if (activePeerId === peerId) renderChatHistory();
@@ -13530,6 +13704,7 @@ function applyMessageReaction(peerId, messageId, emoji, byMe) {
     item.reactions = item.reactions.filter((reaction) => reaction !== existing);
   else if (existing) existing.emoji = emoji;
   else item.reactions.push({ emoji, byMe });
+  scheduleChatHistorySave(peerId);
   if (activePeerId === peerId) renderChatHistory();
   return true;
 }
@@ -13763,6 +13938,7 @@ function removePeer(peerId, { silent = false } = {}) {
 function refreshPeers() {
   peerList.replaceChildren();
   const query = getContactSearchQuery();
+  updateContactSearchMatches();
 
   if (connections.size === 0 && pendingConnections.size === 0) {
     if (contacts.length === 0 && !query) {
@@ -15560,6 +15736,13 @@ messageInput.addEventListener("keydown", (event) => {
 
 contactSearchInput?.addEventListener("input", () => {
   refreshPeers();
+});
+contactSearchInput?.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && contactSearchInput.value) {
+    event.preventDefault();
+    contactSearchInput.value = "";
+    refreshPeers();
+  }
 });
 
 callChat.addEventListener("click", () => {
@@ -17974,12 +18157,13 @@ settingsSearchInput?.addEventListener("keydown", (event) => {
 document.addEventListener("keydown", (event) => {
   if (
     (event.ctrlKey || event.metaKey) &&
-    event.key.toLowerCase() === "k" &&
-    !settingsModal.classList.contains("hidden")
+    event.key.toLowerCase() === "k"
   ) {
     event.preventDefault();
-    settingsSearchInput?.focus();
-    settingsSearchInput?.select();
+    const settingsOpen = !settingsModal.classList.contains("hidden");
+    const searchInput = settingsOpen ? settingsSearchInput : contactSearchInput;
+    searchInput?.focus();
+    searchInput?.select();
   }
 });
 

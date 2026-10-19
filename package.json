@@ -53,13 +53,17 @@
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",
     "@noble/hashes": "^2.3.0",
+    "@tanstack/virtual-core": "^3.19.6",
     "blobatar": "^2.7.0",
     "country-flag-emoji-polyfill": "^0.1.10",
     "dompurify": "^3.4.17",
     "emoji-picker-element": "^1.29.1",
     "emoji-picker-element-data": "^1.8.0",
     "file-type": "^22.0.2",
+    "fuse.js": "^7.5.0",
+    "idb": "^8.0.4",
     "marked": "^18.1.1",
+    "pica": "^10.0.3",
     "tldts": "^7.4.10"
   }
 }
