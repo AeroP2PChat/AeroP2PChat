@@ -176,8 +176,7 @@ async function main() {
           message: "Release-Highlights (zum Beenden zweimal Enter)",
           placeholder: "- Neu: ...\n- Behoben: ...",
           validate(value) {
-            if (!String(value || "").trim())
-              return "Gib mindestens eine Zeile ein.";
+            if (!String(value || "").trim()) return "Gib mindestens eine Zeile ein.";
           },
         }),
       ).trim()

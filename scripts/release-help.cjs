@@ -159,7 +159,12 @@ function verifyArtifacts(names, platform) {
 }
 
 function wait(milliseconds) {
-  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
+  Atomics.wait(
+    new Int32Array(new SharedArrayBuffer(4)),
+    0,
+    0,
+    milliseconds,
+  );
 }
 
 function findLinuxWorkflowRun({ headSha, dispatchedAt, attempts = 20 }) {
@@ -192,10 +197,7 @@ function findLinuxWorkflowRun({ headSha, dispatchedAt, attempts = 20 }) {
           entry.headSha === headSha &&
           Date.parse(entry.createdAt) >= earliestCreatedAt,
       )
-      .sort(
-        (left, right) =>
-          Date.parse(right.createdAt) - Date.parse(left.createdAt),
-      )[0];
+      .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))[0];
     if (workflowRun) return workflowRun;
     if (attempt < attempts) wait(1500);
   }
@@ -424,12 +426,8 @@ module.exports = {
   bumpVersion,
   compareVersions,
   downloadStoreMsix: async () => {
-    const msixPath = path.join(
-      artifactsDir,
-      config.release.windowsStoreMsixAsset,
-    );
-    if (!fs.existsSync(msixPath))
-      throw new Error(`Local MSIX not found: ${msixPath}`);
+    const msixPath = path.join(artifactsDir, config.release.windowsStoreMsixAsset);
+    if (!fs.existsSync(msixPath)) throw new Error(`Local MSIX not found: ${msixPath}`);
     return { path: msixPath, size: fs.statSync(msixPath).size };
   },
   executeRelease,

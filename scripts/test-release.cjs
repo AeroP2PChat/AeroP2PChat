@@ -16,7 +16,10 @@ assert.equal(bumpVersion("26.52.1", "major"), "27.0.0");
 assert.equal(compareVersions("26.52.2", "26.52.1"), 1);
 assert.equal(compareVersions("26.52.1", "26.52.1"), 0);
 assert.equal(compareVersions("26.51.9", "26.52.1"), -1);
-assert.equal(resolveMinimumVersion("keep", "26.52.2", "26.40.0"), "26.40.0");
+assert.equal(
+  resolveMinimumVersion("keep", "26.52.2", "26.40.0"),
+  "26.40.0",
+);
 assert.equal(
   resolveMinimumVersion("important", "26.52.2", "26.40.0"),
   "26.52.2",
@@ -72,7 +75,7 @@ const windowsBuildSource = fs.readFileSync(
   path.join(root, "scripts", "ci-build-release.cjs"),
   "utf8",
 );
-assert.match(windowsBuildSource, /"--win"[\s\S]*?"msi"[\s\S]*?"appx"/);
+assert.match(windowsBuildSource, /"--win", "msi", "appx"/);
 assert.doesNotMatch(windowsBuildSource, /windows\/setup|windows\/store/);
 
 console.log("Release workflow tests passed.");

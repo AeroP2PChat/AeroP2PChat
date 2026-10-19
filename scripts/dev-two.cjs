@@ -24,7 +24,8 @@ function spawnChild(command, args, env, filterChromiumStderr = false) {
     ...env,
   };
   delete childEnv.ELECTRON_RUN_AS_NODE;
-  const filterDevStderr = filterChromiumStderr && !shouldShowRawChromiumLogs();
+  const filterDevStderr =
+    filterChromiumStderr && !shouldShowRawChromiumLogs();
 
   const child = spawn(command, args, {
     cwd: root,

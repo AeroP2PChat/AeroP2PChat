@@ -21,22 +21,17 @@ function parseRingtoneFileName(fileName) {
 function getRingtonePresets(projectRoot) {
   const directory = resolve(projectRoot, "public/sound/ringtones");
   return readdirSync(directory, { withFileTypes: true })
-    .filter(
-      (entry) => entry.isFile() && extname(entry.name).toLowerCase() === ".ogg",
+    .filter((entry) =>
+      entry.isFile() && extname(entry.name).toLowerCase() === ".ogg",
     )
     .map((entry) => ({
       id: entry.name,
       ...parseRingtoneFileName(entry.name),
       source: `sound/ringtones/${encodeURIComponent(entry.name)}`,
     }))
-    .sort(
-      (first, second) =>
-        first.name.localeCompare(second.name, undefined, {
-          sensitivity: "base",
-        }) ||
-        first.author.localeCompare(second.author, undefined, {
-          sensitivity: "base",
-        }),
+    .sort((first, second) =>
+      first.name.localeCompare(second.name, undefined, { sensitivity: "base" }) ||
+      first.author.localeCompare(second.author, undefined, { sensitivity: "base" }),
     );
 }
 

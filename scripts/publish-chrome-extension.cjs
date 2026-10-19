@@ -44,13 +44,9 @@ function assertCredentials() {
     "EXTENSION_ID",
     "PUBLISHER_ID",
   ];
-  const missing = required.filter(
-    (key) => !String(process.env[key] || "").trim(),
-  );
+  const missing = required.filter((key) => !String(process.env[key] || "").trim());
   if (missing.length) {
-    throw new Error(
-      `Missing Chrome Web Store credentials: ${missing.join(", ")}`,
-    );
+    throw new Error(`Missing Chrome Web Store credentials: ${missing.join(", ")}`);
   }
 }
 
@@ -84,20 +80,13 @@ function main() {
   const source = path.resolve(
     root,
     options.source ||
-      path.join(
-        "dist",
-        "build",
-        "artifacts",
-        config.release.chromeExtensionAsset,
-      ),
+      path.join("dist", "build", "artifacts", config.release.chromeExtensionAsset),
   );
   if (!fs.existsSync(source)) {
     throw new Error(`Chrome extension package not found: ${source}`);
   }
 
-  console.log(
-    `Publishing Chrome extension package: ${path.relative(root, source)}`,
-  );
+  console.log(`Publishing Chrome extension package: ${path.relative(root, source)}`);
   run("npx", [
     "--no-install",
     "chrome-webstore-upload",

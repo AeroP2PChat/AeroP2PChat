@@ -1,9 +1,4 @@
-const {
-  existsSync,
-  readFileSync,
-  readdirSync,
-  realpathSync,
-} = require("node:fs");
+const { existsSync, readFileSync, readdirSync, realpathSync } = require("node:fs");
 const { dirname, join, resolve } = require("node:path");
 
 const BUNDLED_RUNTIME_DEV_PACKAGES = [
@@ -28,8 +23,7 @@ function readLicenseText(packageDirectory) {
   const fileName = readdirSync(packageDirectory).find((name) =>
     /^(?:licen[cs]e|copying|notice)(?:[._-]|$)/i.test(name),
   );
-  if (fileName)
-    return readFileSync(join(packageDirectory, fileName), "utf8").trim();
+  if (fileName) return readFileSync(join(packageDirectory, fileName), "utf8").trim();
   const readmePath = join(packageDirectory, "README.md");
   if (existsSync(readmePath)) {
     const readme = readFileSync(readmePath, "utf8");
@@ -73,8 +67,7 @@ function getLegalInformation(projectRoot) {
       name: metadata.name || packageName,
       version: metadata.version || "",
       license: metadata.license || "See license text",
-      homepage:
-        metadata.homepage || normalizeRepositoryUrl(metadata.repository),
+      homepage: metadata.homepage || normalizeRepositoryUrl(metadata.repository),
       text: readLicenseText(realDirectory),
     });
     for (const dependency of Object.keys(metadata.dependencies || {})) {
@@ -86,13 +79,8 @@ function getLegalInformation(projectRoot) {
     visit(packageName, projectRoot);
   }
 
-  const electronDirectory = findPackageDirectory(
-    "electron",
-    projectRoot,
-    projectRoot,
-  );
-  if (!electronDirectory)
-    throw new Error("Electron license package not found.");
+  const electronDirectory = findPackageDirectory("electron", projectRoot, projectRoot);
+  if (!electronDirectory) throw new Error("Electron license package not found.");
   const electronMetadata = JSON.parse(
     readFileSync(join(electronDirectory, "package.json"), "utf8"),
   );

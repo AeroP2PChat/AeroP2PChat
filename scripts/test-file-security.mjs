@@ -6,51 +6,12 @@ import {
 } from "../src/renderer/file-security.mjs";
 
 assert.equal(sanitizeTransferFileName("../../report?.pdf"), "report_.pdf");
-assert.equal(
-  inspectFileMetadata({ name: "notes.txt", size: 12, mimeType: "text/plain" })
-    .level,
-  "safe",
-);
-assert.equal(
-  inspectFileMetadata({
-    name: "photo.jpg.exe",
-    size: 12,
-    mimeType: "application/octet-stream",
-  }).level,
-  "unsafe",
-);
-assert.equal(
-  inspectFileMetadata({
-    name: "invoice.exe.pdf",
-    size: 12,
-    mimeType: "application/pdf",
-  }).level,
-  "blocked",
-);
-assert.equal(
-  inspectFileMetadata({
-    name: "installer.exe",
-    size: 12,
-    mimeType: "application/x-msdownload",
-  }).level,
-  "unsafe",
-);
-assert.equal(
-  inspectFileMetadata({
-    name: "bundle.zip",
-    size: 12,
-    mimeType: "application/zip",
-  }).level,
-  "warning",
-);
-assert.equal(
-  inspectFileMetadata({
-    name: "large.txt",
-    size: 500 * 1024 * 1024 * 1024,
-    mimeType: "text/plain",
-  }).level,
-  "safe",
-);
+assert.equal(inspectFileMetadata({ name: "notes.txt", size: 12, mimeType: "text/plain" }).level, "safe");
+assert.equal(inspectFileMetadata({ name: "photo.jpg.exe", size: 12, mimeType: "application/octet-stream" }).level, "unsafe");
+assert.equal(inspectFileMetadata({ name: "invoice.exe.pdf", size: 12, mimeType: "application/pdf" }).level, "blocked");
+assert.equal(inspectFileMetadata({ name: "installer.exe", size: 12, mimeType: "application/x-msdownload" }).level, "unsafe");
+assert.equal(inspectFileMetadata({ name: "bundle.zip", size: 12, mimeType: "application/zip" }).level, "warning");
+assert.equal(inspectFileMetadata({ name: "large.txt", size: 500 * 1024 * 1024 * 1024, mimeType: "text/plain" }).level, "safe");
 
 const textResult = await inspectFileBlob(
   new Blob(["A harmless text note."], { type: "text/plain" }),
@@ -83,10 +44,12 @@ assert.equal(imageResult.canPreview, true);
 assert.equal(imageResult.previewKind, "image");
 
 const wavHeader = Buffer.from([
-  0x52, 0x49, 0x46, 0x46, 0x24, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45, 0x66,
-  0x6d, 0x74, 0x20, 0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x40, 0x1f,
-  0x00, 0x00, 0x40, 0x1f, 0x00, 0x00, 0x01, 0x00, 0x08, 0x00, 0x64, 0x61, 0x74,
-  0x61, 0x00, 0x00, 0x00, 0x00,
+  0x52, 0x49, 0x46, 0x46, 0x24, 0x00, 0x00, 0x00,
+  0x57, 0x41, 0x56, 0x45, 0x66, 0x6d, 0x74, 0x20,
+  0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00,
+  0x40, 0x1f, 0x00, 0x00, 0x40, 0x1f, 0x00, 0x00,
+  0x01, 0x00, 0x08, 0x00, 0x64, 0x61, 0x74, 0x61,
+  0x00, 0x00, 0x00, 0x00,
 ]);
 const audioResult = await inspectFileBlob(
   new Blob([wavHeader], { type: "audio/wav" }),

@@ -19,10 +19,7 @@ HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\Other
 `;
 
 const installations = parseUninstallRegistry(output, "Aero P2P Chat");
-assert.deepEqual(
-  installations.map((entry) => entry.kind),
-  ["legacy", "msi"],
-);
+assert.deepEqual(installations.map((entry) => entry.kind), ["legacy", "msi"]);
 assert.equal(hasMixedInstallerTypes(installations), true);
 assert.equal(hasMixedInstallerTypes(installations.slice(0, 1)), false);
 

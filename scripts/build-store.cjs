@@ -59,9 +59,7 @@ function run(command, args) {
 function findMsix(outputDir) {
   const candidates = fs
     .readdirSync(outputDir, { withFileTypes: true })
-    .filter(
-      (entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".msix"),
-    )
+    .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".msix"))
     .map((entry) => path.join(outputDir, entry.name));
 
   candidates.sort(
@@ -72,9 +70,7 @@ function findMsix(outputDir) {
 
 function main() {
   if (process.platform !== "win32") {
-    throw new Error(
-      "Microsoft Store MSIX packages can only be built on Windows.",
-    );
+    throw new Error("Microsoft Store MSIX packages can only be built on Windows.");
   }
 
   const options = parseArgs();
@@ -99,9 +95,7 @@ function main() {
 
   const generatedPackage = findMsix(options.output);
   if (!generatedPackage) {
-    throw new Error(
-      "electron-builder did not create a Microsoft Store .msix package.",
-    );
+    throw new Error("electron-builder did not create a Microsoft Store .msix package.");
   }
 
   const artifactPath = options.artifact || generatedPackage;

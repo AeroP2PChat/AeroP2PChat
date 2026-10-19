@@ -4,7 +4,8 @@ const checks = ["node", "npm", "git", "gh"];
 let failed = false;
 
 for (const command of checks) {
-  const windowsCommand = process.platform === "win32" && command === "npm";
+  const windowsCommand =
+    process.platform === "win32" && command === "npm";
   const executable = windowsCommand
     ? process.env.ComSpec || "cmd.exe"
     : command;
@@ -12,13 +13,9 @@ for (const command of checks) {
     ? ["/d", "/s", "/c", "npm.cmd", "--version"]
     : ["--version"];
   const result = spawnSync(executable, args, { encoding: "utf8" });
-  const output = `${result.stdout || ""}${result.stderr || ""}`
-    .trim()
-    .split(/\r?\n/)[0];
+  const output = `${result.stdout || ""}${result.stderr || ""}`.trim().split(/\r?\n/)[0];
   const ok = result.status === 0;
-  console.log(
-    `${ok ? "[OK]" : "[MISSING]"} ${command}${output ? `: ${output}` : ""}`,
-  );
+  console.log(`${ok ? "[OK]" : "[MISSING]"} ${command}${output ? `: ${output}` : ""}`);
   if (!ok) failed = true;
 }
 
