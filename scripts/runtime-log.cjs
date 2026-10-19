@@ -12,7 +12,7 @@ function openLiveLogConsole(title, logPath, layout = "") {
     ? [
         "Add-Type -AssemblyName System.Windows.Forms; Add-Type @'\n",
         "using System; using System.Runtime.InteropServices;\n",
-        "public static class AeroDevWindow { [DllImport(\"user32.dll\")] public static extern bool MoveWindow(IntPtr handle, int x, int y, int width, int height, bool repaint); }\n",
+        'public static class AeroDevWindow { [DllImport("user32.dll")] public static extern bool MoveWindow(IntPtr handle, int x, int y, int width, int height, bool repaint); }\n',
         "'@; $area = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea; ",
         "$topHeight = [math]::Floor($area.Height / 2); $columnWidth = [math]::Floor($area.Width / 2); ",
         "if ($area.Width -ge 1240 -and $area.Height -ge 880) { $left = $area.X",

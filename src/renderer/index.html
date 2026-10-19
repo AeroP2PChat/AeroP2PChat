@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: aero-temp: https://aero.tenkayro.de https://github.com https://*.github.com https://*.githubusercontent.com https://gitlab.com https://*.gitlab.com https://codeberg.org https://*.codeberg.org https://*.imgur.com https://discord.com https://*.discord.com https://*.discordapp.com https://*.discordapp.net; connect-src 'self' ws://localhost:* wss://localhost:* http://localhost:* https://*.peerjs.com wss://*.peerjs.com https://aero.tenkayro.de https://github.com https://*.github.com https://*.githubusercontent.com https://gitlab.com https://*.gitlab.com https://codeberg.org https://*.codeberg.org https://*.imgur.com https://discord.com https://*.discord.com https://*.discordapp.com https://*.discordapp.net https://fonts.googleapis.com https://fonts.gstatic.com stun:* turn:*; media-src 'self' blob: aero-temp: mediastream: data: https://github.com https://*.github.com https://*.githubusercontent.com https://gitlab.com https://*.gitlab.com https://codeberg.org https://*.codeberg.org https://*.imgur.com https://discord.com https://*.discord.com https://*.discordapp.com https://*.discordapp.net; frame-src 'self'; object-src 'none'; base-uri 'none';" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: aero-temp: https://aero.tenkayro.de https://github.com https://*.github.com https://*.githubusercontent.com https://gitlab.com https://*.gitlab.com https://codeberg.org https://*.codeberg.org https://*.imgur.com https://discord.com https://*.discord.com https://*.discordapp.com https://*.discordapp.net; connect-src 'self' ws://localhost:* wss://localhost:* http://localhost:* https://*.peerjs.com wss://*.peerjs.com https://aero.tenkayro.de https://github.com https://*.github.com https://*.githubusercontent.com https://gitlab.com https://*.gitlab.com https://codeberg.org https://*.codeberg.org https://*.imgur.com https://discord.com https://*.discord.com https://*.discordapp.com https://*.discordapp.net https://fonts.googleapis.com https://fonts.gstatic.com stun:* turn:*; media-src 'self' blob: aero-temp: mediastream: data: https://github.com https://*.github.com https://*.githubusercontent.com https://gitlab.com https://*.gitlab.com https://codeberg.org https://*.codeberg.org https://*.imgur.com https://discord.com https://*.discord.com https://*.discordapp.com https://*.discordapp.net; frame-src 'self'; object-src 'none'; base-uri 'none';"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>App</title>
 
@@ -31,7 +34,10 @@
           : "light";
         document.documentElement.dataset.theme = theme;
         if (/^#[0-9a-f]{6}$/i.test(requestedAccent || "")) {
-          document.documentElement.style.setProperty("--boot-fill", requestedAccent);
+          document.documentElement.style.setProperty(
+            "--boot-fill",
+            requestedAccent,
+          );
         }
       })();
     </script>
@@ -46,7 +52,8 @@
         --boot-fill: #147fa6;
         background: var(--boot-bg);
         color: var(--boot-text);
-        font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+        font-family:
+          "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
       }
 
       html:is([data-theme="dark"], [data-theme="ultra-dark"]) {
@@ -231,7 +238,11 @@
             >
               <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
               <span class="titlebar-action-label">Check for updates</span>
-              <span id="update-available-badge" class="update-menu-badge hidden" aria-label="Update available"></span>
+              <span
+                id="update-available-badge"
+                class="update-menu-badge hidden"
+                aria-label="Update available"
+              ></span>
             </button>
             <button
               id="changelog-button"
@@ -241,7 +252,11 @@
             >
               <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
               <span class="titlebar-action-label">Changelog</span>
-              <span id="changelog-unread-badge" class="changelog-menu-badge hidden" aria-label="Unread changelog entries"></span>
+              <span
+                id="changelog-unread-badge"
+                class="changelog-menu-badge hidden"
+                aria-label="Unread changelog entries"
+              ></span>
             </button>
             <button
               id="app-menu-settings"
@@ -273,7 +288,11 @@
           </div>
         </div>
         <div class="window-controls">
-          <div id="app-lock-countdown" class="titlebar-lock-countdown hidden" aria-label="Automatic lock countdown">
+          <div
+            id="app-lock-countdown"
+            class="titlebar-lock-countdown hidden"
+            aria-label="Automatic lock countdown"
+          >
             <i class="fa-solid fa-lock" aria-hidden="true"></i>
             <span id="app-lock-countdown-text">5:00</span>
           </div>
@@ -314,19 +333,63 @@
       <main class="app-shell">
         <section class="connection-panel" aria-label="Connection">
           <div class="sidebar-quick-actions">
-            <button id="open-connection-modal" class="connection-hub-trigger" type="button" aria-expanded="false" aria-controls="connection-panel">
-              <span class="connection-hub-icon"><i class="fa-solid fa-link" aria-hidden="true"></i></span>
+            <button
+              id="open-connection-modal"
+              class="connection-hub-trigger"
+              type="button"
+              aria-expanded="false"
+              aria-controls="connection-panel"
+            >
+              <span class="connection-hub-icon"
+                ><i class="fa-solid fa-link" aria-hidden="true"></i
+              ></span>
               <span class="connection-hub-copy"><strong>Connect</strong></span>
-              <i class="fa-solid fa-chevron-down sidebar-connect-chevron" aria-hidden="true"></i>
+              <i
+                class="fa-solid fa-chevron-down sidebar-connect-chevron"
+                aria-hidden="true"
+              ></i>
             </button>
           </div>
           <div id="connection-panel" class="sidebar-connection-card hidden">
-            <div class="connection-hub-tabs" role="tablist" aria-label="Connection options">
-              <button class="active" type="button" role="tab" aria-selected="true" data-connection-tab="add"><i class="fa-solid fa-user-plus" aria-hidden="true"></i>Add user</button>
-              <button type="button" role="tab" aria-selected="false" data-connection-tab="share"><i class="fa-regular fa-id-card" aria-hidden="true"></i>My ID</button>
+            <div
+              class="connection-hub-tabs"
+              role="tablist"
+              aria-label="Connection options"
+            >
+              <button
+                class="active"
+                type="button"
+                role="tab"
+                aria-selected="true"
+                data-connection-tab="add"
+              >
+                <i class="fa-solid fa-user-plus" aria-hidden="true"></i>Add user
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected="false"
+                data-connection-tab="share"
+              >
+                <i class="fa-regular fa-id-card" aria-hidden="true"></i>My ID
+              </button>
             </div>
-            <section class="sidebar-connection-section" role="tabpanel" data-connection-panel="add" aria-label="Add user"><div id="connect-modal-mount"></div></section>
-            <section class="sidebar-connection-section hidden" role="tabpanel" data-connection-panel="share" aria-label="My Aero ID"><div id="own-id-modal-mount"></div></section>
+            <section
+              class="sidebar-connection-section"
+              role="tabpanel"
+              data-connection-panel="add"
+              aria-label="Add user"
+            >
+              <div id="connect-modal-mount"></div>
+            </section>
+            <section
+              class="sidebar-connection-section hidden"
+              role="tabpanel"
+              data-connection-panel="share"
+              aria-label="My Aero ID"
+            >
+              <div id="own-id-modal-mount"></div>
+            </section>
           </div>
           <div class="id-card">
             <span class="label">My Aero ID</span>
@@ -414,10 +477,29 @@
                 Ignore
               </button>
             </div>
-            <div id="update-progress-container" class="hidden" style="margin-top: 12px;">
-              <p id="update-progress-status" class="update-progress-status" role="status" aria-live="polite">Preparing download...</p>
+            <div
+              id="update-progress-container"
+              class="hidden"
+              style="margin-top: 12px"
+            >
+              <p
+                id="update-progress-status"
+                class="update-progress-status"
+                role="status"
+                aria-live="polite"
+              >
+                Preparing download...
+              </p>
               <div class="progress">
-                <div id="update-progress-bar" class="progress-indicator" role="progressbar" aria-label="Update download" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                <div
+                  id="update-progress-bar"
+                  class="progress-indicator"
+                  role="progressbar"
+                  aria-label="Update download"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="0"
+                ></div>
               </div>
             </div>
           </div>
@@ -425,7 +507,16 @@
           <div class="peers-card">
             <span class="label">Contacts</span>
             <div class="contact-search-wrapper">
-              <svg class="contact-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                class="contact-search-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
@@ -458,7 +549,11 @@
         <section class="chat-panel" aria-label="Chat">
           <header class="chat-header">
             <div class="chat-identity">
-              <div id="chat-avatar" class="contact-avatar chat-header-avatar hidden" aria-hidden="true"></div>
+              <div
+                id="chat-avatar"
+                class="contact-avatar chat-header-avatar hidden"
+                aria-hidden="true"
+              ></div>
               <div class="chat-heading">
                 <div class="chat-title-row">
                   <h2
@@ -712,18 +807,54 @@
             </article>
           </section>
 
-          <div id="chat-search-bar" class="chat-search-bar hidden" role="search">
+          <div
+            id="chat-search-bar"
+            class="chat-search-bar hidden"
+            role="search"
+          >
             <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-            <input id="chat-search-input" type="search" placeholder="Search this chat" aria-label="Search this chat" />
+            <input
+              id="chat-search-input"
+              type="search"
+              placeholder="Search this chat"
+              aria-label="Search this chat"
+            />
             <span id="chat-search-count" aria-live="polite"></span>
-            <button id="chat-search-close" class="icon-only-button" type="button" aria-label="Close search"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            <button
+              id="chat-search-close"
+              class="icon-only-button"
+              type="button"
+              aria-label="Close search"
+            >
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
           </div>
 
-          <div id="message-selection-bar" class="message-selection-bar hidden" role="toolbar" aria-label="Selected messages">
+          <div
+            id="message-selection-bar"
+            class="message-selection-bar hidden"
+            role="toolbar"
+            aria-label="Selected messages"
+          >
             <strong id="message-selection-count">0 selected</strong>
-            <button id="selection-copy" class="ghost-button" type="button"><i class="fa-solid fa-copy" aria-hidden="true"></i> Copy</button>
-            <button id="selection-delete" class="ghost-button danger" type="button"><i class="fa-solid fa-trash" aria-hidden="true"></i> Delete</button>
-            <button id="selection-close" class="icon-only-button" type="button" aria-label="Cancel selection"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            <button id="selection-copy" class="ghost-button" type="button">
+              <i class="fa-solid fa-copy" aria-hidden="true"></i> Copy
+            </button>
+            <button
+              id="selection-delete"
+              class="ghost-button danger"
+              type="button"
+            >
+              <i class="fa-solid fa-trash" aria-hidden="true"></i> Delete
+            </button>
+            <button
+              id="selection-close"
+              class="icon-only-button"
+              type="button"
+              aria-label="Cancel selection"
+            >
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
           </div>
 
           <div
@@ -748,7 +879,11 @@
                 aria-expanded="false"
                 disabled
               />
-              <span id="voice-record-status" class="voice-record-status hidden" aria-live="polite"></span>
+              <span
+                id="voice-record-status"
+                class="voice-record-status hidden"
+                aria-live="polite"
+              ></span>
               <button
                 id="file-attach-button"
                 class="icon-only-button"
@@ -796,40 +931,77 @@
                 <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
                 <span>Send</span>
               </button>
-              <div id="emoji-picker-popover" class="emoji-picker-popover hidden" role="dialog" aria-label="Emoji picker"></div>
-              <div id="emoji-shortcode-popover" class="emoji-shortcode-popover hidden" role="listbox" aria-label="Emoji suggestions"></div>
+              <div
+                id="emoji-picker-popover"
+                class="emoji-picker-popover hidden"
+                role="dialog"
+                aria-label="Emoji picker"
+              ></div>
+              <div
+                id="emoji-shortcode-popover"
+                class="emoji-shortcode-popover hidden"
+                role="listbox"
+                aria-label="Emoji suggestions"
+              ></div>
             </div>
           </form>
         </section>
-      
-    <div
-      id="incoming-call-screen"
-      class="incoming-call-screen hidden"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="incoming-call-name"
-      tabindex="-1"
-    >
-      <div class="incoming-call-content">
-        <div class="incoming-call-avatar-wrap" aria-hidden="true">
-          <div id="incoming-call-avatar" class="contact-avatar incoming-call-avatar"></div>
+
+        <div
+          id="incoming-call-screen"
+          class="incoming-call-screen hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="incoming-call-name"
+          tabindex="-1"
+        >
+          <div class="incoming-call-content">
+            <div class="incoming-call-avatar-wrap" aria-hidden="true">
+              <div
+                id="incoming-call-avatar"
+                class="contact-avatar incoming-call-avatar"
+              ></div>
+            </div>
+            <p class="incoming-call-eyebrow">
+              <i class="fa-solid fa-phone-volume" aria-hidden="true"></i>
+              Incoming voice call
+            </p>
+            <h2 id="incoming-call-name" class="incoming-call-name">
+              Caller Name
+            </h2>
+            <div class="incoming-call-actions">
+              <button
+                id="screen-call-accept"
+                class="screen-call-action accept"
+                type="button"
+              >
+                <div class="icon-circle">
+                  <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                </div>
+                <span>Accept</span>
+              </button>
+              <button
+                id="screen-call-decline"
+                class="screen-call-action decline"
+                type="button"
+              >
+                <div class="icon-circle">
+                  <i class="fa-solid fa-phone-slash" aria-hidden="true"></i>
+                </div>
+                <span>Decline</span>
+              </button>
+            </div>
+            <button
+              id="screen-call-ignore"
+              class="incoming-call-ignore"
+              type="button"
+            >
+              <i class="fa-solid fa-bell-slash" aria-hidden="true"></i> Silence
+              ringing
+            </button>
+          </div>
         </div>
-        <p class="incoming-call-eyebrow"><i class="fa-solid fa-phone-volume" aria-hidden="true"></i> Incoming voice call</p>
-        <h2 id="incoming-call-name" class="incoming-call-name">Caller Name</h2>
-        <div class="incoming-call-actions">
-          <button id="screen-call-accept" class="screen-call-action accept" type="button">
-            <div class="icon-circle"><i class="fa-solid fa-phone" aria-hidden="true"></i></div>
-            <span>Accept</span>
-          </button>
-          <button id="screen-call-decline" class="screen-call-action decline" type="button">
-            <div class="icon-circle"><i class="fa-solid fa-phone-slash" aria-hidden="true"></i></div>
-            <span>Decline</span>
-          </button>
-        </div>
-        <button id="screen-call-ignore" class="incoming-call-ignore" type="button"><i class="fa-solid fa-bell-slash" aria-hidden="true"></i> Silence ringing</button>
-      </div>
-    </div>
-  </main>
+      </main>
       <nav class="mobile-tabbar" aria-label="Mobile navigation">
         <button
           id="mobile-tab-contacts"
@@ -860,46 +1032,132 @@
         </button>
       </nav>
     </div>
-      <div
-        id="startup-update-modal"
-        class="modal-layer hidden"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="startup-update-title"
+    <div
+      id="startup-update-modal"
+      class="modal-layer hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="startup-update-title"
+    >
+      <section
+        class="modal-panel"
+        style="
+          width: min(380px, calc(100vw - 36px));
+          text-align: center;
+          padding: 28px 24px;
+          position: relative;
+        "
       >
-        <section class="modal-panel" style="width: min(380px, calc(100vw - 36px)); text-align: center; padding: 28px 24px; position: relative;">
-          <button id="startup-update-close" class="ghost-button" type="button" style="position: absolute; top: 12px; right: 12px; min-width: 32px; height: 32px; padding: 0; border-radius: 50%;" title="Close">
-            <i class="fa-solid fa-xmark"></i>
+        <button
+          id="startup-update-close"
+          class="ghost-button"
+          type="button"
+          style="
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            min-width: 32px;
+            height: 32px;
+            padding: 0;
+            border-radius: 50%;
+          "
+          title="Close"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div
+          style="
+            font-size: 48px;
+            color: var(--line-accent);
+            margin-bottom: 16px;
+          "
+        >
+          <i class="fa-solid fa-cloud-arrow-down"></i>
+        </div>
+
+        <h2
+          id="startup-update-title"
+          style="
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--text);
+          "
+        >
+          Update available
+        </h2>
+
+        <p
+          id="startup-update-text"
+          style="
+            font-size: 14px;
+            color: var(--text-soft);
+            line-height: 1.5;
+            margin-bottom: 28px;
+          "
+        ></p>
+
+        <div style="display: flex; gap: 12px; justify-content: center">
+          <button
+            id="startup-update-ignore-button"
+            class="ghost-button"
+            type="button"
+            style="flex: 1"
+          >
+            Ignore
           </button>
-          
-          <div style="font-size: 48px; color: var(--line-accent); margin-bottom: 16px;">
-            <i class="fa-solid fa-cloud-arrow-down"></i>
+          <button
+            id="startup-update-fallback"
+            class="ghost-button hidden"
+            type="button"
+            style="flex: 1"
+          >
+            Latest release
+          </button>
+          <button
+            id="startup-update-button"
+            type="button"
+            style="
+              flex: 1;
+              background: var(--text);
+              color: var(--surface);
+              border: none;
+              border-radius: var(--radius-sm);
+              font-weight: 600;
+            "
+          >
+            Install update
+          </button>
+        </div>
+
+        <div
+          id="startup-update-progress-container"
+          class="hidden"
+          style="margin-top: 24px"
+        >
+          <p
+            id="startup-update-progress-status"
+            class="update-progress-status"
+            role="status"
+            aria-live="polite"
+          >
+            Preparing download...
+          </p>
+          <div class="progress">
+            <div
+              id="startup-update-progress-bar"
+              class="progress-indicator"
+              role="progressbar"
+              aria-label="Update download"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+            ></div>
           </div>
-          
-          <h2 id="startup-update-title" style="font-size: 22px; font-weight: 800; margin-bottom: 8px; color: var(--text);">Update available</h2>
-          
-          <p id="startup-update-text" style="font-size: 14px; color: var(--text-soft); line-height: 1.5; margin-bottom: 28px;"></p>
-          
-          <div style="display: flex; gap: 12px; justify-content: center;">
-            <button id="startup-update-ignore-button" class="ghost-button" type="button" style="flex: 1;">
-              Ignore
-            </button>
-            <button id="startup-update-fallback" class="ghost-button hidden" type="button" style="flex: 1;">
-              Latest release
-            </button>
-            <button id="startup-update-button" type="button" style="flex: 1; background: var(--text); color: var(--surface); border: none; border-radius: var(--radius-sm); font-weight: 600;">
-              Install update
-            </button>
-          </div>
-          
-          <div id="startup-update-progress-container" class="hidden" style="margin-top: 24px;">
-            <p id="startup-update-progress-status" class="update-progress-status" role="status" aria-live="polite">Preparing download...</p>
-            <div class="progress">
-              <div id="startup-update-progress-bar" class="progress-indicator" role="progressbar" aria-label="Update download" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
-            </div>
-          </div>
-        </section>
-      </div>
+        </div>
+      </section>
+    </div>
 
     <div
       id="update-modal"
@@ -923,7 +1181,13 @@
               <span>Fastest option</span>
             </div>
             <code id="linux-command" class="command-box"></code>
-            <button class="copy-update-command" data-update-command="installed" type="button">Copy command</button>
+            <button
+              class="copy-update-command"
+              data-update-command="installed"
+              type="button"
+            >
+              Copy command
+            </button>
           </section>
           <section class="update-command-option">
             <div class="update-command-heading">
@@ -931,7 +1195,13 @@
               <span>Website fallback</span>
             </div>
             <code id="linux-website-command" class="command-box"></code>
-            <button class="copy-update-command" data-update-command="website" type="button">Copy command</button>
+            <button
+              class="copy-update-command"
+              data-update-command="website"
+              type="button"
+            >
+              Copy command
+            </button>
           </section>
         </div>
       </section>
@@ -959,7 +1229,10 @@
           </button>
         </header>
         <p id="app-dialog-message"></p>
-        <div id="app-dialog-link-details" class="app-dialog-link-details hidden">
+        <div
+          id="app-dialog-link-details"
+          class="app-dialog-link-details hidden"
+        >
           <span>Destination</span>
           <code id="app-dialog-link-url"></code>
           <span class="app-dialog-link-domain">
@@ -993,7 +1266,9 @@
           <div class="welcome-brand">
             <strong id="welcome-title">Aero setup</strong>
           </div>
-          <span id="welcome-step-label" class="welcome-step-label">Step 1 of 4</span>
+          <span id="welcome-step-label" class="welcome-step-label"
+            >Step 1 of 4</span
+          >
         </header>
 
         <div class="welcome-progress" aria-hidden="true">
@@ -1007,7 +1282,9 @@
           <section class="welcome-page" data-welcome-step="0">
             <div class="welcome-copy">
               <h2>Your profile</h2>
-              <p class="welcome-description">Your Aero ID and avatar stay on this device.</p>
+              <p class="welcome-description">
+                Your Aero ID and avatar stay on this device.
+              </p>
             </div>
             <label class="welcome-field" for="welcome-nickname">
               <span>Display name</span>
@@ -1025,16 +1302,75 @@
           <section class="welcome-page hidden" data-welcome-step="1">
             <div class="welcome-copy">
               <h2>Appearance</h2>
-              <p class="welcome-description">Choose a theme and accent color.</p>
+              <p class="welcome-description">
+                Choose a theme and accent color.
+              </p>
             </div>
             <div class="welcome-setup-card welcome-appearance-card">
-              <div class="welcome-theme-options" role="radiogroup" aria-label="Choose a theme">
-                <label><input id="welcome-theme-system" type="radio" name="welcome-theme" value="system" /><span class="welcome-theme-card system-preview"><i class="fa-solid fa-desktop" aria-hidden="true"></i><strong>System</strong></span></label>
-                <label><input id="welcome-theme-light" type="radio" name="welcome-theme" value="light" /><span class="welcome-theme-card light-preview"><strong>Light</strong></span></label>
-                <label><input id="welcome-theme-dark" type="radio" name="welcome-theme" value="dark" /><span class="welcome-theme-card dark-preview"><strong>Dark</strong></span></label>
-                <label><input id="welcome-theme-ultra-dark" type="radio" name="welcome-theme" value="ultra-dark" /><span class="welcome-theme-card ultra-dark-preview"><strong>OLED</strong></span></label>
+              <div
+                class="welcome-theme-options"
+                role="radiogroup"
+                aria-label="Choose a theme"
+              >
+                <label
+                  ><input
+                    id="welcome-theme-system"
+                    type="radio"
+                    name="welcome-theme"
+                    value="system"
+                  /><span class="welcome-theme-card system-preview"
+                    ><i class="fa-solid fa-desktop" aria-hidden="true"></i
+                    ><strong>System</strong></span
+                  ></label
+                >
+                <label
+                  ><input
+                    id="welcome-theme-light"
+                    type="radio"
+                    name="welcome-theme"
+                    value="light"
+                  /><span class="welcome-theme-card light-preview"
+                    ><strong>Light</strong></span
+                  ></label
+                >
+                <label
+                  ><input
+                    id="welcome-theme-dark"
+                    type="radio"
+                    name="welcome-theme"
+                    value="dark"
+                  /><span class="welcome-theme-card dark-preview"
+                    ><strong>Dark</strong></span
+                  ></label
+                >
+                <label
+                  ><input
+                    id="welcome-theme-ultra-dark"
+                    type="radio"
+                    name="welcome-theme"
+                    value="ultra-dark"
+                  /><span class="welcome-theme-card ultra-dark-preview"
+                    ><strong>OLED</strong></span
+                  ></label
+                >
               </div>
-              <label class="welcome-accent-field"><span>Accent color</span><select id="welcome-accent-color-select"><option value="system">System accent</option><option value="aero">Aero blue</option><option value="violet">Violet</option><option value="green">Green</option><option value="rose">Rose</option><option value="amber">Amber</option><option value="custom">Custom color</option></select><input id="welcome-custom-accent-color" class="hidden" type="color" value="#147fa6" aria-label="Custom accent color" /></label>
+              <label class="welcome-accent-field"
+                ><span>Accent color</span
+                ><select id="welcome-accent-color-select">
+                  <option value="system">System accent</option>
+                  <option value="aero">Aero blue</option>
+                  <option value="violet">Violet</option>
+                  <option value="green">Green</option>
+                  <option value="rose">Rose</option>
+                  <option value="amber">Amber</option>
+                  <option value="custom">Custom color</option></select
+                ><input
+                  id="welcome-custom-accent-color"
+                  class="hidden"
+                  type="color"
+                  value="#147fa6"
+                  aria-label="Custom accent color"
+              /></label>
             </div>
           </section>
 
@@ -1044,26 +1380,35 @@
               <p class="welcome-description">Choose devices used for calls.</p>
             </div>
             <div class="welcome-setup-card welcome-devices-card">
-            <div class="welcome-device-grid">
-              <label for="welcome-microphone-select">
-                <span>Microphone</span>
-                <select id="welcome-microphone-select"></select>
-              </label>
-              <label for="welcome-camera-select">
-                <span>Camera</span>
-                <select id="welcome-camera-select"></select>
-              </label>
-              <label for="welcome-speaker-select" class="welcome-device-output">
-                <span>Output</span>
-                <select id="welcome-speaker-select"></select>
-              </label>
-            </div>
-            <div class="welcome-device-detection">
-              <button id="welcome-detect-devices" class="ghost-button" type="button">
-                Detect devices
-              </button>
-              <span id="welcome-device-status">Defaults work without device access.</span>
-            </div>
+              <div class="welcome-device-grid">
+                <label for="welcome-microphone-select">
+                  <span>Microphone</span>
+                  <select id="welcome-microphone-select"></select>
+                </label>
+                <label for="welcome-camera-select">
+                  <span>Camera</span>
+                  <select id="welcome-camera-select"></select>
+                </label>
+                <label
+                  for="welcome-speaker-select"
+                  class="welcome-device-output"
+                >
+                  <span>Output</span>
+                  <select id="welcome-speaker-select"></select>
+                </label>
+              </div>
+              <div class="welcome-device-detection">
+                <button
+                  id="welcome-detect-devices"
+                  class="ghost-button"
+                  type="button"
+                >
+                  Detect devices
+                </button>
+                <span id="welcome-device-status"
+                  >Defaults work without device access.</span
+                >
+              </div>
             </div>
           </section>
 
@@ -1076,13 +1421,26 @@
                 <input id="welcome-autostart-toggle" type="checkbox" />
                 <span>Start Aero when I sign in</span>
               </label>
-              <div id="welcome-autostart-modes" class="settings-choice welcome-startup-modes">
+              <div
+                id="welcome-autostart-modes"
+                class="settings-choice welcome-startup-modes"
+              >
                 <label>
-                  <input id="welcome-autostart-open" type="radio" name="welcome-autostart-mode" value="open" />
+                  <input
+                    id="welcome-autostart-open"
+                    type="radio"
+                    name="welcome-autostart-mode"
+                    value="open"
+                  />
                   <span>Start opened</span>
                 </label>
                 <label>
-                  <input id="welcome-autostart-hidden" type="radio" name="welcome-autostart-mode" value="hidden" />
+                  <input
+                    id="welcome-autostart-hidden"
+                    type="radio"
+                    name="welcome-autostart-mode"
+                    value="hidden"
+                  />
                   <span>Start minimized to tray</span>
                 </label>
               </div>
@@ -1090,8 +1448,12 @@
                 <input id="welcome-close-to-tray" type="checkbox" />
                 <span>Keep Aero running in the system tray</span>
               </label>
-              <p id="welcome-autostart-unavailable" class="welcome-platform-note hidden">
-                Autostart is only available in the Windows and Linux desktop app.
+              <p
+                id="welcome-autostart-unavailable"
+                class="welcome-platform-note hidden"
+              >
+                Autostart is only available in the Windows and Linux desktop
+                app.
               </p>
             </div>
           </section>
@@ -1131,700 +1493,1710 @@
               aria-controls="settings-search-results"
             />
             <kbd aria-hidden="true">Ctrl K</kbd>
-            <button id="settings-search-clear" class="settings-search-clear hidden" type="button" aria-label="Clear settings search">
+            <button
+              id="settings-search-clear"
+              class="settings-search-clear hidden"
+              type="button"
+              aria-label="Clear settings search"
+            >
               <i class="fa-solid fa-xmark" aria-hidden="true"></i>
             </button>
           </div>
-          <button id="settings-close" class="ghost-button icon-only-button" type="button" aria-label="Close settings" title="Close">
+          <button
+            id="settings-close"
+            class="ghost-button icon-only-button"
+            type="button"
+            aria-label="Close settings"
+            title="Close"
+          >
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
           </button>
         </header>
         <div class="settings-layout">
           <nav class="settings-nav" aria-label="Settings categories">
-            <button type="button" class="settings-nav-item" data-settings-nav="profile">
+            <button
+              type="button"
+              class="settings-nav-item"
+              data-settings-nav="profile"
+            >
               <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
               Profile
             </button>
-            <button type="button" class="settings-nav-item" data-settings-nav="general">
+            <button
+              type="button"
+              class="settings-nav-item"
+              data-settings-nav="general"
+            >
               <i class="fa-solid fa-sliders" aria-hidden="true"></i>
               General
             </button>
-            <button type="button" class="settings-nav-item active" data-settings-nav="appearance">
+            <button
+              type="button"
+              class="settings-nav-item active"
+              data-settings-nav="appearance"
+            >
               <i class="fa-solid fa-palette" aria-hidden="true"></i>
               Appearance
             </button>
-            <button type="button" class="settings-nav-item" data-settings-nav="themes">
+            <button
+              type="button"
+              class="settings-nav-item"
+              data-settings-nav="themes"
+            >
               <i class="fa-solid fa-brush" aria-hidden="true"></i>
               Themes
             </button>
-            <button type="button" class="settings-nav-item" data-settings-nav="notifications">
+            <button
+              type="button"
+              class="settings-nav-item"
+              data-settings-nav="notifications"
+            >
               <i class="fa-solid fa-bell" aria-hidden="true"></i>
               Notifications
             </button>
-            <button type="button" class="settings-nav-item" data-settings-nav="sounds">
+            <button
+              type="button"
+              class="settings-nav-item"
+              data-settings-nav="sounds"
+            >
               <i class="fa-solid fa-volume-high" aria-hidden="true"></i>
               Sounds
             </button>
             <span class="settings-nav-divider"></span>
-            <button type="button" class="settings-nav-item" data-settings-nav="chat">
+            <button
+              type="button"
+              class="settings-nav-item"
+              data-settings-nav="chat"
+            >
               <i class="fa-solid fa-comment" aria-hidden="true"></i>
               Chat
             </button>
-            <button type="button" class="settings-nav-item" data-settings-nav="contacts">
+            <button
+              type="button"
+              class="settings-nav-item"
+              data-settings-nav="contacts"
+            >
               <i class="fa-solid fa-user-group" aria-hidden="true"></i>
               Contacts
             </button>
-            <button type="button" class="settings-nav-item" data-settings-nav="voice">
+            <button
+              type="button"
+              class="settings-nav-item"
+              data-settings-nav="voice"
+            >
               <i class="fa-solid fa-microphone" aria-hidden="true"></i>
               Voice & Video
             </button>
             <span class="settings-nav-divider"></span>
-            <button type="button" class="settings-nav-item" data-settings-nav="security">
+            <button
+              type="button"
+              class="settings-nav-item"
+              data-settings-nav="security"
+            >
               <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
               Security
             </button>
-            <button type="button" class="settings-nav-item" data-settings-nav="updates">
+            <button
+              type="button"
+              class="settings-nav-item"
+              data-settings-nav="updates"
+            >
               <i class="fa-solid fa-rotate" aria-hidden="true"></i>
               Updates
             </button>
-            <button type="button" class="settings-nav-item" data-settings-nav="legal">
+            <button
+              type="button"
+              class="settings-nav-item"
+              data-settings-nav="legal"
+            >
               <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
               Legal
             </button>
             <span class="settings-nav-divider"></span>
-            <button type="button" class="settings-nav-item danger" data-settings-nav="reset">
+            <button
+              type="button"
+              class="settings-nav-item danger"
+              data-settings-nav="reset"
+            >
               <i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>
               Reset
             </button>
           </nav>
-        <div class="settings-grid">
-          <section id="settings-search-results" class="settings-search-results hidden" aria-live="polite" aria-label="Settings search results"></section>
-          <div class="settings-column">
-            <section class="settings-section" data-settings-page="profile">
-              <div class="settings-page-heading"><div><h3>Profile</h3><p>Manage how your name and avatar appear to your contacts.</p></div></div>
-              <div id="profile-settings-mount"></div>
-            </section>
-            <section class="settings-section" data-settings-page="appearance">
-              <div class="settings-page-heading"><div><h3>Appearance</h3><p>Personalize Aero's colors, layout, wallpapers and motion.</p></div></div>
-              <div class="appearance-settings-stack">
-                <div class="appearance-settings-group">
-                  <div class="appearance-settings-heading"><div><h4>Theme</h4><p>Choose the color mode and accent used across Aero.</p></div></div>
-                  <div class="theme-switcher" role="radiogroup" aria-label="Theme">
-                    <label><input id="theme-system" type="radio" name="theme" value="system" /><span><i class="fa-solid fa-desktop" aria-hidden="true"></i>System</span></label>
-                    <label><input id="theme-light" type="radio" name="theme" value="light" /><span><i class="fa-solid fa-sun" aria-hidden="true"></i>Light</span></label>
-                    <label><input id="theme-dark" type="radio" name="theme" value="dark" /><span><i class="fa-solid fa-moon" aria-hidden="true"></i>Dark</span></label>
-                    <label><input id="theme-ultra-dark" type="radio" name="theme" value="ultra-dark" /><span><i class="fa-solid fa-moon" aria-hidden="true"></i>OLED</span></label>
-                  </div>
-                  <label class="settings-field">
-                    <span>Accent color</span>
-                    <select id="accent-color-select">
-                      <option value="system">System accent</option><option value="aero">Aero blue</option><option value="violet">Violet</option><option value="green">Green</option><option value="rose">Rose</option><option value="amber">Amber</option><option value="custom">Custom color</option>
-                    </select>
-                    <input id="custom-accent-color" type="color" value="#147fa6" aria-label="Custom accent color" />
-                  </label>
-                </div>
-                <div class="appearance-settings-group">
-                  <div class="appearance-settings-heading"><div><h4>Layout &amp; text</h4><p>Adjust spacing and readability without changing conversations.</p></div></div>
-                  <div class="appearance-layout-options">
-                    <label class="settings-field">
-                      <span>Message density</span>
-                      <select id="message-density-select"><option value="comfortable">Comfortable</option><option value="compact">Compact</option></select>
-                    </label>
-                    <label class="settings-field">
-                      <span>Chat text size</span>
-                      <select id="chat-font-size-select"><option value="small">Small</option><option value="normal">Normal</option><option value="large">Large</option></select>
-                    </label>
-                    <label class="settings-check"><input id="compact-layout-toggle" type="checkbox" /><span>Compact layout</span></label>
-                    <button id="reset-sidebar-width" class="ghost-button appearance-reset-button" type="button"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>Reset sidebar width</button>
+          <div class="settings-grid">
+            <section
+              id="settings-search-results"
+              class="settings-search-results hidden"
+              aria-live="polite"
+              aria-label="Settings search results"
+            ></section>
+            <div class="settings-column">
+              <section class="settings-section" data-settings-page="profile">
+                <div class="settings-page-heading">
+                  <div>
+                    <h3>Profile</h3>
+                    <p>
+                      Manage how your name and avatar appear to your contacts.
+                    </p>
                   </div>
                 </div>
-                <div class="appearance-settings-group">
-                  <div class="appearance-settings-heading"><div><h4>Wallpapers</h4><p>Use the built-in background or custom images for each theme.</p></div><button id="open-custom-wallpapers-folder" class="ghost-button compact-settings-button" type="button"><i class="fa-regular fa-folder-open" aria-hidden="true"></i>Open folder</button></div>
-                  <label class="settings-check"><input id="wallpaper-enabled-toggle" type="checkbox" /><span>Show wallpapers</span></label>
-                  <div id="custom-wallpaper-list" class="custom-wallpaper-list"></div>
-                  <label class="settings-check"><input id="wallpaper-accent-tint-toggle" type="checkbox" /><span>Tint wallpaper with the accent color</span></label>
-                  <label class="settings-check"><input id="wallpaper-boot-toggle" type="checkbox" /><span>Use custom wallpaper on the loading screen</span></label>
-                </div>
-                <div class="appearance-settings-group">
-                  <div class="appearance-settings-heading"><div><h4>Accessibility</h4><p>Reduce interface movement and animated transitions.</p></div></div>
-                  <label class="settings-check"><input id="reduce-motion-toggle" type="checkbox" /><span>Reduce animations</span></label>
-                </div>
-              </div>
-            </section>
-
-            <section class="settings-section" data-settings-page="themes">
-              <div class="settings-page-heading"><div><h3>Custom themes</h3><p>Manage local CSS themes or load styles from sources you trust.</p></div></div>
-              <div class="theme-tabs" role="tablist" aria-label="Theme source">
-                <button class="theme-tab active" type="button" role="tab" aria-selected="true" data-theme-tab="local">Installed</button>
-                <button class="theme-tab" type="button" role="tab" aria-selected="false" data-theme-tab="online">Online</button>
-              </div>
-              <div class="theme-panel" data-theme-panel="local">
-                <div class="theme-panel-toolbar">
-                  <strong>Installed themes</strong>
-                  <div class="themes-manager-actions">
-                    <button id="open-themes-folder" class="ghost-button theme-action-button" type="button">
-                      <i class="fa-regular fa-folder-open" aria-hidden="true"></i>
-                      <span>Folder</span>
-                    </button>
-                    <button id="reload-themes" class="ghost-button theme-action-button" type="button">
-                      <i class="fa-solid fa-rotate" aria-hidden="true"></i>
-                      <span>Reload</span>
-                    </button>
+                <div id="profile-settings-mount"></div>
+              </section>
+              <section class="settings-section" data-settings-page="appearance">
+                <div class="settings-page-heading">
+                  <div>
+                    <h3>Appearance</h3>
+                    <p>
+                      Personalize Aero's colors, layout, wallpapers and motion.
+                    </p>
                   </div>
                 </div>
-                <div id="local-theme-list" class="local-theme-list"></div>
-              </div>
-              <div class="theme-panel hidden" data-theme-panel="online">
-                <label class="settings-field online-theme-field">
-                  <span>Theme URLs</span>
-                  <textarea id="online-theme-urls" rows="8" spellcheck="false" placeholder="https://example.com/theme.css&#10;One URL per line"></textarea>
-                </label>
-                <div class="online-theme-actions">
-                  <button id="apply-online-themes" class="ghost-button theme-action-button" type="button">
-                    <i class="fa-solid fa-check" aria-hidden="true"></i>
-                    Apply
-                  </button>
-                  <span id="online-theme-status" class="settings-description" aria-live="polite"></span>
-                </div>
-                <p class="theme-inline-note">Theme CSS can change the entire interface. Only add URLs you trust.</p>
-              </div>
-            </section>
-
-            <section class="settings-section" data-settings-page="general">
-              <div class="settings-page-heading"><div><h3>General</h3><p>Control how Aero starts, closes and stays available in the background.</p></div></div>
-              <div class="general-settings-stack">
-                <div class="general-settings-group">
-                  <div class="general-settings-heading"><div><h4>Startup</h4><p>Launch Aero automatically after signing in to your computer.</p></div></div>
-                  <label class="settings-check general-autostart-toggle">
-                    <input id="autostart-toggle" type="checkbox" />
-                    <span data-app-template="Start {name} with the system">Start with system</span>
-                  </label>
-                  <div class="settings-choice general-startup-options" id="autostart-mode-group">
-                    <label>
-                      <input id="autostart-open" type="radio" name="autostart-mode" value="open" />
-                      <span>Open window</span>
-                    </label>
-                    <label>
-                      <input id="autostart-hidden" type="radio" name="autostart-mode" value="hidden" />
-                      <span>Start in system tray</span>
-                    </label>
-                  </div>
-                </div>
-                <div class="general-settings-group">
-                  <div class="general-settings-heading"><div><h4>Closing Aero</h4><p>Keep receiving messages and calls after closing the window.</p></div></div>
-                  <label class="settings-check">
-                    <input id="close-to-tray-toggle" type="checkbox" />
-                    <span>Keep Aero running in the system tray</span>
-                  </label>
-                </div>
-              </div>
-            </section>
-
-            <section class="settings-section" data-settings-page="security">
-              <div class="settings-page-heading"><div><h3>Security</h3><p>Protect local chats, contacts and settings before the app opens.</p></div></div>
-              <div class="security-settings-stack">
-                <article class="security-card">
-                  <div class="security-card-heading">
-                    <div class="security-icon"><i class="fa-solid fa-lock" aria-hidden="true"></i></div>
-                    <div><strong>App Lock</strong><span id="app-lock-summary">Checking status…</span></div>
-                    <span id="app-lock-state" class="security-state">Off</span>
-                  </div>
-                  <div id="app-lock-setup" class="app-lock-setup">
-                    <p class="app-lock-guidance">Use a 6–12 digit PIN. Repeated and sequential PINs are rejected.</p>
-                    <div class="app-lock-pin-fields">
-                      <label class="settings-field"><span>New PIN</span><input id="app-lock-pin" type="password" inputmode="numeric" autocomplete="new-password" minlength="6" maxlength="12" /></label>
-                      <label class="settings-field"><span>Confirm PIN</span><input id="app-lock-pin-confirm" type="password" inputmode="numeric" autocomplete="new-password" minlength="6" maxlength="12" /></label>
+                <div class="appearance-settings-stack">
+                  <div class="appearance-settings-group">
+                    <div class="appearance-settings-heading">
+                      <div>
+                        <h4>Theme</h4>
+                        <p>
+                          Choose the color mode and accent used across Aero.
+                        </p>
+                      </div>
                     </div>
-                    <button id="app-lock-enable" class="ghost-button" type="button"><i class="fa-solid fa-lock" aria-hidden="true"></i><span>Enable App Lock</span></button>
-                  </div>
-                  <div id="app-lock-actions" class="app-lock-actions hidden">
-                    <button id="app-lock-change-pin" class="ghost-button" type="button">Change PIN</button>
-                    <button id="app-lock-new-codes" class="ghost-button" type="button">New recovery codes</button>
-                    <button id="app-lock-disable" class="ghost-button danger" type="button">Turn off</button>
-                  </div>
-                  <div id="auto-lock-settings" class="auto-lock-settings hidden">
-                    <div class="auto-lock-heading">
-                      <div><strong>Automatic lock</strong><span>Lock Aero when this device has not been used.</span></div>
-                      <label class="settings-check auto-lock-master"><input id="auto-lock-enabled" type="checkbox" /><span>Enable</span></label>
+                    <div
+                      class="theme-switcher"
+                      role="radiogroup"
+                      aria-label="Theme"
+                    >
+                      <label
+                        ><input
+                          id="theme-system"
+                          type="radio"
+                          name="theme"
+                          value="system"
+                        /><span
+                          ><i class="fa-solid fa-desktop" aria-hidden="true"></i
+                          >System</span
+                        ></label
+                      >
+                      <label
+                        ><input
+                          id="theme-light"
+                          type="radio"
+                          name="theme"
+                          value="light"
+                        /><span
+                          ><i class="fa-solid fa-sun" aria-hidden="true"></i
+                          >Light</span
+                        ></label
+                      >
+                      <label
+                        ><input
+                          id="theme-dark"
+                          type="radio"
+                          name="theme"
+                          value="dark"
+                        /><span
+                          ><i class="fa-solid fa-moon" aria-hidden="true"></i
+                          >Dark</span
+                        ></label
+                      >
+                      <label
+                        ><input
+                          id="theme-ultra-dark"
+                          type="radio"
+                          name="theme"
+                          value="ultra-dark"
+                        /><span
+                          ><i class="fa-solid fa-moon" aria-hidden="true"></i
+                          >OLED</span
+                        ></label
+                      >
                     </div>
-                    <div id="auto-lock-options" class="auto-lock-options">
+                    <label class="settings-field">
+                      <span>Accent color</span>
+                      <select id="accent-color-select">
+                        <option value="system">System accent</option>
+                        <option value="aero">Aero blue</option>
+                        <option value="violet">Violet</option>
+                        <option value="green">Green</option>
+                        <option value="rose">Rose</option>
+                        <option value="amber">Amber</option>
+                        <option value="custom">Custom color</option>
+                      </select>
+                      <input
+                        id="custom-accent-color"
+                        type="color"
+                        value="#147fa6"
+                        aria-label="Custom accent color"
+                      />
+                    </label>
+                  </div>
+                  <div class="appearance-settings-group">
+                    <div class="appearance-settings-heading">
+                      <div>
+                        <h4>Layout &amp; text</h4>
+                        <p>
+                          Adjust spacing and readability without changing
+                          conversations.
+                        </p>
+                      </div>
+                    </div>
+                    <div class="appearance-layout-options">
                       <label class="settings-field">
-                        <span>Lock after</span>
-                        <select id="auto-lock-delay">
-                          <option value="60">1 minute</option>
-                          <option value="300">5 minutes</option>
-                          <option value="600">10 minutes</option>
-                          <option value="900">15 minutes</option>
-                          <option value="1800">30 minutes</option>
-                          <option value="3600">1 hour</option>
+                        <span>Message density</span>
+                        <select id="message-density-select">
+                          <option value="comfortable">Comfortable</option>
+                          <option value="compact">Compact</option>
                         </select>
                       </label>
-                      <label class="settings-check"><input id="auto-lock-countdown-enabled" type="checkbox" /><span>Show countdown in title bar</span></label>
+                      <label class="settings-field">
+                        <span>Chat text size</span>
+                        <select id="chat-font-size-select">
+                          <option value="small">Small</option>
+                          <option value="normal">Normal</option>
+                          <option value="large">Large</option>
+                        </select>
+                      </label>
+                      <label class="settings-check"
+                        ><input
+                          id="compact-layout-toggle"
+                          type="checkbox"
+                        /><span>Compact layout</span></label
+                      >
+                      <button
+                        id="reset-sidebar-width"
+                        class="ghost-button appearance-reset-button"
+                        type="button"
+                      >
+                        <i
+                          class="fa-solid fa-arrow-rotate-left"
+                          aria-hidden="true"
+                        ></i
+                        >Reset sidebar width
+                      </button>
                     </div>
-                    <p class="auto-lock-note"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i>Aero also locks when the system is locked or suspended.</p>
                   </div>
-                  <p id="app-lock-status-message" class="app-lock-status-message" aria-live="polite"></p>
-                </article>
-                <article id="app-lock-recovery" class="security-card recovery-card hidden">
-                  <div class="security-card-heading">
-                    <div class="security-icon"><i class="fa-solid fa-key" aria-hidden="true"></i></div>
-                    <div><strong>Save your recovery codes now</strong><span>Each code works once. They cannot be shown again.</span></div>
+                  <div class="appearance-settings-group">
+                    <div class="appearance-settings-heading">
+                      <div>
+                        <h4>Wallpapers</h4>
+                        <p>
+                          Use the built-in background or custom images for each
+                          theme.
+                        </p>
+                      </div>
+                      <button
+                        id="open-custom-wallpapers-folder"
+                        class="ghost-button compact-settings-button"
+                        type="button"
+                      >
+                        <i
+                          class="fa-regular fa-folder-open"
+                          aria-hidden="true"
+                        ></i
+                        >Open folder
+                      </button>
+                    </div>
+                    <label class="settings-check"
+                      ><input
+                        id="wallpaper-enabled-toggle"
+                        type="checkbox"
+                      /><span>Show wallpapers</span></label
+                    >
+                    <div
+                      id="custom-wallpaper-list"
+                      class="custom-wallpaper-list"
+                    ></div>
+                    <label class="settings-check"
+                      ><input
+                        id="wallpaper-accent-tint-toggle"
+                        type="checkbox"
+                      /><span>Tint wallpaper with the accent color</span></label
+                    >
+                    <label class="settings-check"
+                      ><input id="wallpaper-boot-toggle" type="checkbox" /><span
+                        >Use custom wallpaper on the loading screen</span
+                      ></label
+                    >
                   </div>
-                  <pre id="app-lock-recovery-codes"></pre>
-                  <div class="app-lock-actions">
-                    <button id="app-lock-copy-codes" class="ghost-button" type="button"><i class="fa-regular fa-copy" aria-hidden="true"></i>Copy codes</button>
-                    <button id="app-lock-save-codes" class="ghost-button" type="button"><i class="fa-regular fa-floppy-disk" aria-hidden="true"></i>Save codes</button>
-                    <button id="app-lock-hide-codes" class="ghost-button" type="button">I saved them</button>
+                  <div class="appearance-settings-group">
+                    <div class="appearance-settings-heading">
+                      <div>
+                        <h4>Accessibility</h4>
+                        <p>
+                          Reduce interface movement and animated transitions.
+                        </p>
+                      </div>
+                    </div>
+                    <label class="settings-check"
+                      ><input id="reduce-motion-toggle" type="checkbox" /><span
+                        >Reduce animations</span
+                      ></label
+                    >
                   </div>
-                </article>
-                <p class="security-limit-note"><i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>App Lock stays enabled through normal updates and reinstalls. Deleting all local Aero data with administrator access cannot be prevented.</span></p>
-              </div>
-            </section>
+                </div>
+              </section>
 
-            <section class="settings-section" data-settings-page="updates">
-              <div class="settings-page-heading"><div><h3>Updates</h3><p>Check for new versions and choose how update downloads are handled.</p></div></div>
-              <div class="update-settings-stack">
-                <p id="update-platform-note" class="settings-help update-platform-note"></p>
-                <div class="update-settings-group">
-                  <div class="update-settings-heading"><div><h4>Version check</h4><p>Ask the official Aero release service for the latest version.</p></div></div>
-                  <div class="update-settings-check-row">
-                    <button id="check-updates-button" class="ghost-button" type="button">
-                      <i class="fa-solid fa-rotate" aria-hidden="true"></i>
-                      Check now
+              <section class="settings-section" data-settings-page="themes">
+                <div class="settings-page-heading">
+                  <div>
+                    <h3>Custom themes</h3>
+                    <p>
+                      Manage local CSS themes or load styles from sources you
+                      trust.
+                    </p>
+                  </div>
+                </div>
+                <div
+                  class="theme-tabs"
+                  role="tablist"
+                  aria-label="Theme source"
+                >
+                  <button
+                    class="theme-tab active"
+                    type="button"
+                    role="tab"
+                    aria-selected="true"
+                    data-theme-tab="local"
+                  >
+                    Installed
+                  </button>
+                  <button
+                    class="theme-tab"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    data-theme-tab="online"
+                  >
+                    Online
+                  </button>
+                </div>
+                <div class="theme-panel" data-theme-panel="local">
+                  <div class="theme-panel-toolbar">
+                    <strong>Installed themes</strong>
+                    <div class="themes-manager-actions">
+                      <button
+                        id="open-themes-folder"
+                        class="ghost-button theme-action-button"
+                        type="button"
+                      >
+                        <i
+                          class="fa-regular fa-folder-open"
+                          aria-hidden="true"
+                        ></i>
+                        <span>Folder</span>
+                      </button>
+                      <button
+                        id="reload-themes"
+                        class="ghost-button theme-action-button"
+                        type="button"
+                      >
+                        <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                        <span>Reload</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div id="local-theme-list" class="local-theme-list"></div>
+                </div>
+                <div class="theme-panel hidden" data-theme-panel="online">
+                  <label class="settings-field online-theme-field">
+                    <span>Theme URLs</span>
+                    <textarea
+                      id="online-theme-urls"
+                      rows="8"
+                      spellcheck="false"
+                      placeholder="https://example.com/theme.css&#10;One URL per line"
+                    ></textarea>
+                  </label>
+                  <div class="online-theme-actions">
+                    <button
+                      id="apply-online-themes"
+                      class="ghost-button theme-action-button"
+                      type="button"
+                    >
+                      <i class="fa-solid fa-check" aria-hidden="true"></i>
+                      Apply
                     </button>
-                    <span id="update-check-status" class="settings-help" aria-live="polite"></span>
+                    <span
+                      id="online-theme-status"
+                      class="settings-description"
+                      aria-live="polite"
+                    ></span>
+                  </div>
+                  <p class="theme-inline-note">
+                    Theme CSS can change the entire interface. Only add URLs you
+                    trust.
+                  </p>
+                </div>
+              </section>
+
+              <section class="settings-section" data-settings-page="general">
+                <div class="settings-page-heading">
+                  <div>
+                    <h3>General</h3>
+                    <p>
+                      Control how Aero starts, closes and stays available in the
+                      background.
+                    </p>
                   </div>
                 </div>
-                <div class="update-settings-group">
-                  <div class="update-settings-heading"><div><h4>Downloads</h4><p>Download verified updates in the background when they become available.</p></div></div>
-                  <label class="settings-check">
-                    <input id="auto-download-updates-toggle" type="checkbox" />
-                    <span>Automatically download updates</span>
-                  </label>
-                </div>
-              </div>
-            </section>
-
-            <section class="settings-section" data-settings-page="notifications">
-              <div class="settings-page-heading"><div><h3>Notifications</h3><p>Choose which events can notify you and what information is shown.</p></div></div>
-              <div class="notification-settings-stack">
-                <div class="notification-settings-group">
-                  <div class="notification-settings-heading"><div><h4>Desktop notifications</h4><p>Show native notifications outside the Aero window.</p></div></div>
-                  <label class="settings-check notification-master-toggle">
-                    <input id="notifications-toggle" type="checkbox" />
-                    <span>Allow desktop notifications</span>
-                  </label>
-                  <div class="notification-event-options">
-                    <label class="settings-check">
-                      <input id="message-notifications-toggle" type="checkbox" />
-                      <span>New messages</span>
+                <div class="general-settings-stack">
+                  <div class="general-settings-group">
+                    <div class="general-settings-heading">
+                      <div>
+                        <h4>Startup</h4>
+                        <p>
+                          Launch Aero automatically after signing in to your
+                          computer.
+                        </p>
+                      </div>
+                    </div>
+                    <label class="settings-check general-autostart-toggle">
+                      <input id="autostart-toggle" type="checkbox" />
+                      <span data-app-template="Start {name} with the system"
+                        >Start with system</span
+                      >
                     </label>
-                    <label class="settings-check notification-suboption">
-                      <input id="message-preview-toggle" type="checkbox" />
-                      <span>Show message previews</span>
-                    </label>
-                    <label class="settings-check">
-                      <input id="call-notifications-toggle" type="checkbox" />
-                      <span>Incoming calls</span>
-                    </label>
-                    <label class="settings-check notification-suboption">
-                      <input id="focused-notifications-toggle" type="checkbox" />
-                      <span>Notify while Aero is focused</span>
-                    </label>
+                    <div
+                      class="settings-choice general-startup-options"
+                      id="autostart-mode-group"
+                    >
+                      <label>
+                        <input
+                          id="autostart-open"
+                          type="radio"
+                          name="autostart-mode"
+                          value="open"
+                        />
+                        <span>Open window</span>
+                      </label>
+                      <label>
+                        <input
+                          id="autostart-hidden"
+                          type="radio"
+                          name="autostart-mode"
+                          value="hidden"
+                        />
+                        <span>Start in system tray</span>
+                      </label>
+                    </div>
                   </div>
-                </div>
-                <div class="notification-settings-group">
-                  <div class="notification-settings-heading"><div><h4>Conversation privacy</h4><p>Control whether contacts can see when you have read a message.</p></div></div>
-                  <label class="settings-check">
-                    <input id="read-receipts-toggle" type="checkbox" />
-                    <span>Send read receipts</span>
-                  </label>
-                </div>
-              </div>
-            </section>
-
-            <section class="settings-section" data-settings-page="sounds">
-              <div class="settings-page-heading"><div><h3>Sounds</h3><p>Control audio feedback for messages, calls and connections.</p></div></div>
-              <div class="sound-settings-stack">
-                <div class="sound-settings-group">
-                  <div class="sound-settings-heading"><div><h4>Sound events</h4><p>Choose which events play audio on this device.</p></div></div>
-                  <label class="settings-check sound-master-toggle">
-                    <input id="sounds-toggle" type="checkbox" />
-                    <span>Enable Aero sounds</span>
-                  </label>
-                  <div class="sound-event-options">
-                    <label class="settings-check">
-                      <input id="message-sound-toggle" type="checkbox" />
-                      <span>Message sound</span>
-                    </label>
-                    <div class="sound-ringtone-options">
-                      <label class="settings-check">
-                        <input id="ringtone-sound-toggle" type="checkbox" />
-                        <span>Call ringtone</span>
-                      </label>
-                      <label class="settings-check sound-suboption">
-                        <input id="ringtone-loop-toggle" type="checkbox" />
-                         <span>Repeat ringtone until answered</span>
-                      </label>
-                      <div class="sound-ringtone-preset">
-                        <label for="ringtone-preset-select">Ringtone</label>
-                        <div class="sound-ringtone-preset-controls">
-                          <select id="ringtone-preset-select"></select>
-                          <button id="ringtone-preview-button" class="sound-ringtone-preview" type="button" aria-label="Preview ringtone" title="Preview ringtone">
-                            <i class="fa-solid fa-play" aria-hidden="true"></i>
-                          </button>
-                        </div>
+                  <div class="general-settings-group">
+                    <div class="general-settings-heading">
+                      <div>
+                        <h4>Closing Aero</h4>
+                        <p>
+                          Keep receiving messages and calls after closing the
+                          window.
+                        </p>
                       </div>
                     </div>
                     <label class="settings-check">
-                      <input id="call-event-sound-toggle" type="checkbox" />
-                      <span>Call join and leave sounds</span>
-                    </label>
-                    <label class="settings-check">
-                      <input id="connected-sound-toggle" type="checkbox" />
-                      <span>Contact connection sound</span>
+                      <input id="close-to-tray-toggle" type="checkbox" />
+                      <span>Keep Aero running in the system tray</span>
                     </label>
                   </div>
                 </div>
-                <div class="sound-settings-group">
+              </section>
+
+              <section class="settings-section" data-settings-page="security">
+                <div class="settings-page-heading">
+                  <div>
+                    <h3>Security</h3>
+                    <p>
+                      Protect local chats, contacts and settings before the app
+                      opens.
+                    </p>
+                  </div>
+                </div>
+                <div class="security-settings-stack">
+                  <article class="security-card">
+                    <div class="security-card-heading">
+                      <div class="security-icon">
+                        <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                      </div>
+                      <div>
+                        <strong>App Lock</strong
+                        ><span id="app-lock-summary">Checking status…</span>
+                      </div>
+                      <span id="app-lock-state" class="security-state"
+                        >Off</span
+                      >
+                    </div>
+                    <div id="app-lock-setup" class="app-lock-setup">
+                      <p class="app-lock-guidance">
+                        Use a 6–12 digit PIN. Repeated and sequential PINs are
+                        rejected.
+                      </p>
+                      <div class="app-lock-pin-fields">
+                        <label class="settings-field"
+                          ><span>New PIN</span
+                          ><input
+                            id="app-lock-pin"
+                            type="password"
+                            inputmode="numeric"
+                            autocomplete="new-password"
+                            minlength="6"
+                            maxlength="12"
+                        /></label>
+                        <label class="settings-field"
+                          ><span>Confirm PIN</span
+                          ><input
+                            id="app-lock-pin-confirm"
+                            type="password"
+                            inputmode="numeric"
+                            autocomplete="new-password"
+                            minlength="6"
+                            maxlength="12"
+                        /></label>
+                      </div>
+                      <button
+                        id="app-lock-enable"
+                        class="ghost-button"
+                        type="button"
+                      >
+                        <i class="fa-solid fa-lock" aria-hidden="true"></i
+                        ><span>Enable App Lock</span>
+                      </button>
+                    </div>
+                    <div id="app-lock-actions" class="app-lock-actions hidden">
+                      <button
+                        id="app-lock-change-pin"
+                        class="ghost-button"
+                        type="button"
+                      >
+                        Change PIN
+                      </button>
+                      <button
+                        id="app-lock-new-codes"
+                        class="ghost-button"
+                        type="button"
+                      >
+                        New recovery codes
+                      </button>
+                      <button
+                        id="app-lock-disable"
+                        class="ghost-button danger"
+                        type="button"
+                      >
+                        Turn off
+                      </button>
+                    </div>
+                    <div
+                      id="auto-lock-settings"
+                      class="auto-lock-settings hidden"
+                    >
+                      <div class="auto-lock-heading">
+                        <div>
+                          <strong>Automatic lock</strong
+                          ><span
+                            >Lock Aero when this device has not been used.</span
+                          >
+                        </div>
+                        <label class="settings-check auto-lock-master"
+                          ><input id="auto-lock-enabled" type="checkbox" /><span
+                            >Enable</span
+                          ></label
+                        >
+                      </div>
+                      <div id="auto-lock-options" class="auto-lock-options">
+                        <label class="settings-field">
+                          <span>Lock after</span>
+                          <select id="auto-lock-delay">
+                            <option value="60">1 minute</option>
+                            <option value="300">5 minutes</option>
+                            <option value="600">10 minutes</option>
+                            <option value="900">15 minutes</option>
+                            <option value="1800">30 minutes</option>
+                            <option value="3600">1 hour</option>
+                          </select>
+                        </label>
+                        <label class="settings-check"
+                          ><input
+                            id="auto-lock-countdown-enabled"
+                            type="checkbox"
+                          /><span>Show countdown in title bar</span></label
+                        >
+                      </div>
+                      <p class="auto-lock-note">
+                        <i
+                          class="fa-solid fa-shield-halved"
+                          aria-hidden="true"
+                        ></i
+                        >Aero also locks when the system is locked or suspended.
+                      </p>
+                    </div>
+                    <p
+                      id="app-lock-status-message"
+                      class="app-lock-status-message"
+                      aria-live="polite"
+                    ></p>
+                  </article>
+                  <article
+                    id="app-lock-recovery"
+                    class="security-card recovery-card hidden"
+                  >
+                    <div class="security-card-heading">
+                      <div class="security-icon">
+                        <i class="fa-solid fa-key" aria-hidden="true"></i>
+                      </div>
+                      <div>
+                        <strong>Save your recovery codes now</strong
+                        ><span
+                          >Each code works once. They cannot be shown
+                          again.</span
+                        >
+                      </div>
+                    </div>
+                    <pre id="app-lock-recovery-codes"></pre>
+                    <div class="app-lock-actions">
+                      <button
+                        id="app-lock-copy-codes"
+                        class="ghost-button"
+                        type="button"
+                      >
+                        <i class="fa-regular fa-copy" aria-hidden="true"></i
+                        >Copy codes
+                      </button>
+                      <button
+                        id="app-lock-save-codes"
+                        class="ghost-button"
+                        type="button"
+                      >
+                        <i
+                          class="fa-regular fa-floppy-disk"
+                          aria-hidden="true"
+                        ></i
+                        >Save codes
+                      </button>
+                      <button
+                        id="app-lock-hide-codes"
+                        class="ghost-button"
+                        type="button"
+                      >
+                        I saved them
+                      </button>
+                    </div>
+                  </article>
+                  <p class="security-limit-note">
+                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i
+                    ><span
+                      >App Lock stays enabled through normal updates and
+                      reinstalls. Deleting all local Aero data with
+                      administrator access cannot be prevented.</span
+                    >
+                  </p>
+                </div>
+              </section>
+
+              <section class="settings-section" data-settings-page="updates">
+                <div class="settings-page-heading">
+                  <div>
+                    <h3>Updates</h3>
+                    <p>
+                      Check for new versions and choose how update downloads are
+                      handled.
+                    </p>
+                  </div>
+                </div>
+                <div class="update-settings-stack">
+                  <p
+                    id="update-platform-note"
+                    class="settings-help update-platform-note"
+                  ></p>
+                  <div class="update-settings-group">
+                    <div class="update-settings-heading">
+                      <div>
+                        <h4>Version check</h4>
+                        <p>
+                          Ask the official Aero release service for the latest
+                          version.
+                        </p>
+                      </div>
+                    </div>
+                    <div class="update-settings-check-row">
+                      <button
+                        id="check-updates-button"
+                        class="ghost-button"
+                        type="button"
+                      >
+                        <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                        Check now
+                      </button>
+                      <span
+                        id="update-check-status"
+                        class="settings-help"
+                        aria-live="polite"
+                      ></span>
+                    </div>
+                  </div>
+                  <div class="update-settings-group">
+                    <div class="update-settings-heading">
+                      <div>
+                        <h4>Downloads</h4>
+                        <p>
+                          Download verified updates in the background when they
+                          become available.
+                        </p>
+                      </div>
+                    </div>
+                    <label class="settings-check">
+                      <input
+                        id="auto-download-updates-toggle"
+                        type="checkbox"
+                      />
+                      <span>Automatically download updates</span>
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              <section
+                class="settings-section"
+                data-settings-page="notifications"
+              >
+                <div class="settings-page-heading">
+                  <div>
+                    <h3>Notifications</h3>
+                    <p>
+                      Choose which events can notify you and what information is
+                      shown.
+                    </p>
+                  </div>
+                </div>
+                <div class="notification-settings-stack">
+                  <div class="notification-settings-group">
+                    <div class="notification-settings-heading">
+                      <div>
+                        <h4>Desktop notifications</h4>
+                        <p>
+                          Show native notifications outside the Aero window.
+                        </p>
+                      </div>
+                    </div>
+                    <label class="settings-check notification-master-toggle">
+                      <input id="notifications-toggle" type="checkbox" />
+                      <span>Allow desktop notifications</span>
+                    </label>
+                    <div class="notification-event-options">
+                      <label class="settings-check">
+                        <input
+                          id="message-notifications-toggle"
+                          type="checkbox"
+                        />
+                        <span>New messages</span>
+                      </label>
+                      <label class="settings-check notification-suboption">
+                        <input id="message-preview-toggle" type="checkbox" />
+                        <span>Show message previews</span>
+                      </label>
+                      <label class="settings-check">
+                        <input id="call-notifications-toggle" type="checkbox" />
+                        <span>Incoming calls</span>
+                      </label>
+                      <label class="settings-check notification-suboption">
+                        <input
+                          id="focused-notifications-toggle"
+                          type="checkbox"
+                        />
+                        <span>Notify while Aero is focused</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="notification-settings-group">
+                    <div class="notification-settings-heading">
+                      <div>
+                        <h4>Conversation privacy</h4>
+                        <p>
+                          Control whether contacts can see when you have read a
+                          message.
+                        </p>
+                      </div>
+                    </div>
+                    <label class="settings-check">
+                      <input id="read-receipts-toggle" type="checkbox" />
+                      <span>Send read receipts</span>
+                    </label>
+                  </div>
+                </div>
+              </section>
+
+              <section class="settings-section" data-settings-page="sounds">
+                <div class="settings-page-heading">
+                  <div>
+                    <h3>Sounds</h3>
+                    <p>
+                      Control audio feedback for messages, calls and
+                      connections.
+                    </p>
+                  </div>
+                </div>
+                <div class="sound-settings-stack">
+                  <div class="sound-settings-group">
+                    <div class="sound-settings-heading">
+                      <div>
+                        <h4>Sound events</h4>
+                        <p>Choose which events play audio on this device.</p>
+                      </div>
+                    </div>
+                    <label class="settings-check sound-master-toggle">
+                      <input id="sounds-toggle" type="checkbox" />
+                      <span>Enable Aero sounds</span>
+                    </label>
+                    <div class="sound-event-options">
+                      <label class="settings-check">
+                        <input id="message-sound-toggle" type="checkbox" />
+                        <span>Message sound</span>
+                      </label>
+                      <div class="sound-ringtone-options">
+                        <label class="settings-check">
+                          <input id="ringtone-sound-toggle" type="checkbox" />
+                          <span>Call ringtone</span>
+                        </label>
+                        <label class="settings-check sound-suboption">
+                          <input id="ringtone-loop-toggle" type="checkbox" />
+                          <span>Repeat ringtone until answered</span>
+                        </label>
+                        <div class="sound-ringtone-preset">
+                          <label for="ringtone-preset-select">Ringtone</label>
+                          <div class="sound-ringtone-preset-controls">
+                            <select id="ringtone-preset-select"></select>
+                            <button
+                              id="ringtone-preview-button"
+                              class="sound-ringtone-preview"
+                              type="button"
+                              aria-label="Preview ringtone"
+                              title="Preview ringtone"
+                            >
+                              <i
+                                class="fa-solid fa-play"
+                                aria-hidden="true"
+                              ></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <label class="settings-check">
+                        <input id="call-event-sound-toggle" type="checkbox" />
+                        <span>Call join and leave sounds</span>
+                      </label>
+                      <label class="settings-check">
+                        <input id="connected-sound-toggle" type="checkbox" />
+                        <span>Contact connection sound</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="sound-settings-group">
+                    <div class="custom-sounds-heading">
+                      <div>
+                        <strong>Custom sounds</strong
+                        ><span
+                          >Replace individual built-in sounds with your own
+                          audio.</span
+                        >
+                      </div>
+                      <button
+                        id="open-custom-sounds-folder"
+                        class="custom-sound-action-button"
+                        type="button"
+                      >
+                        <i
+                          class="fa-regular fa-folder-open"
+                          aria-hidden="true"
+                        ></i>
+                        Folder
+                      </button>
+                    </div>
+                    <div id="custom-sound-list" class="custom-sound-list"></div>
+                  </div>
+                </div>
+                <template>
+                  <label class="settings-check">
+                    <input id="sounds-toggle" type="checkbox" />
+                    <span>Sounds</span>
+                  </label>
+                  <label class="settings-check">
+                    <input id="message-sound-toggle" type="checkbox" />
+                    <span>Message sound</span>
+                  </label>
+                  <label class="settings-check">
+                    <input id="ringtone-sound-toggle" type="checkbox" />
+                    <span>Call ringtone</span>
+                  </label>
+                  <label class="settings-check">
+                    <input id="ringtone-loop-toggle" type="checkbox" />
+                    <span>Loop ringtone</span>
+                  </label>
+                  <label class="settings-check">
+                    <input id="call-event-sound-toggle" type="checkbox" />
+                    <span>Call events</span>
+                  </label>
+                  <label class="settings-check">
+                    <input id="connected-sound-toggle" type="checkbox" />
+                    <span>Connection sound</span>
+                  </label>
                   <div class="custom-sounds-heading">
                     <div>
-                      <strong>Custom sounds</strong><span>Replace individual built-in sounds with your own audio.</span>
+                      <strong>Custom sounds</strong>
                     </div>
-                    <button id="open-custom-sounds-folder" class="custom-sound-action-button" type="button">
-                      <i class="fa-regular fa-folder-open" aria-hidden="true"></i>
+                    <button
+                      id="open-custom-sounds-folder"
+                      class="custom-sound-action-button"
+                      type="button"
+                    >
+                      <i
+                        class="fa-regular fa-folder-open"
+                        aria-hidden="true"
+                      ></i>
                       Folder
                     </button>
                   </div>
                   <div id="custom-sound-list" class="custom-sound-list"></div>
-                </div>
-              </div>
-              <template>
-                <label class="settings-check">
-                  <input id="sounds-toggle" type="checkbox" />
-                  <span>Sounds</span>
-                </label>
-                <label class="settings-check">
-                  <input id="message-sound-toggle" type="checkbox" />
-                  <span>Message sound</span>
-                </label>
-                <label class="settings-check">
-                  <input id="ringtone-sound-toggle" type="checkbox" />
-                  <span>Call ringtone</span>
-                </label>
-                <label class="settings-check">
-                  <input id="ringtone-loop-toggle" type="checkbox" />
-                  <span>Loop ringtone</span>
-                </label>
-                <label class="settings-check">
-                  <input id="call-event-sound-toggle" type="checkbox" />
-                  <span>Call events</span>
-                </label>
-                <label class="settings-check">
-                  <input id="connected-sound-toggle" type="checkbox" />
-                  <span>Connection sound</span>
-                </label>
-                <div class="custom-sounds-heading">
+                </template>
+              </section>
+
+              <section class="settings-section" data-settings-page="chat">
+                <div class="settings-page-heading">
                   <div>
-                    <strong>Custom sounds</strong>
-                  </div>
-                  <button id="open-custom-sounds-folder" class="custom-sound-action-button" type="button">
-                    <i class="fa-regular fa-folder-open" aria-hidden="true"></i>
-                    Folder
-                  </button>
-                </div>
-                <div id="custom-sound-list" class="custom-sound-list"></div>
-              </template>
-            </section>
-
-            <section class="settings-section" data-settings-page="chat">
-              <div class="settings-page-heading"><div><h3>Chat</h3><p>Configure voice messages, received files and trusted external links.</p></div></div>
-              <div class="chat-settings-stack">
-                <div class="chat-settings-group">
-                  <div class="chat-settings-heading"><div><h4>Voice messages</h4><p>Control how recorded messages are downloaded and displayed.</p></div></div>
-                  <label class="settings-check">
-                    <input id="voice-auto-download-toggle" type="checkbox" />
-                    <span>Download voice messages automatically</span>
-                  </label>
-                  <label class="settings-check">
-                    <input id="voice-waveform-toggle" type="checkbox" />
-                    <span>Show waveform</span>
-                  </label>
-                </div>
-                <div class="chat-settings-group">
-                  <div class="chat-settings-heading"><div><h4>Files &amp; images</h4><p>Choose when trusted downloads are saved and where they go.</p></div></div>
-                  <label class="settings-check">
-                    <input id="file-auto-download-toggle" type="checkbox" />
-                    <span>Automatically download files from trusted contacts</span>
-                  </label>
-                  <label class="settings-field file-download-mode-field">
-                    <span>Save location</span>
-                    <select id="file-download-mode-select">
-                      <option value="ask">Ask every time</option>
-                      <option value="downloads">Default downloads folder</option>
-                      <option value="custom">Custom folder</option>
-                    </select>
-                  </label>
-                  <div id="file-download-folder-row" class="file-download-folder-row hidden">
-                    <span id="file-download-folder-label">No folder selected</span>
-                    <button id="file-download-folder-button" class="ghost-button" type="button">
-                      <i class="fa-regular fa-folder-open" aria-hidden="true"></i>Choose
-                    </button>
-                  </div>
-                  <p id="file-download-platform-note" class="settings-description">Files are checked and never opened automatically.</p>
-                </div>
-                <div class="chat-settings-group">
-                  <div class="chat-settings-heading chat-trusted-heading">
-                    <div><h4>External links</h4><p id="trusted-domains-status">Manage domains Aero can open without asking again.</p></div>
-                    <button id="clear-trusted-domains" class="ghost-button" type="button">Clear</button>
-                  </div>
-                  <details class="trusted-domains-details">
-                    <summary>
-                       <span>View trusted domains</span>
-                      <span class="trusted-domains-summary-meta">
-                        <span id="trusted-default-domains-count"></span>
-                        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
-                      </span>
-                    </summary>
-                    <div id="trusted-default-domains-list" class="trusted-domains-list" aria-label="Built-in trusted domains"></div>
-                  </details>
-                </div>
-              </div>
-            </section>
-          </div>
-
-          <div class="settings-column">
-            <section class="settings-section" data-settings-page="voice">
-              <div class="settings-page-heading"><div><h3>Voice &amp; Video</h3><p>Select call devices and tune microphone processing for clear speech.</p></div></div>
-              <div class="voice-settings-stack">
-                <div class="voice-settings-group">
-                  <div class="voice-settings-heading"><div><h4>Devices</h4><p>Choose the microphone, camera and speakers used during calls.</p></div></div>
-                  <div class="device-settings voice-device-settings">
-                    <label for="microphone-select">Microphone<select id="microphone-select"></select></label>
-                    <label for="camera-select">Camera<select id="camera-select"></select></label>
-                    <label for="speaker-select">Speakers<select id="speaker-select"></select></label>
+                    <h3>Chat</h3>
+                    <p>
+                      Configure voice messages, received files and trusted
+                      external links.
+                    </p>
                   </div>
                 </div>
-                <div class="voice-settings-group">
-                  <div class="voice-settings-heading"><div><h4>Microphone processing</h4><p>Start with a profile, then fine-tune it only when needed.</p></div></div>
-                  <label class="voice-profile-field" for="mic-profile-select">Voice profile
-                    <select id="mic-profile-select">
-                      <option value="voice-isolation">Voice isolation</option>
-                      <option value="studio">Studio</option>
-                      <option value="custom">Custom</option>
-                    </select>
-                  </label>
-                  <div id="voice-custom-controls">
-                    <label class="settings-range" for="mic-mode-select">
-                      <div class="settings-range-header"><span>Sensitivity mode</span><strong id="mic-mode-label">Auto</strong></div>
-                      <div class="settings-range-body"><select id="mic-mode-select"><option value="auto">Auto</option><option value="manual">Manual</option></select></div>
-                    </label>
-                    <label class="settings-range" for="mic-sensitivity-slider">
-                      <div class="settings-range-header"><span>Microphone sensitivity</span><strong id="mic-sensitivity-label">55%</strong></div>
-                      <div class="settings-range-body"><input id="mic-sensitivity-slider" type="range" min="0" max="100" step="1" /></div>
-                    </label>
-                    <label class="settings-range" for="mic-noise-reduction-slider">
-                      <div class="settings-range-header"><span>Noise reduction</span><strong id="mic-noise-reduction-label">55%</strong></div>
-                      <div class="settings-range-body"><input id="mic-noise-reduction-slider" type="range" min="0" max="100" step="1" /></div>
-                    </label>
-                  </div>
-                  <label class="settings-range" for="mic-boost-slider">
-                      <div class="settings-range-header"><span>Microphone gain</span><strong id="mic-boost-label">100%</strong></div>
-                    <div class="settings-range-body"><input id="mic-boost-slider" type="range" min="0" max="200" step="1" /></div>
-                  </label>
-                  <details class="voice-eq-details">
-                    <summary><i class="fa-solid fa-chevron-right" aria-hidden="true"></i><span>3-band EQ</span><strong id="mic-eq-label">Flat</strong></summary>
-                    <div class="settings-range-group">
-                      <label class="settings-range" for="mic-eq-low-slider"><div class="settings-range-header"><span>Low</span><strong id="mic-eq-low-label">0 dB</strong></div><div class="settings-range-body"><input id="mic-eq-low-slider" type="range" min="-12" max="12" step="1" /></div></label>
-                      <label class="settings-range" for="mic-eq-mid-slider"><div class="settings-range-header"><span>Mid</span><strong id="mic-eq-mid-label">0 dB</strong></div><div class="settings-range-body"><input id="mic-eq-mid-slider" type="range" min="-12" max="12" step="1" /></div></label>
-                      <label class="settings-range" for="mic-eq-high-slider"><div class="settings-range-header"><span>High</span><strong id="mic-eq-high-label">0 dB</strong></div><div class="settings-range-body"><input id="mic-eq-high-slider" type="range" min="-12" max="12" step="1" /></div></label>
+                <div class="chat-settings-stack">
+                  <div class="chat-settings-group">
+                    <div class="chat-settings-heading">
+                      <div>
+                        <h4>Voice messages</h4>
+                        <p>
+                          Control how recorded messages are downloaded and
+                          displayed.
+                        </p>
+                      </div>
                     </div>
-                  </details>
+                    <label class="settings-check">
+                      <input id="voice-auto-download-toggle" type="checkbox" />
+                      <span>Download voice messages automatically</span>
+                    </label>
+                    <label class="settings-check">
+                      <input id="voice-waveform-toggle" type="checkbox" />
+                      <span>Show waveform</span>
+                    </label>
+                  </div>
+                  <div class="chat-settings-group">
+                    <div class="chat-settings-heading">
+                      <div>
+                        <h4>Files &amp; images</h4>
+                        <p>
+                          Choose when trusted downloads are saved and where they
+                          go.
+                        </p>
+                      </div>
+                    </div>
+                    <label class="settings-check">
+                      <input id="file-auto-download-toggle" type="checkbox" />
+                      <span
+                        >Automatically download files from trusted
+                        contacts</span
+                      >
+                    </label>
+                    <label class="settings-field file-download-mode-field">
+                      <span>Save location</span>
+                      <select id="file-download-mode-select">
+                        <option value="ask">Ask every time</option>
+                        <option value="downloads">
+                          Default downloads folder
+                        </option>
+                        <option value="custom">Custom folder</option>
+                      </select>
+                    </label>
+                    <div
+                      id="file-download-folder-row"
+                      class="file-download-folder-row hidden"
+                    >
+                      <span id="file-download-folder-label"
+                        >No folder selected</span
+                      >
+                      <button
+                        id="file-download-folder-button"
+                        class="ghost-button"
+                        type="button"
+                      >
+                        <i
+                          class="fa-regular fa-folder-open"
+                          aria-hidden="true"
+                        ></i
+                        >Choose
+                      </button>
+                    </div>
+                    <p
+                      id="file-download-platform-note"
+                      class="settings-description"
+                    >
+                      Files are checked and never opened automatically.
+                    </p>
+                  </div>
+                  <div class="chat-settings-group">
+                    <div class="chat-settings-heading chat-trusted-heading">
+                      <div>
+                        <h4>External links</h4>
+                        <p id="trusted-domains-status">
+                          Manage domains Aero can open without asking again.
+                        </p>
+                      </div>
+                      <button
+                        id="clear-trusted-domains"
+                        class="ghost-button"
+                        type="button"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                    <details class="trusted-domains-details">
+                      <summary>
+                        <span>View trusted domains</span>
+                        <span class="trusted-domains-summary-meta">
+                          <span id="trusted-default-domains-count"></span>
+                          <i
+                            class="fa-solid fa-chevron-down"
+                            aria-hidden="true"
+                          ></i>
+                        </span>
+                      </summary>
+                      <div
+                        id="trusted-default-domains-list"
+                        class="trusted-domains-list"
+                        aria-label="Built-in trusted domains"
+                      ></div>
+                    </details>
+                  </div>
                 </div>
-                <div class="voice-settings-group">
-                  <div class="voice-settings-heading"><div><h4>Call playback</h4><p>Adjust how loudly other participants are played.</p></div></div>
-                  <label class="settings-range" for="remote-volume-slider">
-                    <div class="settings-range-header"><span>Call volume</span><strong id="remote-volume-label">100%</strong></div>
-                    <div class="settings-range-body"><input id="remote-volume-slider" type="range" min="0" max="100" step="1" /></div>
+              </section>
+            </div>
+
+            <div class="settings-column">
+              <section class="settings-section" data-settings-page="voice">
+                <div class="settings-page-heading">
+                  <div>
+                    <h3>Voice &amp; Video</h3>
+                    <p>
+                      Select call devices and tune microphone processing for
+                      clear speech.
+                    </p>
+                  </div>
+                </div>
+                <div class="voice-settings-stack">
+                  <div class="voice-settings-group">
+                    <div class="voice-settings-heading">
+                      <div>
+                        <h4>Devices</h4>
+                        <p>
+                          Choose the microphone, camera and speakers used during
+                          calls.
+                        </p>
+                      </div>
+                    </div>
+                    <div class="device-settings voice-device-settings">
+                      <label for="microphone-select"
+                        >Microphone<select id="microphone-select"></select
+                      ></label>
+                      <label for="camera-select"
+                        >Camera<select id="camera-select"></select
+                      ></label>
+                      <label for="speaker-select"
+                        >Speakers<select id="speaker-select"></select
+                      ></label>
+                    </div>
+                  </div>
+                  <div class="voice-settings-group">
+                    <div class="voice-settings-heading">
+                      <div>
+                        <h4>Microphone processing</h4>
+                        <p>
+                          Start with a profile, then fine-tune it only when
+                          needed.
+                        </p>
+                      </div>
+                    </div>
+                    <label class="voice-profile-field" for="mic-profile-select"
+                      >Voice profile
+                      <select id="mic-profile-select">
+                        <option value="voice-isolation">Voice isolation</option>
+                        <option value="studio">Studio</option>
+                        <option value="custom">Custom</option>
+                      </select>
+                    </label>
+                    <div id="voice-custom-controls">
+                      <label class="settings-range" for="mic-mode-select">
+                        <div class="settings-range-header">
+                          <span>Sensitivity mode</span
+                          ><strong id="mic-mode-label">Auto</strong>
+                        </div>
+                        <div class="settings-range-body">
+                          <select id="mic-mode-select">
+                            <option value="auto">Auto</option>
+                            <option value="manual">Manual</option>
+                          </select>
+                        </div>
+                      </label>
+                      <label
+                        class="settings-range"
+                        for="mic-sensitivity-slider"
+                      >
+                        <div class="settings-range-header">
+                          <span>Microphone sensitivity</span
+                          ><strong id="mic-sensitivity-label">55%</strong>
+                        </div>
+                        <div class="settings-range-body">
+                          <input
+                            id="mic-sensitivity-slider"
+                            type="range"
+                            min="0"
+                            max="100"
+                            step="1"
+                          />
+                        </div>
+                      </label>
+                      <label
+                        class="settings-range"
+                        for="mic-noise-reduction-slider"
+                      >
+                        <div class="settings-range-header">
+                          <span>Noise reduction</span
+                          ><strong id="mic-noise-reduction-label">55%</strong>
+                        </div>
+                        <div class="settings-range-body">
+                          <input
+                            id="mic-noise-reduction-slider"
+                            type="range"
+                            min="0"
+                            max="100"
+                            step="1"
+                          />
+                        </div>
+                      </label>
+                    </div>
+                    <label class="settings-range" for="mic-boost-slider">
+                      <div class="settings-range-header">
+                        <span>Microphone gain</span
+                        ><strong id="mic-boost-label">100%</strong>
+                      </div>
+                      <div class="settings-range-body">
+                        <input
+                          id="mic-boost-slider"
+                          type="range"
+                          min="0"
+                          max="200"
+                          step="1"
+                        />
+                      </div>
+                    </label>
+                    <details class="voice-eq-details">
+                      <summary>
+                        <i
+                          class="fa-solid fa-chevron-right"
+                          aria-hidden="true"
+                        ></i
+                        ><span>3-band EQ</span
+                        ><strong id="mic-eq-label">Flat</strong>
+                      </summary>
+                      <div class="settings-range-group">
+                        <label class="settings-range" for="mic-eq-low-slider"
+                          ><div class="settings-range-header">
+                            <span>Low</span
+                            ><strong id="mic-eq-low-label">0 dB</strong>
+                          </div>
+                          <div class="settings-range-body">
+                            <input
+                              id="mic-eq-low-slider"
+                              type="range"
+                              min="-12"
+                              max="12"
+                              step="1"
+                            /></div
+                        ></label>
+                        <label class="settings-range" for="mic-eq-mid-slider"
+                          ><div class="settings-range-header">
+                            <span>Mid</span
+                            ><strong id="mic-eq-mid-label">0 dB</strong>
+                          </div>
+                          <div class="settings-range-body">
+                            <input
+                              id="mic-eq-mid-slider"
+                              type="range"
+                              min="-12"
+                              max="12"
+                              step="1"
+                            /></div
+                        ></label>
+                        <label class="settings-range" for="mic-eq-high-slider"
+                          ><div class="settings-range-header">
+                            <span>High</span
+                            ><strong id="mic-eq-high-label">0 dB</strong>
+                          </div>
+                          <div class="settings-range-body">
+                            <input
+                              id="mic-eq-high-slider"
+                              type="range"
+                              min="-12"
+                              max="12"
+                              step="1"
+                            /></div
+                        ></label>
+                      </div>
+                    </details>
+                  </div>
+                  <div class="voice-settings-group">
+                    <div class="voice-settings-heading">
+                      <div>
+                        <h4>Call playback</h4>
+                        <p>Adjust how loudly other participants are played.</p>
+                      </div>
+                    </div>
+                    <label class="settings-range" for="remote-volume-slider">
+                      <div class="settings-range-header">
+                        <span>Call volume</span
+                        ><strong id="remote-volume-label">100%</strong>
+                      </div>
+                      <div class="settings-range-body">
+                        <input
+                          id="remote-volume-slider"
+                          type="range"
+                          min="0"
+                          max="100"
+                          step="1"
+                        />
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <section class="settings-section" data-settings-page="contacts">
+              <div class="settings-page-heading">
+                <div>
+                  <h3>Contacts</h3>
+                  <p>
+                    Organize saved people and review users you have blocked.
+                  </p>
+                </div>
+              </div>
+              <div class="contacts-settings-group">
+                <div class="contacts-settings-heading">
+                  <div>
+                    <h4>Contact nicknames</h4>
+                    <p>
+                      Set private names that are only stored on this device.
+                    </p>
+                  </div>
+                </div>
+                <div
+                  id="contact-nickname-list"
+                  class="contact-nickname-list"
+                ></div>
+              </div>
+              <div class="contacts-settings-group">
+                <div class="contacts-settings-heading">
+                  <div>
+                    <h4>Blocked users</h4>
+                    <p>Blocked users cannot connect or send new messages.</p>
+                  </div>
+                </div>
+                <div id="blocked-list" class="blocked-list"></div>
+              </div>
+            </section>
+
+            <section class="settings-section" data-settings-page="legal">
+              <div class="settings-page-heading">
+                <div>
+                  <h3>Legal</h3>
+                  <p>
+                    Licenses and rights for Aero P2P Chat and its bundled
+                    components.
+                  </p>
+                </div>
+              </div>
+              <div class="legal-stack">
+                <article class="legal-card">
+                  <div class="legal-card-heading">
+                    <div class="legal-card-icon">
+                      <i class="fa-solid fa-code" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                      <strong>Aero P2P Chat</strong
+                      ><span>Application source code</span>
+                    </div>
+                    <span class="legal-license-pill">MIT</span>
+                  </div>
+                  <details class="legal-license-details">
+                    <summary>View license</summary>
+                    <pre id="legal-app-license"></pre>
+                  </details>
+                </article>
+                <article class="legal-card">
+                  <div class="legal-card-heading">
+                    <div class="legal-card-icon">
+                      <i class="fa-solid fa-music" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                      <strong>Audio assets</strong
+                      ><span>Ringtones, notifications, calls and streams</span>
+                    </div>
+                    <span class="legal-license-pill owned">Owned</span>
+                  </div>
+                  <p class="legal-rights-copy">
+                    Copyright © 2026 Jonas Grimm (Tenkayro). All rights
+                    reserved. Bundled audio assets are not covered by the
+                    software's MIT license.
+                  </p>
+                  <details class="legal-license-details">
+                    <summary>View audio license</summary>
+                    <pre id="legal-audio-license"></pre>
+                  </details>
+                </article>
+                <article class="legal-card legal-runtime-card">
+                  <div class="legal-card-heading">
+                    <div class="legal-card-icon">
+                      <i class="fa-brands fa-chrome" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                      <strong>Electron, Chromium &amp; Node.js</strong
+                      ><span>Desktop runtime</span>
+                    </div>
+                    <span class="legal-license-pill">Various</span>
+                  </div>
+                  <p class="legal-rights-copy">
+                    Electron's license is listed below. Complete Chromium,
+                    Node.js and bundled component notices are shipped with every
+                    desktop package as <code>LICENSES.chromium.html</code> and
+                    <code>LICENSE.electron.txt</code>.
+                  </p>
+                </article>
+                <div class="legal-third-party-heading">
+                  <div>
+                    <strong>Third-party software</strong
+                    ><span id="legal-dependency-count"></span>
+                  </div>
+                  <label class="legal-search">
+                    <i
+                      class="fa-solid fa-magnifying-glass"
+                      aria-hidden="true"
+                    ></i>
+                    <input
+                      id="legal-license-search"
+                      type="search"
+                      placeholder="Search licenses"
+                      aria-label="Search third-party licenses"
+                    />
                   </label>
                 </div>
+                <div id="legal-license-list" class="legal-license-list"></div>
+              </div>
+            </section>
+
+            <section
+              class="settings-section settings-reset-section"
+              data-settings-page="reset"
+            >
+              <div class="settings-page-heading">
+                <div>
+                  <h3>Reset &amp; setup</h3>
+                  <p>
+                    Run setup again or restore all preferences to their
+                    defaults.
+                  </p>
+                </div>
+              </div>
+              <div class="settings-reset-actions">
+                <article class="settings-reset-card">
+                  <div>
+                    <strong>Run welcome setup again</strong>
+                    <p>
+                      Review your profile, appearance, devices and startup
+                      options. Nothing is reset.
+                    </p>
+                  </div>
+                  <button
+                    id="reopen-welcome-screen"
+                    class="ghost-button"
+                    type="button"
+                  >
+                    Open setup
+                  </button>
+                </article>
+                <article class="settings-reset-card danger">
+                  <div>
+                    <strong>Reset all settings</strong>
+                    <p>
+                      Restore defaults without removing your Aero ID, contacts,
+                      or chats.
+                    </p>
+                  </div>
+                  <button
+                    id="reset-all-settings"
+                    class="ghost-button danger"
+                    type="button"
+                  >
+                    Reset settings
+                  </button>
+                </article>
+                <article class="settings-reset-card danger">
+                  <div>
+                    <strong>Full reset</strong>
+                    <p>
+                      Permanently remove local settings, identity, contacts,
+                      chats, custom media and App Lock. App Lock authentication
+                      is required when enabled.
+                    </p>
+                  </div>
+                  <button
+                    id="full-app-reset"
+                    class="ghost-button danger"
+                    type="button"
+                  >
+                    Erase all data
+                  </button>
+                </article>
               </div>
             </section>
           </div>
-
-          <section class="settings-section" data-settings-page="contacts">
-              <div class="settings-page-heading"><div><h3>Contacts</h3><p>Organize saved people and review users you have blocked.</p></div></div>
-            <div class="contacts-settings-group">
-              <div class="contacts-settings-heading">
-                <div>
-                  <h4>Contact nicknames</h4><p>Set private names that are only stored on this device.</p>
-                </div>
-              </div>
-              <div id="contact-nickname-list" class="contact-nickname-list"></div>
-            </div>
-            <div class="contacts-settings-group">
-              <div class="contacts-settings-heading">
-                <div>
-                  <h4>Blocked users</h4><p>Blocked users cannot connect or send new messages.</p>
-                </div>
-              </div>
-              <div id="blocked-list" class="blocked-list"></div>
-            </div>
-          </section>
-
-          <section class="settings-section" data-settings-page="legal">
-            <div class="settings-page-heading">
-              <div>
-                <h3>Legal</h3>
-                <p>Licenses and rights for Aero P2P Chat and its bundled components.</p>
-              </div>
-            </div>
-            <div class="legal-stack">
-              <article class="legal-card">
-                <div class="legal-card-heading">
-                  <div class="legal-card-icon"><i class="fa-solid fa-code" aria-hidden="true"></i></div>
-                  <div><strong>Aero P2P Chat</strong><span>Application source code</span></div>
-                  <span class="legal-license-pill">MIT</span>
-                </div>
-                <details class="legal-license-details">
-                  <summary>View license</summary>
-                  <pre id="legal-app-license"></pre>
-                </details>
-              </article>
-              <article class="legal-card">
-                <div class="legal-card-heading">
-                  <div class="legal-card-icon"><i class="fa-solid fa-music" aria-hidden="true"></i></div>
-                  <div><strong>Audio assets</strong><span>Ringtones, notifications, calls and streams</span></div>
-                  <span class="legal-license-pill owned">Owned</span>
-                </div>
-                <p class="legal-rights-copy">Copyright © 2026 Jonas Grimm (Tenkayro). All rights reserved. Bundled audio assets are not covered by the software's MIT license.</p>
-                <details class="legal-license-details">
-                  <summary>View audio license</summary>
-                  <pre id="legal-audio-license"></pre>
-                </details>
-              </article>
-              <article class="legal-card legal-runtime-card">
-                <div class="legal-card-heading">
-                  <div class="legal-card-icon"><i class="fa-brands fa-chrome" aria-hidden="true"></i></div>
-                  <div><strong>Electron, Chromium &amp; Node.js</strong><span>Desktop runtime</span></div>
-                  <span class="legal-license-pill">Various</span>
-                </div>
-                <p class="legal-rights-copy">Electron's license is listed below. Complete Chromium, Node.js and bundled component notices are shipped with every desktop package as <code>LICENSES.chromium.html</code> and <code>LICENSE.electron.txt</code>.</p>
-              </article>
-              <div class="legal-third-party-heading">
-                <div><strong>Third-party software</strong><span id="legal-dependency-count"></span></div>
-                <label class="legal-search">
-                  <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                  <input id="legal-license-search" type="search" placeholder="Search licenses" aria-label="Search third-party licenses" />
-                </label>
-              </div>
-              <div id="legal-license-list" class="legal-license-list"></div>
-            </div>
-          </section>
-
-          <section class="settings-section settings-reset-section" data-settings-page="reset">
-            <div class="settings-page-heading"><div><h3>Reset &amp; setup</h3><p>Run setup again or restore all preferences to their defaults.</p></div></div>
-            <div class="settings-reset-actions">
-              <article class="settings-reset-card">
-                <div><strong>Run welcome setup again</strong><p>Review your profile, appearance, devices and startup options. Nothing is reset.</p></div>
-                <button id="reopen-welcome-screen" class="ghost-button" type="button">Open setup</button>
-              </article>
-              <article class="settings-reset-card danger">
-                <div><strong>Reset all settings</strong><p>Restore defaults without removing your Aero ID, contacts, or chats.</p></div>
-                <button id="reset-all-settings" class="ghost-button danger" type="button">Reset settings</button>
-              </article>
-              <article class="settings-reset-card danger">
-                <div><strong>Full reset</strong><p>Permanently remove local settings, identity, contacts, chats, custom media and App Lock. App Lock authentication is required when enabled.</p></div>
-                <button id="full-app-reset" class="ghost-button danger" type="button">Erase all data</button>
-              </article>
-            </div>
-          </section>
-        </div>
         </div>
       </section>
     </div>
 
-    <div id="changelog-modal" class="workspace-page hidden" role="region" aria-labelledby="changelog-title">
+    <div
+      id="changelog-modal"
+      class="workspace-page hidden"
+      role="region"
+      aria-labelledby="changelog-title"
+    >
       <section class="modal-panel workspace-page-surface changelog-modal-panel">
         <header class="modal-header changelog-header">
           <div>
             <div class="changelog-title-row">
               <h2 id="changelog-title">Changelog</h2>
-              <span id="changelog-installed-version" class="changelog-installed-pill">Installed</span>
+              <span
+                id="changelog-installed-version"
+                class="changelog-installed-pill"
+                >Installed</span
+              >
             </div>
             <p id="changelog-subtitle">What changed in Aero P2P Chat</p>
           </div>
           <div class="changelog-header-actions">
-            <button id="changelog-refresh" class="ghost-button icon-only-button" type="button" aria-label="Refresh changelog" title="Refresh"><i class="fa-solid fa-rotate" aria-hidden="true"></i></button>
-            <button id="changelog-close" class="ghost-button icon-only-button" type="button" aria-label="Close changelog" title="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+            <button
+              id="changelog-refresh"
+              class="ghost-button icon-only-button"
+              type="button"
+              aria-label="Refresh changelog"
+              title="Refresh"
+            >
+              <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+            </button>
+            <button
+              id="changelog-close"
+              class="ghost-button icon-only-button"
+              type="button"
+              aria-label="Close changelog"
+              title="Close"
+            >
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
           </div>
         </header>
         <div class="changelog-layout">
           <aside class="changelog-sidebar" aria-label="Changelog versions">
-            <div class="changelog-sidebar-heading"><span>Versions</span><small id="changelog-count"></small></div>
-            <div id="changelog-version-list" class="changelog-version-list" role="listbox"></div>
-            <button id="changelog-source" class="changelog-source-button" type="button"><i class="fa-brands fa-github" aria-hidden="true"></i><span>View source Gist</span></button>
+            <div class="changelog-sidebar-heading">
+              <span>Versions</span><small id="changelog-count"></small>
+            </div>
+            <div
+              id="changelog-version-list"
+              class="changelog-version-list"
+              role="listbox"
+            ></div>
+            <button
+              id="changelog-source"
+              class="changelog-source-button"
+              type="button"
+            >
+              <i class="fa-brands fa-github" aria-hidden="true"></i
+              ><span>View source Gist</span>
+            </button>
           </aside>
           <main class="changelog-content" aria-live="polite">
-            <div id="changelog-loading" class="changelog-state"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i><strong>Loading changelog…</strong><span>Fetching the latest release notes</span></div>
-            <div id="changelog-error" class="changelog-state hidden" role="status"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i><strong>Could not load the changelog</strong><span></span><button id="changelog-retry" class="ghost-button" type="button">Try again</button></div>
-            <article id="changelog-document" class="changelog-document hidden"></article>
+            <div id="changelog-loading" class="changelog-state">
+              <i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i
+              ><strong>Loading changelog…</strong
+              ><span>Fetching the latest release notes</span>
+            </div>
+            <div
+              id="changelog-error"
+              class="changelog-state hidden"
+              role="status"
+            >
+              <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i
+              ><strong>Could not load the changelog</strong><span></span
+              ><button id="changelog-retry" class="ghost-button" type="button">
+                Try again
+              </button>
+            </div>
+            <article
+              id="changelog-document"
+              class="changelog-document hidden"
+            ></article>
           </main>
         </div>
       </section>
     </div>
 
-    <div id="changelog-image-viewer" class="changelog-image-viewer hidden" role="dialog" aria-modal="true" aria-label="Changelog image viewer">
+    <div
+      id="changelog-image-viewer"
+      class="changelog-image-viewer hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Changelog image viewer"
+    >
       <header class="changelog-image-viewer-toolbar">
         <span id="changelog-image-counter">1 / 1</span>
         <div class="changelog-image-viewer-actions">
-          <button id="changelog-image-zoom-out" type="button" aria-label="Zoom out" title="Zoom out"><i class="fa-solid fa-minus" aria-hidden="true"></i></button>
-          <button id="changelog-image-zoom-reset" type="button" aria-label="Reset zoom" title="Reset zoom">100%</button>
-          <button id="changelog-image-zoom-in" type="button" aria-label="Zoom in" title="Zoom in"><i class="fa-solid fa-plus" aria-hidden="true"></i></button>
-          <button id="changelog-image-close" type="button" aria-label="Close image viewer" title="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+          <button
+            id="changelog-image-zoom-out"
+            type="button"
+            aria-label="Zoom out"
+            title="Zoom out"
+          >
+            <i class="fa-solid fa-minus" aria-hidden="true"></i>
+          </button>
+          <button
+            id="changelog-image-zoom-reset"
+            type="button"
+            aria-label="Reset zoom"
+            title="Reset zoom"
+          >
+            100%
+          </button>
+          <button
+            id="changelog-image-zoom-in"
+            type="button"
+            aria-label="Zoom in"
+            title="Zoom in"
+          >
+            <i class="fa-solid fa-plus" aria-hidden="true"></i>
+          </button>
+          <button
+            id="changelog-image-close"
+            type="button"
+            aria-label="Close image viewer"
+            title="Close"
+          >
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
         </div>
       </header>
-      <button id="changelog-image-previous" class="changelog-image-navigation previous" type="button" aria-label="Previous image"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+      <button
+        id="changelog-image-previous"
+        class="changelog-image-navigation previous"
+        type="button"
+        aria-label="Previous image"
+      >
+        <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+      </button>
       <div id="changelog-image-viewport" class="changelog-image-viewport">
         <div class="changelog-image-stage">
           <img id="changelog-image-preview" alt="" draggable="false" />
         </div>
       </div>
-      <button id="changelog-image-next" class="changelog-image-navigation next" type="button" aria-label="Next image"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
-      <footer id="changelog-image-caption" class="changelog-image-caption"></footer>
+      <button
+        id="changelog-image-next"
+        class="changelog-image-navigation next"
+        type="button"
+        aria-label="Next image"
+      >
+        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+      </button>
+      <footer
+        id="changelog-image-caption"
+        class="changelog-image-caption"
+      ></footer>
     </div>
 
-    <div id="custom-sound-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="custom-sound-title">
+    <div
+      id="custom-sound-modal"
+      class="modal-layer hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="custom-sound-title"
+    >
       <section class="modal-panel custom-sound-modal-panel">
         <header class="modal-header">
           <div>
             <h2 id="custom-sound-title">Custom sound</h2>
             <p id="custom-sound-file-name" class="custom-sound-file-name"></p>
           </div>
-          <button id="custom-sound-close" class="ghost-button icon-only-button" type="button" aria-label="Close">
+          <button
+            id="custom-sound-close"
+            class="ghost-button icon-only-button"
+            type="button"
+            aria-label="Close"
+          >
             <i class="fa-solid fa-xmark" aria-hidden="true"></i>
           </button>
         </header>
-        <audio id="custom-sound-preview" class="custom-sound-preview" preload="metadata"></audio>
+        <audio
+          id="custom-sound-preview"
+          class="custom-sound-preview"
+          preload="metadata"
+        ></audio>
         <div class="custom-sound-player">
-          <button id="custom-sound-play" class="custom-sound-player-button" type="button" aria-label="Play preview">
+          <button
+            id="custom-sound-play"
+            class="custom-sound-player-button"
+            type="button"
+            aria-label="Play preview"
+          >
             <i class="fa-solid fa-play" aria-hidden="true"></i>
           </button>
-          <span id="custom-sound-current-time" class="custom-sound-player-time">0:00</span>
-          <button id="custom-sound-progress" class="custom-sound-player-progress" type="button" aria-label="Seek preview">
+          <span id="custom-sound-current-time" class="custom-sound-player-time"
+            >0:00</span
+          >
+          <button
+            id="custom-sound-progress"
+            class="custom-sound-player-progress"
+            type="button"
+            aria-label="Seek preview"
+          >
             <span id="custom-sound-progress-selection"></span>
             <span id="custom-sound-progress-fill"></span>
           </button>
-          <span id="custom-sound-duration" class="custom-sound-player-time">0:00</span>
+          <span id="custom-sound-duration" class="custom-sound-player-time"
+            >0:00</span
+          >
         </div>
         <div class="custom-sound-trim">
-          <div id="custom-sound-waveform" class="custom-sound-waveform" role="slider" tabindex="0" aria-label="Trim audio selection">
+          <div
+            id="custom-sound-waveform"
+            class="custom-sound-waveform"
+            role="slider"
+            tabindex="0"
+            aria-label="Trim audio selection"
+          >
             <canvas id="custom-sound-waveform-canvas"></canvas>
-            <span id="custom-sound-waveform-start-handle" class="custom-sound-waveform-handle is-start" aria-hidden="true"></span>
-            <span id="custom-sound-waveform-end-handle" class="custom-sound-waveform-handle is-end" aria-hidden="true"></span>
+            <span
+              id="custom-sound-waveform-start-handle"
+              class="custom-sound-waveform-handle is-start"
+              aria-hidden="true"
+            ></span>
+            <span
+              id="custom-sound-waveform-end-handle"
+              class="custom-sound-waveform-handle is-end"
+              aria-hidden="true"
+            ></span>
           </div>
           <div class="custom-sound-trim-labels">
-            <span>Start <strong id="custom-sound-start-value">0:00</strong></span>
+            <span
+              >Start <strong id="custom-sound-start-value">0:00</strong></span
+            >
             <span>End <strong id="custom-sound-end-value">0:00</strong></span>
           </div>
         </div>
@@ -1832,9 +3204,15 @@
           <input id="custom-sound-normalize" type="checkbox" checked />
           <span>Normalize</span>
         </label>
-        <p id="custom-sound-status" class="custom-sound-status" aria-live="polite"></p>
+        <p
+          id="custom-sound-status"
+          class="custom-sound-status"
+          aria-live="polite"
+        ></p>
         <div class="app-dialog-actions">
-          <button id="custom-sound-cancel" class="ghost-button" type="button">Cancel</button>
+          <button id="custom-sound-cancel" class="ghost-button" type="button">
+            Cancel
+          </button>
           <button id="custom-sound-save" type="button">
             <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
             Save sound
@@ -1851,42 +3229,96 @@
     >
       <header class="call-health-popover-header">
         <h2 id="call-health-popover-title">Call health</h2>
-        <button id="call-health-popover-close" class="ghost-button icon-only-button" type="button" aria-label="Close">
+        <button
+          id="call-health-popover-close"
+          class="ghost-button icon-only-button"
+          type="button"
+          aria-label="Close"
+        >
           <i class="fa-solid fa-xmark" aria-hidden="true"></i>
         </button>
       </header>
-        <div class="call-health-detail-summary">
-          <span id="call-health-detail-quality" class="call-health-detail-quality unknown">Checking</span>
-          <span id="call-health-detail-state">Waiting for media</span>
+      <div class="call-health-detail-summary">
+        <span
+          id="call-health-detail-quality"
+          class="call-health-detail-quality unknown"
+          >Checking</span
+        >
+        <span id="call-health-detail-state">Waiting for media</span>
+      </div>
+      <div class="call-health-detail-grid">
+        <div>
+          <span>Latency</span><strong id="call-health-detail-latency">—</strong>
         </div>
-        <div class="call-health-detail-grid">
-          <div><span>Latency</span><strong id="call-health-detail-latency">—</strong></div>
-          <div><span>Packet loss</span><strong id="call-health-detail-loss">—</strong></div>
-          <div><span>Incoming</span><strong id="call-health-detail-bitrate">—</strong></div>
-          <div><span>Jitter</span><strong id="call-health-detail-jitter">—</strong></div>
+        <div>
+          <span>Packet loss</span
+          ><strong id="call-health-detail-loss">—</strong>
         </div>
-        <section class="call-health-graph-card">
-          <div><strong>Latency</strong><span>last 90 seconds</span></div>
-          <canvas id="call-health-latency-graph" width="520" height="84" aria-label="Latency history"></canvas>
-        </section>
-        <section class="call-health-graph-card">
-          <div><strong>Packet loss</strong><span>last 90 seconds</span></div>
-          <canvas id="call-health-loss-graph" width="520" height="84" aria-label="Packet loss history"></canvas>
-        </section>
+        <div>
+          <span>Incoming</span
+          ><strong id="call-health-detail-bitrate">—</strong>
+        </div>
+        <div>
+          <span>Jitter</span><strong id="call-health-detail-jitter">—</strong>
+        </div>
+      </div>
+      <section class="call-health-graph-card">
+        <div><strong>Latency</strong><span>last 90 seconds</span></div>
+        <canvas
+          id="call-health-latency-graph"
+          width="520"
+          height="84"
+          aria-label="Latency history"
+        ></canvas>
+      </section>
+      <section class="call-health-graph-card">
+        <div><strong>Packet loss</strong><span>last 90 seconds</span></div>
+        <canvas
+          id="call-health-loss-graph"
+          width="520"
+          height="84"
+          aria-label="Packet loss history"
+        ></canvas>
+      </section>
     </aside>
-    <input id="custom-sound-file-input" type="file" accept="audio/ogg,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/aac,audio/flac" hidden />
-    <input id="custom-wallpaper-file-input" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+    <input
+      id="custom-sound-file-input"
+      type="file"
+      accept="audio/ogg,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/aac,audio/flac"
+      hidden
+    />
+    <input
+      id="custom-wallpaper-file-input"
+      type="file"
+      accept="image/png,image/jpeg,image/webp"
+      hidden
+    />
 
-    <div id="profile-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+    <div
+      id="profile-modal"
+      class="modal-layer hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="profile-title"
+    >
       <section class="profile-panel">
-        <button id="profile-close" class="profile-close" type="button" title="Close" aria-label="Close profile settings">
+        <button
+          id="profile-close"
+          class="profile-close"
+          type="button"
+          title="Close"
+          aria-label="Close profile settings"
+        >
           <i class="fa-solid fa-xmark" aria-hidden="true"></i>
         </button>
         <header class="profile-header">
           <h2 id="profile-title">Profile</h2>
         </header>
         <div class="profile-identity">
-          <div id="profile-avatar-preview" class="contact-avatar profile-avatar-preview"></div>
+          <div
+            id="profile-avatar-preview"
+            class="contact-avatar profile-avatar-preview"
+          ></div>
           <div class="profile-identity-copy">
             <strong id="profile-id"></strong>
             <span>Blobatar generated locally from your Aero ID</span>
@@ -1895,9 +3327,18 @@
         <div class="profile-content">
           <label class="profile-field" for="profile-nickname">
             <span>Name</span>
-            <input id="profile-nickname" type="text" maxlength="32" autocomplete="nickname" placeholder="Optional" />
+            <input
+              id="profile-nickname"
+              type="text"
+              maxlength="32"
+              autocomplete="nickname"
+              placeholder="Optional"
+            />
           </label>
-          <section class="profile-avatar-settings" aria-labelledby="profile-name-style-title">
+          <section
+            class="profile-avatar-settings"
+            aria-labelledby="profile-name-style-title"
+          >
             <div class="profile-section-heading">
               <span id="profile-name-style-title">Name style</span>
             </div>
@@ -1934,14 +3375,23 @@
             </div>
           </section>
           <div class="profile-actions">
-            <button id="profile-reset" class="profile-reset" type="button">Reset</button>
-            <button id="profile-save" class="profile-save" type="button">Save</button>
+            <button id="profile-reset" class="profile-reset" type="button">
+              Reset
+            </button>
+            <button id="profile-save" class="profile-save" type="button">
+              Save
+            </button>
           </div>
         </div>
       </section>
     </div>
 
-    <div id="app-menu" class="context-menu app-menu hidden" role="menu" aria-label="Presence status">
+    <div
+      id="app-menu"
+      class="context-menu app-menu hidden"
+      role="menu"
+      aria-label="Presence status"
+    >
       <div class="context-menu-group" aria-label="Presence status">
         <span class="context-menu-label">Set your status</span>
         <button
@@ -2017,15 +3467,54 @@
         <i class="fa-solid fa-reply" aria-hidden="true"></i>
         <span>Reply</span>
       </button>
-      <div class="context-menu-group reaction-menu" aria-label="React with emoji">
+      <div
+        class="context-menu-group reaction-menu"
+        aria-label="React with emoji"
+      >
         <span class="context-menu-label">React</span>
         <div id="message-reaction-options" class="reaction-options">
-          <button type="button" data-reaction="👍" aria-label="React with thumbs up">👍</button>
-          <button type="button" data-reaction="❤️" aria-label="React with heart">❤️</button>
-          <button type="button" data-reaction="😂" aria-label="React with laughing face">😂</button>
-          <button type="button" data-reaction="😮" aria-label="React with surprised face">😮</button>
-          <button type="button" data-reaction="😢" aria-label="React with sad face">😢</button>
-          <button type="button" data-reaction="🙏" aria-label="React with folded hands">🙏</button>
+          <button
+            type="button"
+            data-reaction="👍"
+            aria-label="React with thumbs up"
+          >
+            👍
+          </button>
+          <button
+            type="button"
+            data-reaction="❤️"
+            aria-label="React with heart"
+          >
+            ❤️
+          </button>
+          <button
+            type="button"
+            data-reaction="😂"
+            aria-label="React with laughing face"
+          >
+            😂
+          </button>
+          <button
+            type="button"
+            data-reaction="😮"
+            aria-label="React with surprised face"
+          >
+            😮
+          </button>
+          <button
+            type="button"
+            data-reaction="😢"
+            aria-label="React with sad face"
+          >
+            😢
+          </button>
+          <button
+            type="button"
+            data-reaction="🙏"
+            aria-label="React with folded hands"
+          >
+            🙏
+          </button>
         </div>
       </div>
       <button id="menu-save-file" class="hidden" type="button" role="menuitem">
@@ -2055,26 +3544,85 @@
       </button>
     </div>
 
-    <div id="chat-more-menu" class="context-menu chat-more-menu hidden" role="menu" aria-label="Chat options">
-      <button id="chat-menu-contact-info" type="button" role="menuitem"><i class="fa-solid fa-user-shield" aria-hidden="true"></i><span>Contact info</span></button>
-      <button id="chat-menu-search" type="button" role="menuitem"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span>Search</span></button>
-      <button id="chat-menu-select" type="button" role="menuitem"><i class="fa-solid fa-check-double" aria-hidden="true"></i><span>Select messages</span></button>
-      <button id="chat-menu-mute" type="button" role="menuitem"><i class="fa-solid fa-bell-slash" aria-hidden="true"></i><span>Mute notifications</span></button>
-      <button id="chat-menu-export" type="button" role="menuitem"><i class="fa-solid fa-file-export" aria-hidden="true"></i><span>Export chat</span></button>
+    <div
+      id="chat-more-menu"
+      class="context-menu chat-more-menu hidden"
+      role="menu"
+      aria-label="Chat options"
+    >
+      <button id="chat-menu-contact-info" type="button" role="menuitem">
+        <i class="fa-solid fa-user-shield" aria-hidden="true"></i
+        ><span>Contact info</span>
+      </button>
+      <button id="chat-menu-search" type="button" role="menuitem">
+        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i
+        ><span>Search</span>
+      </button>
+      <button id="chat-menu-select" type="button" role="menuitem">
+        <i class="fa-solid fa-check-double" aria-hidden="true"></i
+        ><span>Select messages</span>
+      </button>
+      <button id="chat-menu-mute" type="button" role="menuitem">
+        <i class="fa-solid fa-bell-slash" aria-hidden="true"></i
+        ><span>Mute notifications</span>
+      </button>
+      <button id="chat-menu-export" type="button" role="menuitem">
+        <i class="fa-solid fa-file-export" aria-hidden="true"></i
+        ><span>Export chat</span>
+      </button>
       <div class="context-menu-group">
         <span class="context-menu-label">Safety</span>
-        <button id="chat-menu-trust" type="button" role="menuitem"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>Trust</span></button>
-        <button id="chat-menu-block" type="button" role="menuitem" class="danger"><i class="fa-solid fa-ban" aria-hidden="true"></i><span>Block</span></button>
+        <button id="chat-menu-trust" type="button" role="menuitem">
+          <i class="fa-solid fa-shield-halved" aria-hidden="true"></i
+          ><span>Trust</span>
+        </button>
+        <button
+          id="chat-menu-block"
+          type="button"
+          role="menuitem"
+          class="danger"
+        >
+          <i class="fa-solid fa-ban" aria-hidden="true"></i><span>Block</span>
+        </button>
       </div>
-      <button id="clear-chat" type="button" role="menuitem" class="danger"><i class="fa-regular fa-trash-can" aria-hidden="true"></i><span>Clear chat for me</span></button>
-      <button id="clear-chat-everyone" type="button" role="menuitem" class="danger"><i class="fa-solid fa-users-slash" aria-hidden="true"></i><span>Clear chat for everyone</span></button>
+      <button id="clear-chat" type="button" role="menuitem" class="danger">
+        <i class="fa-regular fa-trash-can" aria-hidden="true"></i
+        ><span>Clear chat for me</span>
+      </button>
+      <button
+        id="clear-chat-everyone"
+        type="button"
+        role="menuitem"
+        class="danger"
+      >
+        <i class="fa-solid fa-users-slash" aria-hidden="true"></i
+        ><span>Clear chat for everyone</span>
+      </button>
     </div>
 
-    <div id="details-modal" class="modal-layer hidden" role="dialog" aria-modal="true" aria-labelledby="details-modal-title">
+    <div
+      id="details-modal"
+      class="modal-layer hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="details-modal-title"
+    >
       <section class="modal-panel details-modal-panel">
         <header class="modal-header">
-          <div><span id="details-modal-kicker" class="details-modal-kicker">Details</span><h2 id="details-modal-title">Information</h2></div>
-          <button id="details-modal-close" class="ghost-button icon-only-button" type="button" aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+          <div>
+            <span id="details-modal-kicker" class="details-modal-kicker"
+              >Details</span
+            >
+            <h2 id="details-modal-title">Information</h2>
+          </div>
+          <button
+            id="details-modal-close"
+            class="ghost-button icon-only-button"
+            type="button"
+            aria-label="Close"
+          >
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+          </button>
         </header>
         <div id="details-modal-content" class="details-modal-content"></div>
       </section>
@@ -2260,3 +3808,4 @@
       </div>
     </div>
   </body>
+</html>

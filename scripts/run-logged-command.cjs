@@ -40,7 +40,9 @@ let finished = false;
 function finish(exitCode) {
   if (finished) return;
   finished = true;
-  writeLogLine(`\n[${new Date().toISOString()}] Command finished with exit code ${exitCode}.`);
+  writeLogLine(
+    `\n[${new Date().toISOString()}] Command finished with exit code ${exitCode}.`,
+  );
   logStream.end(() => {
     process.exitCode = exitCode;
   });
@@ -68,11 +70,18 @@ const child = spawn(executable, commandArgs, {
   shell: useShell,
 });
 
-child.stdout.on("data", (chunk) => writeToTerminalAndLog(process.stdout, chunk));
-child.stderr.on("data", (chunk) => writeToTerminalAndLog(process.stderr, chunk));
+child.stdout.on("data", (chunk) =>
+  writeToTerminalAndLog(process.stdout, chunk),
+);
+child.stderr.on("data", (chunk) =>
+  writeToTerminalAndLog(process.stderr, chunk),
+);
 
 child.on("error", (error) => {
-  writeToTerminalAndLog(process.stderr, `Could not start command: ${error.message}\n`);
+  writeToTerminalAndLog(
+    process.stderr,
+    `Could not start command: ${error.message}\n`,
+  );
   finish(1);
 });
 

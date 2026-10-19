@@ -10,8 +10,12 @@ const { getLegalInformation } = legalNoticeTools;
 export default defineConfig({
   define: {
     __PROJECT_CONFIG__: JSON.stringify(projectConfig),
-    __RINGTONE_PRESETS__: JSON.stringify(getRingtonePresets(import.meta.dirname)),
-    __LEGAL_INFORMATION__: JSON.stringify(getLegalInformation(import.meta.dirname)),
+    __RINGTONE_PRESETS__: JSON.stringify(
+      getRingtonePresets(import.meta.dirname),
+    ),
+    __LEGAL_INFORMATION__: JSON.stringify(
+      getLegalInformation(import.meta.dirname),
+    ),
   },
   root: resolve("src/renderer"),
   publicDir: resolve("public"),
@@ -21,7 +25,6 @@ export default defineConfig({
     rolldownOptions: {
       input: {
         index: resolve("src/renderer/index.html"),
-        
       },
     },
   },

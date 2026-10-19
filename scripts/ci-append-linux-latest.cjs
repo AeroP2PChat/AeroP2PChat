@@ -59,7 +59,10 @@ function main() {
     `linuxSize: ${asset.size}`,
   ];
 
-  for (const [prefix, extension] of [["linuxRpm", ".rpm"], ["linuxDeb", ".deb"]]) {
+  for (const [prefix, extension] of [
+    ["linuxRpm", ".rpm"],
+    ["linuxDeb", ".deb"],
+  ]) {
     const packageAsset = assetFor(extension);
     if (!packageAsset) continue;
     lines.push(

@@ -87,7 +87,8 @@ contextBridge.exposeInMainWorld("aeroChat", {
     return () => ipcRenderer.removeListener("app-lock-countdown", listener);
   },
   enableAppLock: (details) => ipcRenderer.invoke("app-lock-enable", details),
-  changeAppLockPin: (details) => ipcRenderer.invoke("app-lock-change-pin", details),
+  changeAppLockPin: (details) =>
+    ipcRenderer.invoke("app-lock-change-pin", details),
   regenerateAppLockCodes: () => ipcRenderer.invoke("app-lock-regenerate-codes"),
   saveAppLockRecoveryCodes: (codes) =>
     ipcRenderer.invoke("app-lock-save-recovery-codes", codes),
@@ -120,11 +121,11 @@ contextBridge.exposeInMainWorld("aeroChat", {
     ipcRenderer.invoke("scan-incoming-file", tempRef),
   getIncomingFileUrl: (tempRef) =>
     ipcRenderer.invoke("get-incoming-file-url", tempRef),
-  cleanupIncomingFiles: () =>
-    ipcRenderer.invoke("cleanup-incoming-files"),
+  cleanupIncomingFiles: () => ipcRenderer.invoke("cleanup-incoming-files"),
   saveCustomSound: (soundId, data) =>
     ipcRenderer.invoke("save-custom-sound", soundId, data),
-  loadCustomSound: (soundId) => ipcRenderer.invoke("load-custom-sound", soundId),
+  loadCustomSound: (soundId) =>
+    ipcRenderer.invoke("load-custom-sound", soundId),
   deleteCustomSound: (soundId) =>
     ipcRenderer.invoke("delete-custom-sound", soundId),
   openCustomSoundsFolder: () => ipcRenderer.invoke("open-custom-sounds-folder"),

@@ -15,12 +15,16 @@ const cancel = document.querySelector("#cancel");
 const reveal = document.querySelector("#reveal");
 
 title.textContent = parameters.get("title") || "Unlock Aero";
-description.textContent = parameters.get("description") || "Enter your PIN or a one-time recovery code.";
+description.textContent =
+  parameters.get("description") ||
+  "Enter your PIN or a one-time recovery code.";
 cancel.hidden = parameters.get("cancel") !== "1";
 
 function formatWait(milliseconds) {
   const seconds = Math.max(1, Math.ceil(Number(milliseconds || 0) / 1000));
-  return seconds < 60 ? `${seconds} seconds` : `${Math.ceil(seconds / 60)} minutes`;
+  return seconds < 60
+    ? `${seconds} seconds`
+    : `${Math.ceil(seconds / 60)} minutes`;
 }
 
 form.addEventListener("submit", async (event) => {
@@ -47,5 +51,11 @@ reveal.addEventListener("click", () => {
 });
 
 cancel.addEventListener("click", () => window.aeroSecurity.cancel());
-document.querySelector("#close").addEventListener("click", () => window.aeroSecurity.cancel());
-document.querySelector("#minimize").addEventListener("click", () => window.aeroSecurity.windowControl("minimize"));
+document
+  .querySelector("#close")
+  .addEventListener("click", () => window.aeroSecurity.cancel());
+document
+  .querySelector("#minimize")
+  .addEventListener("click", () =>
+    window.aeroSecurity.windowControl("minimize"),
+  );

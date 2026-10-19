@@ -24,38 +24,66 @@
         <div><span>Jitter</span><strong id="jitter">—</strong></div>
       </section>
       <section class="details" aria-label="Connection details">
-        <div><span>Connection</span><strong id="connection-state">—</strong></div>
+        <div>
+          <span>Connection</span><strong id="connection-state">—</strong>
+        </div>
         <div><span>ICE</span><strong id="ice-state">—</strong></div>
         <div><span>Media</span><strong id="media-kinds">—</strong></div>
-        <div><span>Incoming codec</span><strong id="incoming-codec">—</strong></div>
-        <div><span>Outgoing codec</span><strong id="outgoing-codec">—</strong></div>
-        <div><span>Playout buffer</span><strong id="playout-delay">—</strong></div>
-        <div><span>Total received</span><strong id="total-received">—</strong></div>
+        <div>
+          <span>Incoming codec</span><strong id="incoming-codec">—</strong>
+        </div>
+        <div>
+          <span>Outgoing codec</span><strong id="outgoing-codec">—</strong>
+        </div>
+        <div>
+          <span>Playout buffer</span><strong id="playout-delay">—</strong>
+        </div>
+        <div>
+          <span>Total received</span><strong id="total-received">—</strong>
+        </div>
         <div><span>Total sent</span><strong id="total-sent">—</strong></div>
-        <div><span>Packets received</span><strong id="packets-received">—</strong></div>
+        <div>
+          <span>Packets received</span><strong id="packets-received">—</strong>
+        </div>
         <div><span>Packets sent</span><strong id="packets-sent">—</strong></div>
         <div><span>Packets lost</span><strong id="packets-lost">—</strong></div>
         <div><span>Video</span><strong id="video-info">—</strong></div>
       </section>
       <section class="charts" aria-label="Call history">
         <section class="chart-card">
-          <div class="chart-label"><strong>Latency</strong><span>90 s</span></div>
+          <div class="chart-label">
+            <strong>Latency</strong><span>90 s</span>
+          </div>
           <canvas id="latency-graph" aria-label="Latency history"></canvas>
         </section>
         <section class="chart-card">
-          <div class="chart-label"><strong>Packet loss</strong><span>90 s</span></div>
+          <div class="chart-label">
+            <strong>Packet loss</strong><span>90 s</span>
+          </div>
           <canvas id="loss-graph" aria-label="Packet loss history"></canvas>
         </section>
         <section class="chart-card">
-          <div class="chart-label"><strong>Incoming</strong><span>kbps · 90 s</span></div>
-          <canvas id="incoming-graph" aria-label="Incoming bitrate history"></canvas>
+          <div class="chart-label">
+            <strong>Incoming</strong><span>kbps · 90 s</span>
+          </div>
+          <canvas
+            id="incoming-graph"
+            aria-label="Incoming bitrate history"
+          ></canvas>
         </section>
         <section class="chart-card">
-          <div class="chart-label"><strong>Outgoing</strong><span>kbps · 90 s</span></div>
-          <canvas id="outgoing-graph" aria-label="Outgoing bitrate history"></canvas>
+          <div class="chart-label">
+            <strong>Outgoing</strong><span>kbps · 90 s</span>
+          </div>
+          <canvas
+            id="outgoing-graph"
+            aria-label="Outgoing bitrate history"
+          ></canvas>
         </section>
         <section class="chart-card">
-          <div class="chart-label"><strong>Jitter</strong><span>ms · 90 s</span></div>
+          <div class="chart-label">
+            <strong>Jitter</strong><span>ms · 90 s</span>
+          </div>
           <canvas id="jitter-graph" aria-label="Jitter history"></canvas>
         </section>
       </section>

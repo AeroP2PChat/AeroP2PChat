@@ -7,7 +7,12 @@ const {
 
 const APP_LOCK_VERSION = 1;
 const RECOVERY_CODE_COUNT = 10;
-const LEGACY_SCRYPT_OPTIONS = { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
+const LEGACY_SCRYPT_OPTIONS = {
+  N: 32768,
+  r: 8,
+  p: 1,
+  maxmem: 64 * 1024 * 1024,
+};
 const SCRYPT_OPTIONS = { N: 32768, r: 8, p: 3, maxmem: 64 * 1024 * 1024 };
 
 function normalizePin(value) {
@@ -19,14 +24,20 @@ function validatePin(value) {
   if (!/^\d{6,12}$/.test(pin)) {
     return { ok: false, error: "Use a PIN with 6 to 12 digits." };
   }
-  if (/^(\d)\1+$/.test(pin) || "01234567890123456789".includes(pin) || "98765432109876543210".includes(pin)) {
+  if (
+    /^(\d)\1+$/.test(pin) ||
+    "01234567890123456789".includes(pin) ||
+    "98765432109876543210".includes(pin)
+  ) {
     return { ok: false, error: "Choose a less predictable PIN." };
   }
   return { ok: true, pin };
 }
 
 function normalizeRecoveryCode(value) {
-  return String(value ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  return String(value ?? "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
 }
 
 function getPinScryptOptions(pinRecord = {}) {
@@ -65,7 +76,9 @@ function createRecoveryRecord(codes) {
   const salt = randomBytes(16).toString("base64");
   return {
     salt,
-    hashes: codes.map((code) => hashRecoveryCode(code, salt).toString("base64")),
+    hashes: codes.map((code) =>
+      hashRecoveryCode(code, salt).toString("base64"),
+    ),
   };
 }
 
@@ -141,10 +154,7 @@ function getAutoLockRemainingSeconds(
 ) {
   const duration = Math.max(1, Math.floor(Number(durationSeconds) || 0));
   const idle = Math.max(0, Math.floor(Number(systemIdleSeconds) || 0));
-  const unlockedFor = Math.max(
-    0,
-    Math.floor(Number(secondsSinceUnlock) || 0),
-  );
+  const unlockedFor = Math.max(0, Math.floor(Number(secondsSinceUnlock) || 0));
   return Math.max(0, duration - Math.min(idle, unlockedFor));
 }
 
@@ -153,7 +163,11 @@ function secureEqual(actual, expectedBase64) {
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
-function verifyAppLockCredential(recordValue, credentialValue, now = Date.now()) {
+function verifyAppLockCredential(
+  recordValue,
+  credentialValue,
+  now = Date.now(),
+) {
   const record = assertAppLockRecord(recordValue);
   const blockedUntil = Number(record.blockedUntil) || 0;
   if (blockedUntil > now) {

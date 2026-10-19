@@ -56,20 +56,16 @@ function closeToast(id) {
 }
 
 function showToast(details) {
-  const {
-    id,
-    title,
-    body,
-    kind,
-    variant,
-    peerId,
-    callId,
-    theme,
-    accent,
-  } = details;
+  const { id, title, body, kind, variant, peerId, callId, theme, accent } =
+    details;
 
   // Apply theme
-  document.body.className = theme === "light" ? "light-theme" : theme === "ultra-dark" ? "ultra-dark-theme" : "";
+  document.body.className =
+    theme === "light"
+      ? "light-theme"
+      : theme === "ultra-dark"
+        ? "ultra-dark-theme"
+        : "";
 
   // Enforce max 1 toast at a time: close all currently active toasts instantly without animation
   // This prevents the window from temporarily expanding to fit 2 toasts, which causes a visual jump.
@@ -117,7 +113,9 @@ function showToast(details) {
     }
 
     toastEl.innerHTML = html;
-    toastEl.querySelector(".toast-header")?.prepend(createToastAvatar(title, peerId));
+    toastEl
+      .querySelector(".toast-header")
+      ?.prepend(createToastAvatar(title, peerId));
 
     // Close button logic
     const closeBtn = toastEl.querySelector(`#btn-close-${id}`);

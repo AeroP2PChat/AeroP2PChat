@@ -29,8 +29,14 @@ assert(
 );
 
 const created = createAppLockRecord("604927", 1_000);
-assert(created.recoveryCodes.length === 10, "Recovery code count is incorrect.");
-assert(!JSON.stringify(created.record).includes("604927"), "PIN was stored in plaintext.");
+assert(
+  created.recoveryCodes.length === 10,
+  "Recovery code count is incorrect.",
+);
+assert(
+  !JSON.stringify(created.record).includes("604927"),
+  "PIN was stored in plaintext.",
+);
 assert(
   !JSON.stringify(created.record).includes(created.recoveryCodes[0]),
   "Recovery code was stored in plaintext.",
@@ -54,10 +60,18 @@ assert(
   "A legacy App Lock PIN was not upgraded after authentication.",
 );
 
-result = verifyAppLockCredential(result.record, created.recoveryCodes[0], 3_000);
+result = verifyAppLockCredential(
+  result.record,
+  created.recoveryCodes[0],
+  3_000,
+);
 assert(result.ok && result.usedRecoveryCode, "Recovery code was rejected.");
 const afterRecovery = result.record;
-result = verifyAppLockCredential(afterRecovery, created.recoveryCodes[0], 4_000);
+result = verifyAppLockCredential(
+  afterRecovery,
+  created.recoveryCodes[0],
+  4_000,
+);
 assert(!result.ok, "A recovery code was accepted twice.");
 
 let throttled = created.record;
@@ -65,15 +79,25 @@ for (let attempt = 0; attempt < 5; attempt += 1) {
   throttled = verifyAppLockCredential(throttled, "000000", 10_000).record;
 }
 result = verifyAppLockCredential(throttled, "604927", 10_001);
-assert(result.blocked && result.retryAfterMs > 0, "Failed attempts were not throttled.");
+assert(
+  result.blocked && result.retryAfterMs > 0,
+  "Failed attempts were not throttled.",
+);
 
 const replaced = replaceAppLockPin(created.record, "804927", 20_000);
-assert(verifyAppLockCredential(replaced.record, "804927", 21_000).ok, "New PIN failed.");
-assert(!verifyAppLockCredential(replaced.record, "604927", 21_000).ok, "Old PIN still works.");
+assert(
+  verifyAppLockCredential(replaced.record, "804927", 21_000).ok,
+  "New PIN failed.",
+);
+assert(
+  !verifyAppLockCredential(replaced.record, "604927", 21_000).ok,
+  "Old PIN still works.",
+);
 
 const regenerated = regenerateRecoveryCodes(created.record, 30_000);
 assert(
-  !verifyAppLockCredential(regenerated.record, created.recoveryCodes[1], 31_000).ok,
+  !verifyAppLockCredential(regenerated.record, created.recoveryCodes[1], 31_000)
+    .ok,
   "Old recovery code survived regeneration.",
 );
 

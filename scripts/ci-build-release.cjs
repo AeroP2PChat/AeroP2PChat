@@ -19,21 +19,25 @@ function parseArgs() {
   const options = { platform: "", version: packageInfo.version };
   for (const arg of process.argv.slice(2)) {
     if (arg.startsWith("--platform=")) options.platform = arg.slice(11);
-    else if (arg.startsWith("--version=")) options.version = arg.slice(10).replace(/^v/, "");
-    else if (arg !== "--preserve-build") throw new Error(`Unknown option: ${arg}`);
+    else if (arg.startsWith("--version="))
+      options.version = arg.slice(10).replace(/^v/, "");
+    else if (arg !== "--preserve-build")
+      throw new Error(`Unknown option: ${arg}`);
   }
-  if (!["linux", "windows"].includes(options.platform)) throw new Error("Missing --platform=linux|windows");
+  if (!["linux", "windows"].includes(options.platform))
+    throw new Error("Missing --platform=linux|windows");
   if (options.version !== packageInfo.version) {
-    throw new Error(`Requested version ${options.version} does not match package.json ${packageInfo.version}.`);
+    throw new Error(
+      `Requested version ${options.version} does not match package.json ${packageInfo.version}.`,
+    );
   }
   return options;
 }
 
 function run(command, args) {
-  const windowsNpm = process.platform === "win32" && ["npm", "npx"].includes(command);
-  const executable = windowsNpm
-    ? process.env.ComSpec || "cmd.exe"
-    : command;
+  const windowsNpm =
+    process.platform === "win32" && ["npm", "npx"].includes(command);
+  const executable = windowsNpm ? process.env.ComSpec || "cmd.exe" : command;
   const commandArgs = windowsNpm
     ? ["/d", "/s", "/c", `${command}.cmd`, ...args]
     : args;
@@ -44,7 +48,8 @@ function run(command, args) {
     env: { ...process.env, ELECTRON_RUN_AS_NODE: "" },
   });
   if (result.error) throw result.error;
-  if (result.status !== 0) throw new Error(`${command} ${args.join(" ")} failed.`);
+  if (result.status !== 0)
+    throw new Error(`${command} ${args.join(" ")} failed.`);
 }
 
 function hashes(filePath) {
@@ -58,7 +63,8 @@ function hashes(filePath) {
 
 function copyArtifact(sourceDir, sourceName, targetName = sourceName) {
   const source = path.join(sourceDir, sourceName);
-  if (!fs.existsSync(source)) throw new Error(`Build artifact not found: ${source}`);
+  if (!fs.existsSync(source))
+    throw new Error(`Build artifact not found: ${source}`);
   const target = path.join(artifactsDir, targetName);
   fs.copyFileSync(source, target);
   return { name: targetName, ...hashes(target) };
@@ -67,32 +73,42 @@ function copyArtifact(sourceDir, sourceName, targetName = sourceName) {
 function resetPlatformOutput(platform) {
   fs.rmSync(path.join(buildDir, platform), { recursive: true, force: true });
   fs.mkdirSync(artifactsDir, { recursive: true });
-  const platformArtifacts = platform === "windows"
-    ? [
-        config.release.windowsSetupAsset,
-        config.release.windowsStoreMsixAsset,
-        // Remove packages produced before the Store migration to MSIX.
-        "Aero-P2P-Chat-Microsoft-Store-x64.appx",
-        "update_manifest_windows.json",
-      ]
-    : [
-        config.release.linuxAppImageAsset,
-        config.release.linuxRpmAsset,
-        config.release.linuxDebAsset,
-        "update_manifest_linux.json",
-      ];
+  const platformArtifacts =
+    platform === "windows"
+      ? [
+          config.release.windowsSetupAsset,
+          config.release.windowsStoreMsixAsset,
+          // Remove packages produced before the Store migration to MSIX.
+          "Aero-P2P-Chat-Microsoft-Store-x64.appx",
+          "update_manifest_windows.json",
+        ]
+      : [
+          config.release.linuxAppImageAsset,
+          config.release.linuxRpmAsset,
+          config.release.linuxDebAsset,
+          "update_manifest_linux.json",
+        ];
   for (const name of platformArtifacts) {
     fs.rmSync(path.join(artifactsDir, name), { force: true });
   }
 }
 
 function buildLinux(version) {
-  if (process.platform !== "linux") throw new Error("Linux packages require a Linux host.");
+  if (process.platform !== "linux")
+    throw new Error("Linux packages require a Linux host.");
   resetPlatformOutput("linux");
   run("node", ["scripts/run-electron-vite.cjs", "build"]);
   run(process.execPath, [
-    electronBuilderCli, "--config", "electron-builder.config.cjs",
-    "--linux", "AppImage", "rpm", "deb", "--x64", "--publish", "never",
+    electronBuilderCli,
+    "--config",
+    "electron-builder.config.cjs",
+    "--linux",
+    "AppImage",
+    "rpm",
+    "deb",
+    "--x64",
+    "--publish",
+    "never",
     "--config.directories.output=dist/build/linux",
   ]);
   const output = path.join(buildDir, "linux");
@@ -108,14 +124,22 @@ function buildLinux(version) {
 }
 
 function buildWindows(version) {
-  if (process.platform !== "win32") throw new Error("Windows packages require a Windows host.");
+  if (process.platform !== "win32")
+    throw new Error("Windows packages require a Windows host.");
   resetPlatformOutput("windows");
   run("node", ["scripts/run-electron-vite.cjs", "build"]);
   run(process.execPath, [
-    electronBuilderCli, "--config", "electron-builder.config.cjs",
+    electronBuilderCli,
+    "--config",
+    "electron-builder.config.cjs",
     // Build both installers from one packaged app. Separate invocations make
     // electron-builder rebuild dependencies and win-unpacked twice.
-    "--win", "msi", "appx", "--x64", "--publish", "never",
+    "--win",
+    "msi",
+    "appx",
+    "--x64",
+    "--publish",
+    "never",
     "--config.directories.output=dist/build/windows",
   ]);
   const output = path.join(buildDir, "windows");

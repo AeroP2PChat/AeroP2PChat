@@ -42,22 +42,31 @@ const ownIdPrivacyToggle = document.querySelector("#toggle-own-id-privacy");
 const copyId = document.querySelector("#copy-id");
 const connectForm = document.querySelector("#connect-form");
 const remoteIdInput = document.querySelector("#remote-id");
-const remoteIdPrivacyToggle = document.querySelector("#toggle-remote-id-privacy");
+const remoteIdPrivacyToggle = document.querySelector(
+  "#toggle-remote-id-privacy",
+);
 const connectButton = document.querySelector("#connect-button");
 const ownIdModal = document.querySelector("#connection-panel");
 const connectModal = ownIdModal;
 const ownIdModalMount = document.querySelector("#own-id-modal-mount");
 const connectModalMount = document.querySelector("#connect-modal-mount");
-const openConnectionModalButton = document.querySelector("#open-connection-modal");
+const openConnectionModalButton = document.querySelector(
+  "#open-connection-modal",
+);
 const connectionTabs = [...document.querySelectorAll("[data-connection-tab]")];
-const connectionPanels = [...document.querySelectorAll("[data-connection-panel]")];
+const connectionPanels = [
+  ...document.querySelectorAll("[data-connection-panel]"),
+];
 let isOwnIdBlurred = true;
 let isRemoteIdBlurred = true;
 let connectionPanelCloseTimer = null;
 const sidebarIdCard = document.querySelector(".connection-panel .id-card");
-const sidebarConnectForm = document.querySelector(".connection-panel .connect-form");
+const sidebarConnectForm = document.querySelector(
+  ".connection-panel .connect-form",
+);
 if (ownIdModalMount && sidebarIdCard) ownIdModalMount.append(sidebarIdCard);
-if (connectModalMount && sidebarConnectForm) connectModalMount.append(sidebarConnectForm);
+if (connectModalMount && sidebarConnectForm)
+  connectModalMount.append(sidebarConnectForm);
 const statusDot = document.querySelector("#status-dot");
 const statusText = document.querySelector("#status-text");
 const titlebarStatus = document.querySelector(".titlebar-status");
@@ -73,14 +82,28 @@ const changelogClose = document.querySelector("#changelog-close");
 const changelogRefresh = document.querySelector("#changelog-refresh");
 const changelogRetry = document.querySelector("#changelog-retry");
 const changelogImageViewer = document.querySelector("#changelog-image-viewer");
-const changelogImageViewport = document.querySelector("#changelog-image-viewport");
-const changelogImagePreview = document.querySelector("#changelog-image-preview");
-const changelogImageCounter = document.querySelector("#changelog-image-counter");
-const changelogImageCaption = document.querySelector("#changelog-image-caption");
-const changelogImagePrevious = document.querySelector("#changelog-image-previous");
+const changelogImageViewport = document.querySelector(
+  "#changelog-image-viewport",
+);
+const changelogImagePreview = document.querySelector(
+  "#changelog-image-preview",
+);
+const changelogImageCounter = document.querySelector(
+  "#changelog-image-counter",
+);
+const changelogImageCaption = document.querySelector(
+  "#changelog-image-caption",
+);
+const changelogImagePrevious = document.querySelector(
+  "#changelog-image-previous",
+);
 const changelogImageNext = document.querySelector("#changelog-image-next");
-const changelogImageZoomOut = document.querySelector("#changelog-image-zoom-out");
-const changelogImageZoomReset = document.querySelector("#changelog-image-zoom-reset");
+const changelogImageZoomOut = document.querySelector(
+  "#changelog-image-zoom-out",
+);
+const changelogImageZoomReset = document.querySelector(
+  "#changelog-image-zoom-reset",
+);
 const changelogImageZoomIn = document.querySelector("#changelog-image-zoom-in");
 const changelogImageClose = document.querySelector("#changelog-image-close");
 const changelogSource = document.querySelector("#changelog-source");
@@ -120,14 +143,28 @@ const callText = document.querySelector("#call-text");
 const callPeerName = document.querySelector("#call-peer-name");
 const callHealth = document.querySelector("#call-health");
 const callHealthPopover = document.querySelector("#call-health-popover");
-const callHealthPopoverClose = document.querySelector("#call-health-popover-close");
-const callHealthDetailQuality = document.querySelector("#call-health-detail-quality");
-const callHealthDetailState = document.querySelector("#call-health-detail-state");
-const callHealthDetailLatency = document.querySelector("#call-health-detail-latency");
+const callHealthPopoverClose = document.querySelector(
+  "#call-health-popover-close",
+);
+const callHealthDetailQuality = document.querySelector(
+  "#call-health-detail-quality",
+);
+const callHealthDetailState = document.querySelector(
+  "#call-health-detail-state",
+);
+const callHealthDetailLatency = document.querySelector(
+  "#call-health-detail-latency",
+);
 const callHealthDetailLoss = document.querySelector("#call-health-detail-loss");
-const callHealthDetailBitrate = document.querySelector("#call-health-detail-bitrate");
-const callHealthDetailJitter = document.querySelector("#call-health-detail-jitter");
-const callHealthLatencyGraph = document.querySelector("#call-health-latency-graph");
+const callHealthDetailBitrate = document.querySelector(
+  "#call-health-detail-bitrate",
+);
+const callHealthDetailJitter = document.querySelector(
+  "#call-health-detail-jitter",
+);
+const callHealthLatencyGraph = document.querySelector(
+  "#call-health-latency-graph",
+);
 const callHealthLossGraph = document.querySelector("#call-health-loss-graph");
 const callAccept = document.querySelector("#call-accept");
 const callDecline = document.querySelector("#call-decline");
@@ -173,7 +210,9 @@ const chatSearchInput = document.querySelector("#chat-search-input");
 const chatSearchCount = document.querySelector("#chat-search-count");
 const chatSearchClose = document.querySelector("#chat-search-close");
 const messageSelectionBar = document.querySelector("#message-selection-bar");
-const messageSelectionCount = document.querySelector("#message-selection-count");
+const messageSelectionCount = document.querySelector(
+  "#message-selection-count",
+);
 const selectionCopy = document.querySelector("#selection-copy");
 const selectionDelete = document.querySelector("#selection-delete");
 const selectionClose = document.querySelector("#selection-close");
@@ -186,7 +225,9 @@ const fileAttachButton = document.querySelector("#file-attach-button");
 const fileAttachInput = document.querySelector("#file-attach-input");
 const emojiPickerButton = document.querySelector("#emoji-picker-button");
 const emojiPickerPopover = document.querySelector("#emoji-picker-popover");
-const emojiShortcodePopover = document.querySelector("#emoji-shortcode-popover");
+const emojiShortcodePopover = document.querySelector(
+  "#emoji-shortcode-popover",
+);
 const voiceRecordStatus = document.querySelector("#voice-record-status");
 const headerUpdateButton = document.querySelector("#header-update-button");
 const updateCard = document.querySelector("#update-card");
@@ -201,12 +242,18 @@ const startupUpdateModal = document.querySelector("#startup-update-modal");
 const startupUpdateTitle = document.querySelector("#startup-update-title");
 const startupUpdateText = document.querySelector("#startup-update-text");
 const startupUpdateClose = document.querySelector("#startup-update-close");
-const startupUpdateIgnoreButton = document.querySelector("#startup-update-ignore-button");
-const startupUpdateFallbackButton = document.querySelector("#startup-update-fallback");
+const startupUpdateIgnoreButton = document.querySelector(
+  "#startup-update-ignore-button",
+);
+const startupUpdateFallbackButton = document.querySelector(
+  "#startup-update-fallback",
+);
 const startupUpdateButton = document.querySelector("#startup-update-button");
 const checkUpdatesButton = document.querySelector("#check-updates-button");
 const updateCheckStatus = document.querySelector("#update-check-status");
-const autoDownloadUpdatesToggle = document.querySelector("#auto-download-updates-toggle");
+const autoDownloadUpdatesToggle = document.querySelector(
+  "#auto-download-updates-toggle",
+);
 const updatePlatformNote = document.querySelector("#update-platform-note");
 let startupUpdateModalShownForVersion = "";
 let updateSettingsStatus = "";
@@ -225,11 +272,17 @@ const appDialogClose = document.querySelector("#app-dialog-close");
 const appDialogCancel = document.querySelector("#app-dialog-cancel");
 const appDialogConfirm = document.querySelector("#app-dialog-confirm");
 const appDialogCheckbox = document.querySelector("#app-dialog-checkbox");
-const appDialogCheckboxInput = document.querySelector("#app-dialog-checkbox-input");
-const appDialogCheckboxLabel = document.querySelector("#app-dialog-checkbox-label");
+const appDialogCheckboxInput = document.querySelector(
+  "#app-dialog-checkbox-input",
+);
+const appDialogCheckboxLabel = document.querySelector(
+  "#app-dialog-checkbox-label",
+);
 const appDialogLinkDetails = document.querySelector("#app-dialog-link-details");
 const appDialogLinkUrl = document.querySelector("#app-dialog-link-url");
-const appDialogLinkDomainValue = document.querySelector("#app-dialog-link-domain-value");
+const appDialogLinkDomainValue = document.querySelector(
+  "#app-dialog-link-domain-value",
+);
 const welcomeScreen = document.querySelector("#welcome-screen");
 const welcomeStepLabel = document.querySelector("#welcome-step-label");
 const welcomePages = Array.from(
@@ -245,7 +298,9 @@ const welcomeNickname = document.querySelector("#welcome-nickname");
 const welcomeThemeSystem = document.querySelector("#welcome-theme-system");
 const welcomeThemeLight = document.querySelector("#welcome-theme-light");
 const welcomeThemeDark = document.querySelector("#welcome-theme-dark");
-const welcomeThemeUltraDark = document.querySelector("#welcome-theme-ultra-dark");
+const welcomeThemeUltraDark = document.querySelector(
+  "#welcome-theme-ultra-dark",
+);
 const welcomeAccentColorSelect = document.querySelector(
   "#welcome-accent-color-select",
 );
@@ -279,7 +334,9 @@ const settingsModal = document.querySelector("#settings-modal");
 const settingsClose = document.querySelector("#settings-close");
 const settingsSearchInput = document.querySelector("#settings-search-input");
 const settingsSearchClear = document.querySelector("#settings-search-clear");
-const settingsSearchResults = document.querySelector("#settings-search-results");
+const settingsSearchResults = document.querySelector(
+  "#settings-search-results",
+);
 const settingsNavItems = Array.from(
   document.querySelectorAll("[data-settings-nav]"),
 );
@@ -291,7 +348,9 @@ let activeSettingsPage = "";
 let settingsSearchResultsCache = [];
 const resetAllSettingsButton = document.querySelector("#reset-all-settings");
 const fullAppResetButton = document.querySelector("#full-app-reset");
-const reopenWelcomeScreenButton = document.querySelector("#reopen-welcome-screen");
+const reopenWelcomeScreenButton = document.querySelector(
+  "#reopen-welcome-screen",
+);
 const appLockSummary = document.querySelector("#app-lock-summary");
 const appLockState = document.querySelector("#app-lock-state");
 const appLockSetup = document.querySelector("#app-lock-setup");
@@ -321,12 +380,20 @@ const profileAvatarPreview = document.querySelector("#profile-avatar-preview");
 const profileId = document.querySelector("#profile-id");
 const profileNickname = document.querySelector("#profile-nickname");
 const profileNameFont = document.querySelector("#profile-name-font");
-const profileNameThemeColor = document.querySelector("#profile-name-theme-color");
+const profileNameThemeColor = document.querySelector(
+  "#profile-name-theme-color",
+);
 const profileNameColor = document.querySelector("#profile-name-color");
-const profileNameColorValue = document.querySelector("#profile-name-color-value");
+const profileNameColorValue = document.querySelector(
+  "#profile-name-color-value",
+);
 const profileNameColorField = profileNameColor.closest(".profile-color-field");
-const profileNamePreviewLight = document.querySelector("#profile-name-preview-light");
-const profileNamePreviewDark = document.querySelector("#profile-name-preview-dark");
+const profileNamePreviewLight = document.querySelector(
+  "#profile-name-preview-light",
+);
+const profileNamePreviewDark = document.querySelector(
+  "#profile-name-preview-dark",
+);
 const profileReset = document.querySelector("#profile-reset");
 const profileSave = document.querySelector("#profile-save");
 const profileSettingsMount = document.querySelector("#profile-settings-mount");
@@ -347,7 +414,9 @@ const compactLayoutToggle = document.querySelector("#compact-layout-toggle");
 const reduceMotionToggle = document.querySelector("#reduce-motion-toggle");
 const resetSidebarWidthButton = document.querySelector("#reset-sidebar-width");
 const localThemeList = document.querySelector("#local-theme-list");
-const themeTabButtons = Array.from(document.querySelectorAll("[data-theme-tab]"));
+const themeTabButtons = Array.from(
+  document.querySelectorAll("[data-theme-tab]"),
+);
 const themePanels = Array.from(document.querySelectorAll("[data-theme-panel]"));
 const onlineThemeUrlsInput = document.querySelector("#online-theme-urls");
 const applyOnlineThemesButton = document.querySelector("#apply-online-themes");
@@ -397,24 +466,46 @@ const focusedNotificationsToggle = document.querySelector(
   "#focused-notifications-toggle",
 );
 const readReceiptsToggle = document.querySelector("#read-receipts-toggle");
-const voiceAutoDownloadToggle = document.querySelector("#voice-auto-download-toggle");
+const voiceAutoDownloadToggle = document.querySelector(
+  "#voice-auto-download-toggle",
+);
 const voiceWaveformToggle = document.querySelector("#voice-waveform-toggle");
-const fileAutoDownloadToggle = document.querySelector("#file-auto-download-toggle");
-const fileDownloadModeSelect = document.querySelector("#file-download-mode-select");
-const fileDownloadFolderRow = document.querySelector("#file-download-folder-row");
-const fileDownloadFolderLabel = document.querySelector("#file-download-folder-label");
-const fileDownloadFolderButton = document.querySelector("#file-download-folder-button");
-const fileDownloadPlatformNote = document.querySelector("#file-download-platform-note");
+const fileAutoDownloadToggle = document.querySelector(
+  "#file-auto-download-toggle",
+);
+const fileDownloadModeSelect = document.querySelector(
+  "#file-download-mode-select",
+);
+const fileDownloadFolderRow = document.querySelector(
+  "#file-download-folder-row",
+);
+const fileDownloadFolderLabel = document.querySelector(
+  "#file-download-folder-label",
+);
+const fileDownloadFolderButton = document.querySelector(
+  "#file-download-folder-button",
+);
+const fileDownloadPlatformNote = document.querySelector(
+  "#file-download-platform-note",
+);
 const trustedDomainsStatus = document.querySelector("#trusted-domains-status");
-const clearTrustedDomainsButton = document.querySelector("#clear-trusted-domains");
-const trustedDefaultDomainsCount = document.querySelector("#trusted-default-domains-count");
-const trustedDefaultDomainsList = document.querySelector("#trusted-default-domains-list");
+const clearTrustedDomainsButton = document.querySelector(
+  "#clear-trusted-domains",
+);
+const trustedDefaultDomainsCount = document.querySelector(
+  "#trusted-default-domains-count",
+);
+const trustedDefaultDomainsList = document.querySelector(
+  "#trusted-default-domains-list",
+);
 const soundsToggle = document.querySelector("#sounds-toggle");
 const messageSoundToggle = document.querySelector("#message-sound-toggle");
 const ringtoneSoundToggle = document.querySelector("#ringtone-sound-toggle");
 const ringtoneLoopToggle = document.querySelector("#ringtone-loop-toggle");
 const ringtonePresetSelect = document.querySelector("#ringtone-preset-select");
-const ringtonePreviewButton = document.querySelector("#ringtone-preview-button");
+const ringtonePreviewButton = document.querySelector(
+  "#ringtone-preview-button",
+);
 const callEventSoundToggle = document.querySelector("#call-event-sound-toggle");
 const connectedSoundToggle = document.querySelector("#connected-sound-toggle");
 const customSoundList = document.querySelector("#custom-sound-list");
@@ -428,19 +519,25 @@ const customSoundSave = document.querySelector("#custom-sound-save");
 const customSoundFileName = document.querySelector("#custom-sound-file-name");
 const customSoundPreview = document.querySelector("#custom-sound-preview");
 const customSoundPlay = document.querySelector("#custom-sound-play");
-const customSoundCurrentTime = document.querySelector("#custom-sound-current-time");
+const customSoundCurrentTime = document.querySelector(
+  "#custom-sound-current-time",
+);
 const customSoundDuration = document.querySelector("#custom-sound-duration");
 const customSoundProgress = document.querySelector("#custom-sound-progress");
 const customSoundProgressSelection = document.querySelector(
   "#custom-sound-progress-selection",
 );
-const customSoundProgressFill = document.querySelector("#custom-sound-progress-fill");
+const customSoundProgressFill = document.querySelector(
+  "#custom-sound-progress-fill",
+);
 const legalAppLicense = document.querySelector("#legal-app-license");
 const legalAudioLicense = document.querySelector("#legal-audio-license");
 const legalDependencyCount = document.querySelector("#legal-dependency-count");
 const legalLicenseSearch = document.querySelector("#legal-license-search");
 const legalLicenseList = document.querySelector("#legal-license-list");
-const customSoundStartValue = document.querySelector("#custom-sound-start-value");
+const customSoundStartValue = document.querySelector(
+  "#custom-sound-start-value",
+);
 const customSoundEndValue = document.querySelector("#custom-sound-end-value");
 const customSoundWaveform = document.querySelector("#custom-sound-waveform");
 const customSoundWaveformCanvas = document.querySelector(
@@ -456,14 +553,18 @@ const customSoundNormalize = document.querySelector("#custom-sound-normalize");
 const customSoundStatus = document.querySelector("#custom-sound-status");
 const customSoundFileInput = document.querySelector("#custom-sound-file-input");
 const customWallpaperList = document.querySelector("#custom-wallpaper-list");
-const customWallpaperFileInput = document.querySelector("#custom-wallpaper-file-input");
+const customWallpaperFileInput = document.querySelector(
+  "#custom-wallpaper-file-input",
+);
 const openCustomWallpapersFolderButton = document.querySelector(
   "#open-custom-wallpapers-folder",
 );
 const wallpaperAccentTintToggle = document.querySelector(
   "#wallpaper-accent-tint-toggle",
 );
-const wallpaperEnabledToggle = document.querySelector("#wallpaper-enabled-toggle");
+const wallpaperEnabledToggle = document.querySelector(
+  "#wallpaper-enabled-toggle",
+);
 const wallpaperBootToggle = document.querySelector("#wallpaper-boot-toggle");
 const contactNicknameList = document.querySelector("#contact-nickname-list");
 const blockedList = document.querySelector("#blocked-list");
@@ -474,10 +575,6 @@ const appMenuOffline = document.querySelector("#app-menu-offline");
 const appMenuUpdate = document.querySelector("#app-menu-update");
 const updateAvailableBadge = document.querySelector("#update-available-badge");
 const appMenuUpdateIgnore = document.querySelector("#app-menu-update-ignore");
-
-
-
-
 
 const appMenuSettings = document.querySelector("#app-menu-settings");
 
@@ -494,7 +591,9 @@ const menuDelete = document.querySelector("#menu-delete");
 const menuDeleteEveryone = document.querySelector("#menu-delete-everyone");
 const menuMessageInfo = document.querySelector("#menu-message-info");
 const menuReply = document.querySelector("#menu-reply");
-const messageReactionOptions = document.querySelector("#message-reaction-options");
+const messageReactionOptions = document.querySelector(
+  "#message-reaction-options",
+);
 const detailsModal = document.querySelector("#details-modal");
 const detailsModalKicker = document.querySelector("#details-modal-kicker");
 const detailsModalTitle = document.querySelector("#details-modal-title");
@@ -519,9 +618,7 @@ const streamMenuFullscreen = document.querySelector("#stream-menu-fullscreen");
 const streamMenuStop = document.querySelector("#stream-menu-stop");
 const streamSizeMenu = document.querySelector("#stream-size-menu");
 const streamSizeBigger = document.querySelector("#stream-size-bigger");
-const streamSizeFullscreen = document.querySelector(
-  "#stream-size-fullscreen",
-);
+const streamSizeFullscreen = document.querySelector("#stream-size-fullscreen");
 const mobileTabContacts = document.querySelector("#mobile-tab-contacts");
 const mobileTabChat = document.querySelector("#mobile-tab-chat");
 const mobileTabSettings = document.querySelector("#mobile-tab-settings");
@@ -635,9 +732,7 @@ const DEFAULT_MIC_EQ_MID = 0;
 const DEFAULT_MIC_EQ_HIGH = 0;
 const DEFAULT_SIDEBAR_WIDTH = 360;
 const systemThemeQuery = window.matchMedia("(prefers-color-scheme: dark)");
-const DEFAULT_THEME = systemThemeQuery.matches
-  ? "dark"
-  : "light";
+const DEFAULT_THEME = systemThemeQuery.matches ? "dark" : "light";
 const appearanceAccentStyle = document.createElement("style");
 appearanceAccentStyle.id = "appearance-accent-style";
 document.head.append(appearanceAccentStyle);
@@ -704,16 +799,26 @@ const callLeaveAudio = new Audio("sound/call-leave.ogg");
 const connectedAudio = new Audio("sound/connected.ogg");
 const messageAudio = new Audio("sound/message.ogg");
 const ringtonePresets = Array.isArray(__RINGTONE_PRESETS__)
-  ? __RINGTONE_PRESETS__.filter((preset) =>
-      preset && typeof preset.id === "string" && typeof preset.name === "string" &&
-      typeof preset.author === "string" && typeof preset.isDefault === "boolean" &&
-      typeof preset.source === "string",
+  ? __RINGTONE_PRESETS__.filter(
+      (preset) =>
+        preset &&
+        typeof preset.id === "string" &&
+        typeof preset.name === "string" &&
+        typeof preset.author === "string" &&
+        typeof preset.isDefault === "boolean" &&
+        typeof preset.source === "string",
     )
   : [];
-const defaultRingtonePreset =
-  ringtonePresets.find((preset) => preset.isDefault) ||
-  ringtonePresets[0] ||
-  { id: "", author: "", name: "Unavailable", source: "", isDefault: true };
+const defaultRingtonePreset = ringtonePresets.find(
+  (preset) => preset.isDefault,
+) ||
+  ringtonePresets[0] || {
+    id: "",
+    author: "",
+    name: "Unavailable",
+    source: "",
+    isDefault: true,
+  };
 const ringtoneAudio = new Audio(defaultRingtonePreset.source);
 const ringtonePreviewAudio = new Audio();
 const CUSTOM_SOUND_MAX_SOURCE_BYTES = 25 * 1024 * 1024;
@@ -725,15 +830,31 @@ const CUSTOM_WALLPAPER_MAX_OUTPUT_BYTES = 8 * 1024 * 1024;
 const CUSTOM_WALLPAPER_MAX_PIXELS = 4_194_304;
 const CUSTOM_WALLPAPER_MAX_DIMENSION = 2560;
 const customSoundDefinitions = {
-  message: { label: "Message", audio: messageAudio, source: "sound/message.ogg" },
+  message: {
+    label: "Message",
+    audio: messageAudio,
+    source: "sound/message.ogg",
+  },
   ringtone: {
     label: "Incoming call ringtone",
     audio: ringtoneAudio,
     source: defaultRingtonePreset.source,
   },
-  "call-join": { label: "Call joined", audio: callJoinAudio, source: "sound/call-join.ogg" },
-  "call-leave": { label: "Call ended", audio: callLeaveAudio, source: "sound/call-leave.ogg" },
-  connected: { label: "Peer connected", audio: connectedAudio, source: "sound/connected.ogg" },
+  "call-join": {
+    label: "Call joined",
+    audio: callJoinAudio,
+    source: "sound/call-join.ogg",
+  },
+  "call-leave": {
+    label: "Call ended",
+    audio: callLeaveAudio,
+    source: "sound/call-leave.ogg",
+  },
+  connected: {
+    label: "Peer connected",
+    audio: connectedAudio,
+    source: "sound/connected.ogg",
+  },
 };
 const customSoundObjectUrls = new Map();
 const customSoundAvailability = new Map();
@@ -760,7 +881,9 @@ function setRingtonePreviewPlaying(playing) {
   ringtonePreviewButton?.classList.toggle("is-playing", playing);
   const icon = ringtonePreviewButton?.querySelector("i");
   if (icon) icon.className = playing ? "fa-solid fa-stop" : "fa-solid fa-play";
-  const accessibleLabel = playing ? "Stop ringtone preview" : "Preview ringtone";
+  const accessibleLabel = playing
+    ? "Stop ringtone preview"
+    : "Preview ringtone";
   ringtonePreviewButton?.setAttribute("aria-label", accessibleLabel);
   if (ringtonePreviewButton) ringtonePreviewButton.title = accessibleLabel;
 }
@@ -809,8 +932,10 @@ function getSelectedRingtonePreset() {
   const presetId = normalizeRingtonePresetId(
     appConfig?.soundSettings?.ringtonePreset,
   );
-  return ringtonePresets.find((preset) => preset.id === presetId) ||
-    defaultRingtonePreset;
+  return (
+    ringtonePresets.find((preset) => preset.id === presetId) ||
+    defaultRingtonePreset
+  );
 }
 
 function applyBuiltInRingtonePreset() {
@@ -1077,8 +1202,7 @@ const latestManifestUrl = `${latestReleaseUrl}/download/latest.yml`;
 const changelogGistApiUrl =
   "https://api.github.com/gists/57f4fc6d54f13b545152c76312d8554f";
 const linuxInstallCommand = `${linuxTerminalCommandName} update`;
-const linuxWebsiteUpdateCommand =
-  `bash <(curl -fsSL ${githubRawBaseUrl}/install.sh) update`;
+const linuxWebsiteUpdateCommand = `bash <(curl -fsSL ${githubRawBaseUrl}/install.sh) update`;
 const linuxUpdateCommands = {
   installed: linuxInstallCommand,
   website: linuxWebsiteUpdateCommand,
@@ -1092,7 +1216,8 @@ function setTitlebarActionLabel(button, text) {
 const platformApi = createPlatformApi();
 const platform = platformApi.platform;
 platformApi.onAppLockCountdown((state = {}) => {
-  const visible = state.enabled === true && Number.isFinite(state.remainingSeconds);
+  const visible =
+    state.enabled === true && Number.isFinite(state.remainingSeconds);
   appLockCountdown?.classList.toggle("hidden", !visible);
   if (!visible || !appLockCountdownText) return;
   const seconds = Math.max(0, Math.ceil(state.remainingSeconds));
@@ -1121,7 +1246,6 @@ function setDebugSimulateUpdate(enabled) {
   debugSimulateUpdate = nextEnabled;
   checkForUpdates({ manual: true });
 }
-
 
 document.title = appDisplayName;
 document.querySelectorAll("[data-app-name]").forEach((element) => {
@@ -1307,14 +1431,16 @@ async function refreshAppLockStatus() {
   try {
     currentAppLockStatus = await platformApi.getAppLockStatus();
     if (currentAppLockStatus.unsupported) {
-      appLockSummary.textContent = "App Lock is available in the Windows and Linux desktop app.";
+      appLockSummary.textContent =
+        "App Lock is available in the Windows and Linux desktop app.";
       appLockSetup.classList.add("hidden");
       appLockActions.classList.add("hidden");
       return;
     }
     renderAppLockSettings();
   } catch (error) {
-    appLockStatusMessage.textContent = error?.message || "App Lock status could not be loaded.";
+    appLockStatusMessage.textContent =
+      error?.message || "App Lock status could not be loaded.";
   }
 }
 
@@ -1339,7 +1465,13 @@ function stripRetiredIdentityData(config) {
     }
   };
 
-  for (const key of ["loggedIn", "accountUserId", "authToken", "role", "avatar"]) {
+  for (const key of [
+    "loggedIn",
+    "accountUserId",
+    "authToken",
+    "role",
+    "avatar",
+  ]) {
     remove(config?.identity, key);
   }
   for (const contact of config?.contacts || []) {
@@ -1666,7 +1798,9 @@ function loadIdentity() {
   if (appConfig.identity?.id && isValidAeroId(appConfig.identity.id)) {
     appConfig.identity.nickname = sanitizeNickname(appConfig.identity.nickname);
     delete appConfig.identity.avatar;
-    appConfig.identity.nameStyle = normalizeNameStyle(appConfig.identity.nameStyle);
+    appConfig.identity.nameStyle = normalizeNameStyle(
+      appConfig.identity.nameStyle,
+    );
     appConfig.identity.previousIds = getKnownPreviousIdentityIds(
       appConfig.identity.previousIds,
       appConfig.identity.id,
@@ -1737,7 +1871,7 @@ normalizeAppSettings();
 applyAppearancePreferences();
 const hasStartupCustomThemes = Boolean(
   appConfig.appSettings.customTheme ||
-    appConfig.appSettings.onlineThemeUrls?.length,
+  appConfig.appSettings.onlineThemeUrls?.length,
 );
 if (hasStartupCustomThemes) {
   await refreshCustomThemes();
@@ -2344,22 +2478,31 @@ function normalizeCustomSounds(customSounds) {
 
   return Object.fromEntries(
     Object.entries(customSounds)
-      .filter(([soundId, value]) =>
-        Object.hasOwn(customSoundDefinitions, soundId) && value && typeof value === "object",
+      .filter(
+        ([soundId, value]) =>
+          Object.hasOwn(customSoundDefinitions, soundId) &&
+          value &&
+          typeof value === "object",
       )
       .map(([soundId, value]) => [
         soundId,
         {
           name: String(value.name || "Custom sound").slice(0, 120),
           duration: Number.isFinite(value.duration)
-            ? Math.max(0, Math.min(CUSTOM_SOUND_MAX_DURATION_SECONDS, value.duration))
+            ? Math.max(
+                0,
+                Math.min(CUSTOM_SOUND_MAX_DURATION_SECONDS, value.duration),
+              )
             : 0,
           normalized: value.normalized !== false,
           active: value.active !== false,
           sha256: /^[a-f0-9]{64}$/i.test(value.sha256 || "")
             ? String(value.sha256).toLowerCase()
             : "",
-          updatedAt: typeof value.updatedAt === "string" ? value.updatedAt.slice(0, 40) : "",
+          updatedAt:
+            typeof value.updatedAt === "string"
+              ? value.updatedAt.slice(0, 40)
+              : "",
         },
       ]),
   );
@@ -2371,22 +2514,39 @@ function normalizeCustomWallpapers(customWallpapers) {
     Object.entries(customWallpapers)
       .filter(
         ([wallpaperId, value]) =>
-          CUSTOM_WALLPAPER_IDS.includes(wallpaperId) && value && typeof value === "object",
+          CUSTOM_WALLPAPER_IDS.includes(wallpaperId) &&
+          value &&
+          typeof value === "object",
       )
       .map(([wallpaperId, value]) => [
         wallpaperId,
         {
           name: String(value.name || "Custom wallpaper").slice(0, 120),
           width: Number.isFinite(value.width)
-            ? Math.max(1, Math.min(CUSTOM_WALLPAPER_MAX_DIMENSION, Math.round(value.width)))
+            ? Math.max(
+                1,
+                Math.min(
+                  CUSTOM_WALLPAPER_MAX_DIMENSION,
+                  Math.round(value.width),
+                ),
+              )
             : 0,
           height: Number.isFinite(value.height)
-            ? Math.max(1, Math.min(CUSTOM_WALLPAPER_MAX_DIMENSION, Math.round(value.height)))
+            ? Math.max(
+                1,
+                Math.min(
+                  CUSTOM_WALLPAPER_MAX_DIMENSION,
+                  Math.round(value.height),
+                ),
+              )
             : 0,
           sha256: /^[a-f0-9]{64}$/i.test(value.sha256 || "")
             ? String(value.sha256).toLowerCase()
             : "",
-          updatedAt: typeof value.updatedAt === "string" ? value.updatedAt.slice(0, 40) : "",
+          updatedAt:
+            typeof value.updatedAt === "string"
+              ? value.updatedAt.slice(0, 40)
+              : "",
         },
       ]),
   );
@@ -2410,7 +2570,9 @@ function normalizeAppSettings() {
     readReceipts: appConfig.appSettings.readReceipts !== false,
     voiceAutoDownload: Boolean(appConfig.appSettings.voiceAutoDownload),
     voiceWaveform: appConfig.appSettings.voiceWaveform !== false,
-    fileAutoDownloadTrusted: Boolean(appConfig.appSettings.fileAutoDownloadTrusted),
+    fileAutoDownloadTrusted: Boolean(
+      appConfig.appSettings.fileAutoDownloadTrusted,
+    ),
     fileDownloadMode: ["ask", "downloads", "custom"].includes(
       appConfig.appSettings.fileDownloadMode,
     )
@@ -2427,24 +2589,38 @@ function normalizeAppSettings() {
     autoDownloadUpdates: Boolean(appConfig.appSettings.autoDownloadUpdates),
     showUpdateModal: appConfig.appSettings.showUpdateModal !== false,
     trustedLinkDomains: Array.isArray(appConfig.appSettings.trustedLinkDomains)
-      ? [...new Set(appConfig.appSettings.trustedLinkDomains
-          .map(normalizeTrustedLinkDomain)
-          .filter(Boolean))].slice(0, 100)
+      ? [
+          ...new Set(
+            appConfig.appSettings.trustedLinkDomains
+              .map(normalizeTrustedLinkDomain)
+              .filter(Boolean),
+          ),
+        ].slice(0, 100)
       : [],
     presenceStatus: ["online", "dnd", "offline"].includes(
       appConfig.appSettings.presenceStatus,
     )
       ? appConfig.appSettings.presenceStatus
       : "online",
-    theme: ["system", "light", "dark", "ultra-dark"].includes(appConfig.appSettings.theme)
+    theme: ["system", "light", "dark", "ultra-dark"].includes(
+      appConfig.appSettings.theme,
+    )
       ? appConfig.appSettings.theme
       : "system",
-    accentColor: ["system", "aero", "violet", "green", "rose", "amber", "custom"].includes(
-      appConfig.appSettings.accentColor,
-    )
+    accentColor: [
+      "system",
+      "aero",
+      "violet",
+      "green",
+      "rose",
+      "amber",
+      "custom",
+    ].includes(appConfig.appSettings.accentColor)
       ? appConfig.appSettings.accentColor
       : "system",
-    customAccentColor: /^#[0-9a-f]{6}$/i.test(appConfig.appSettings.customAccentColor)
+    customAccentColor: /^#[0-9a-f]{6}$/i.test(
+      appConfig.appSettings.customAccentColor,
+    )
       ? appConfig.appSettings.customAccentColor
       : "#147fa6",
     compactLayout: Boolean(appConfig.appSettings.compactLayout),
@@ -2464,18 +2640,24 @@ function normalizeAppSettings() {
         ? appConfig.appSettings.customTheme
         : "",
     onlineThemeUrls: Array.isArray(appConfig.appSettings.onlineThemeUrls)
-      ? [...new Set(appConfig.appSettings.onlineThemeUrls
-          .map((value) => {
-            try {
-              const url = new URL(String(value || "").trim());
-              return url.protocol === "https:" && !url.username && !url.password
-                ? url.toString()
-                : "";
-            } catch {
-              return "";
-            }
-          })
-          .filter(Boolean))].slice(0, 8)
+      ? [
+          ...new Set(
+            appConfig.appSettings.onlineThemeUrls
+              .map((value) => {
+                try {
+                  const url = new URL(String(value || "").trim());
+                  return url.protocol === "https:" &&
+                    !url.username &&
+                    !url.password
+                    ? url.toString()
+                    : "";
+                } catch {
+                  return "";
+                }
+              })
+              .filter(Boolean),
+          ),
+        ].slice(0, 8)
       : [],
     sidebarWidth: Number.isFinite(appConfig.appSettings.sidebarWidth)
       ? appConfig.appSettings.sidebarWidth
@@ -2524,7 +2706,8 @@ function normalizeAppSettings() {
   appConfig.wallpaperSettings = {
     enabled: appConfig.wallpaperSettings?.enabled !== false,
     tintWithAccent: appConfig.wallpaperSettings?.tintWithAccent === true,
-    useCustomDuringBoot: appConfig.wallpaperSettings?.useCustomDuringBoot !== false,
+    useCustomDuringBoot:
+      appConfig.wallpaperSettings?.useCustomDuringBoot !== false,
     custom: normalizeCustomWallpapers(appConfig.wallpaperSettings?.custom),
   };
 
@@ -2561,9 +2744,7 @@ function getAccentForeground(color) {
     return "#ffffff";
   }
   const [red, green, blue] = channels.map((channel) =>
-    channel <= 0.03928
-      ? channel / 12.92
-      : ((channel + 0.055) / 1.055) ** 2.4,
+    channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
   );
   const luminance = red * 0.2126 + green * 0.7152 + blue * 0.0722;
   const blackContrast = (luminance + 0.05) / 0.05;
@@ -2576,8 +2757,8 @@ function applyAccentColor(accentColor = "system") {
     accentColor === "system"
       ? systemAccentColor
       : accentColor === "custom"
-      ? appConfig.appSettings?.customAccentColor || accentColors.aero
-      : accentColors[accentColor] || accentColors.aero;
+        ? appConfig.appSettings?.customAccentColor || accentColors.aero
+        : accentColors[accentColor] || accentColors.aero;
   const foreground = getAccentForeground(color);
   document.documentElement.style.setProperty("--boot-fill", color);
   document.documentElement.dataset.accentColor = accentColor;
@@ -2589,15 +2770,24 @@ function applyAppearancePreferences() {
   const settings = appConfig.appSettings || {};
   applyAppTheme(settings.theme);
   applyAccentColor(settings.accentColor);
-  document.body.dataset.compactLayout = settings.compactLayout ? "true" : "false";
-  document.body.dataset.messageDensity = settings.messageDensity || "comfortable";
+  document.body.dataset.compactLayout = settings.compactLayout
+    ? "true"
+    : "false";
+  document.body.dataset.messageDensity =
+    settings.messageDensity || "comfortable";
   document.body.dataset.chatFontSize = settings.chatFontSize || "normal";
-  document.body.classList.toggle("reduce-motion", Boolean(settings.reducedMotion));
+  document.body.classList.toggle(
+    "reduce-motion",
+    Boolean(settings.reducedMotion),
+  );
 }
 
 async function refreshSystemAccentColor() {
   const result = await platformApi.getSystemAccentColor();
-  if (typeof result?.color === "string" && /^#[0-9a-f]{6}$/i.test(result.color)) {
+  if (
+    typeof result?.color === "string" &&
+    /^#[0-9a-f]{6}$/i.test(result.color)
+  ) {
     systemAccentColor = result.color;
   }
   if (appConfig.appSettings?.accentColor === "system") {
@@ -2649,7 +2839,11 @@ function renderCustomThemePicker() {
     (theme) => theme.id === customThemeSelect.value,
   );
   if (activeTheme) {
-    const details = [activeTheme.description, activeTheme.author && `by ${activeTheme.author}`, activeTheme.version && `v${activeTheme.version}`]
+    const details = [
+      activeTheme.description,
+      activeTheme.author && `by ${activeTheme.author}`,
+      activeTheme.version && `v${activeTheme.version}`,
+    ]
       .filter(Boolean)
       .join(" · ");
     customThemeDetails.textContent = details || activeTheme.id;
@@ -2672,7 +2866,11 @@ function renderLocalThemes() {
   reloadThemesButton?.classList.toggle("hidden", !platformApi.isElectron);
   const themes = platformApi.isElectron ? availableCustomThemes : [];
   const cards = [
-    { id: "", name: "Default Aero theme", description: "Use Aero P2P Chat without a local CSS theme." },
+    {
+      id: "",
+      name: "Default Aero theme",
+      description: "Use Aero P2P Chat without a local CSS theme.",
+    },
     ...themes,
   ];
   localThemeList.replaceChildren(
@@ -2686,9 +2884,14 @@ function renderLocalThemes() {
       const title = document.createElement("strong");
       title.textContent = theme.name;
       const details = document.createElement("span");
-      details.textContent = [theme.author && `by ${theme.author}`, theme.version && `v${theme.version}`, theme.description]
-        .filter(Boolean)
-        .join(" · ") || "Local CSS theme";
+      details.textContent =
+        [
+          theme.author && `by ${theme.author}`,
+          theme.version && `v${theme.version}`,
+          theme.description,
+        ]
+          .filter(Boolean)
+          .join(" · ") || "Local CSS theme";
       card.append(title, details);
       card.addEventListener("click", async () => {
         if (await applyAllThemes(theme.id)) {
@@ -2701,16 +2904,23 @@ function renderLocalThemes() {
 }
 
 function normalizeOnlineThemeUrls(value) {
-  return [...new Set(String(value || "").split(/\r?\n/).map((line) => {
-    try {
-      const url = new URL(line.trim());
-      return url.protocol === "https:" && !url.username && !url.password
-        ? url.toString()
-        : "";
-    } catch {
-      return "";
-    }
-  }).filter(Boolean))].slice(0, 8);
+  return [
+    ...new Set(
+      String(value || "")
+        .split(/\r?\n/)
+        .map((line) => {
+          try {
+            const url = new URL(line.trim());
+            return url.protocol === "https:" && !url.username && !url.password
+              ? url.toString()
+              : "";
+          } catch {
+            return "";
+          }
+        })
+        .filter(Boolean),
+    ),
+  ].slice(0, 8);
 }
 
 const allowedThemeAssetHosts = [
@@ -2746,11 +2956,13 @@ function sanitizeThemeCss(css) {
   return String(css || "")
     .replace(/@import\s+[^;]+;/gi, "")
     .replace(/url\(\s*(['"]?)(.*?)\1\s*\)/gi, (match, _quote, url) =>
-      isAllowedThemeAssetUrl(url) ? match : "url(\"\")",
+      isAllowedThemeAssetUrl(url) ? match : 'url("")',
     );
 }
 
-async function applyAllThemes(localThemeId = appConfig.appSettings?.customTheme || "") {
+async function applyAllThemes(
+  localThemeId = appConfig.appSettings?.customTheme || "",
+) {
   let localCss = "";
   if (localThemeId && platformApi.isElectron) {
     const result = await platformApi.loadTheme(localThemeId);
@@ -2765,9 +2977,13 @@ async function applyAllThemes(localThemeId = appConfig.appSettings?.customTheme 
   const onlineCss = onlineResults
     .filter((result) => result.status === "fulfilled")
     .map((result) => sanitizeThemeCss(result.value));
-  customThemeStyle.textContent = [localCss, ...onlineCss].filter(Boolean).join("\n\n");
+  customThemeStyle.textContent = [localCss, ...onlineCss]
+    .filter(Boolean)
+    .join("\n\n");
   if (onlineThemeStatus) {
-    const failed = onlineResults.filter((result) => result.status === "rejected").length;
+    const failed = onlineResults.filter(
+      (result) => result.status === "rejected",
+    ).length;
     onlineThemeStatus.textContent = onlineUrls.length
       ? `${onlineCss.length} online theme${onlineCss.length === 1 ? "" : "s"} loaded${failed ? `, ${failed} failed` : ""}.`
       : "";
@@ -2804,7 +3020,9 @@ async function refreshCustomThemes() {
   if (platformApi.isElectron) {
     try {
       const result = await platformApi.listThemes();
-      availableCustomThemes = Array.isArray(result?.themes) ? result.themes : [];
+      availableCustomThemes = Array.isArray(result?.themes)
+        ? result.themes
+        : [];
       customThemesPath = typeof result?.path === "string" ? result.path : "";
     } catch {
       availableCustomThemes = [];
@@ -2847,10 +3065,9 @@ function renderWelcomeSettings() {
   );
   welcomeCloseToTray.checked = Boolean(settings.closeToTray);
   welcomeCloseToTray.disabled = !platformApi.supportsCloseToTray;
-  welcomeCloseToTray.closest(".settings-check")?.classList.toggle(
-    "disabled",
-    welcomeCloseToTray.disabled,
-  );
+  welcomeCloseToTray
+    .closest(".settings-check")
+    ?.classList.toggle("disabled", welcomeCloseToTray.disabled);
 }
 
 function renderWelcomeStep() {
@@ -2870,10 +3087,9 @@ function renderWelcomeStep() {
     currentWelcomeStep === lastStep ? "Finish" : "Continue";
 
   requestAnimationFrame(() => {
-    const focusTarget =
-      welcomePages[currentWelcomeStep]?.querySelector(
-        "input:not(:disabled), select:not(:disabled), button:not(:disabled)",
-      );
+    const focusTarget = welcomePages[currentWelcomeStep]?.querySelector(
+      "input:not(:disabled), select:not(:disabled), button:not(:disabled)",
+    );
     focusTarget?.focus();
   });
 }
@@ -2907,7 +3123,8 @@ async function saveWelcomeNickname() {
 
 async function detectWelcomeDevices() {
   welcomeDetectDevices.disabled = true;
-  welcomeDeviceStatus.textContent = "Requesting microphone and camera access...";
+  welcomeDeviceStatus.textContent =
+    "Requesting microphone and camera access...";
   let permissionStream = null;
   try {
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -2917,7 +3134,8 @@ async function detectWelcomeDevices() {
       audio: true,
       video: true,
     });
-    welcomeDeviceStatus.textContent = "Devices detected. Choose the ones you want to use.";
+    welcomeDeviceStatus.textContent =
+      "Devices detected. Choose the ones you want to use.";
   } catch {
     welcomeDeviceStatus.textContent =
       "Device access was not granted. You can continue with the default devices.";
@@ -2987,7 +3205,9 @@ function renderAppSettings() {
   syncEnhancedSelect(chatFontSizeSelect);
   renderLocalThemes();
   if (onlineThemeUrlsInput && document.activeElement !== onlineThemeUrlsInput) {
-    onlineThemeUrlsInput.value = (appConfig.appSettings.onlineThemeUrls || []).join("\n");
+    onlineThemeUrlsInput.value = (
+      appConfig.appSettings.onlineThemeUrls || []
+    ).join("\n");
   }
   autostartToggle.checked = appConfig.appSettings.autostart;
   autostartOpen.checked = !appConfig.appSettings.startHidden;
@@ -3024,18 +3244,24 @@ function renderAppSettings() {
   autoDownloadUpdatesToggle
     .closest(".settings-check")
     ?.classList.toggle("disabled", autoDownloadUpdatesToggle.disabled);
-  updateCheckStatus.textContent = updateSettingsStatus ||
+  updateCheckStatus.textContent =
+    updateSettingsStatus ||
     (updateChecksSupported ? "" : "Updates are unavailable on this platform.");
   updatePlatformNote.textContent = updatePlatformMessage;
   readReceiptsToggle.checked = appConfig.appSettings.readReceipts;
   voiceAutoDownloadToggle.checked = appConfig.appSettings.voiceAutoDownload;
   voiceWaveformToggle.checked = appConfig.appSettings.voiceWaveform;
-  fileAutoDownloadToggle.checked = appConfig.appSettings.fileAutoDownloadTrusted;
+  fileAutoDownloadToggle.checked =
+    appConfig.appSettings.fileAutoDownloadTrusted;
   const customFileFolderSupported = platformApi.supportsFileDirectoryChoice;
-  const customFileFolderOption = fileDownloadModeSelect.querySelector('option[value="custom"]');
-  if (customFileFolderOption) customFileFolderOption.disabled = !customFileFolderSupported;
+  const customFileFolderOption = fileDownloadModeSelect.querySelector(
+    'option[value="custom"]',
+  );
+  if (customFileFolderOption)
+    customFileFolderOption.disabled = !customFileFolderSupported;
   fileDownloadModeSelect.value =
-    appConfig.appSettings.fileDownloadMode === "custom" && !customFileFolderSupported
+    appConfig.appSettings.fileDownloadMode === "custom" &&
+    !customFileFolderSupported
       ? "ask"
       : appConfig.appSettings.fileDownloadMode;
   fileDownloadFolderRow.classList.toggle(
@@ -3049,12 +3275,13 @@ function renderAppSettings() {
   fileDownloadPlatformNote.textContent = platformApi.isElectron
     ? "Files stream into private app temporary storage and are limited by free disk space, not RAM. Saving is separate; Microsoft Defender or ClamAV is used when available."
     : platformApi.isChromeExtension
-        ? "Files stream into Chrome's private storage and are limited by its available quota, not RAM. Chrome controls final saving and applies its own download protection."
-        : "Files stream into private browser storage and are limited by its available quota, not RAM. Your browser controls saving and files are never opened automatically.";
+      ? "Files stream into Chrome's private storage and are limited by its available quota, not RAM. Chrome controls final saving and applies its own download protection."
+      : "Files stream into private browser storage and are limited by its available quota, not RAM. Your browser controls saving and files are never opened automatically.";
   syncEnhancedSelect(fileDownloadModeSelect);
-  const personalTrustedDomainCount = appConfig.appSettings.trustedLinkDomains.filter(
-    (domain) => !DEFAULT_TRUSTED_LINK_DOMAINS.has(domain),
-  ).length;
+  const personalTrustedDomainCount =
+    appConfig.appSettings.trustedLinkDomains.filter(
+      (domain) => !DEFAULT_TRUSTED_LINK_DOMAINS.has(domain),
+    ).length;
   trustedDomainsStatus.textContent = personalTrustedDomainCount
     ? `${DEFAULT_TRUSTED_LINK_DOMAINS.size} built-in · ${personalTrustedDomainCount} personal`
     : `${DEFAULT_TRUSTED_LINK_DOMAINS.size} built-in trusted domains`;
@@ -3565,7 +3792,9 @@ function setCustomSoundAudio(soundId, data) {
 
   const previousUrl = customSoundObjectUrls.get(soundId);
   if (previousUrl) URL.revokeObjectURL(previousUrl);
-  const objectUrl = URL.createObjectURL(new Blob([bytes], { type: "audio/ogg" }));
+  const objectUrl = URL.createObjectURL(
+    new Blob([bytes], { type: "audio/ogg" }),
+  );
   customSoundObjectUrls.set(soundId, objectUrl);
   definition.audio.pause();
   definition.audio.currentTime = 0;
@@ -3584,11 +3813,17 @@ async function applyCustomSound(soundId) {
 
   const result = await platformApi.loadCustomSound(soundId);
   if (!result?.ok) {
-    customSoundAvailability.set(soundId, result?.missing ? "missing" : "invalid");
+    customSoundAvailability.set(
+      soundId,
+      result?.missing ? "missing" : "invalid",
+    );
     resetCustomSoundAudio(soundId);
     return false;
   }
-  if (!metadata.sha256 || metadata.sha256 !== await getCustomSoundSha256(result.data)) {
+  if (
+    !metadata.sha256 ||
+    metadata.sha256 !== (await getCustomSoundSha256(result.data))
+  ) {
     customSoundAvailability.set(soundId, "invalid");
     resetCustomSoundAudio(soundId);
     return false;
@@ -3645,7 +3880,9 @@ function renderCustomSoundList() {
     const metadata = getCustomSoundMetadata(soundId);
     const row = document.createElement("div");
     row.className = "custom-sound-row";
-    const availability = metadata ? customSoundAvailability.get(soundId) || "checking" : "";
+    const availability = metadata
+      ? customSoundAvailability.get(soundId) || "checking"
+      : "";
     const customLoaded = availability === "valid" && Boolean(metadata?.active);
     row.classList.toggle("is-custom", customLoaded);
     row.classList.toggle("is-disabled", Boolean(metadata && !metadata.active));
@@ -3725,7 +3962,8 @@ function closeCustomSoundEditor() {
   cancelAnimationFrame(customSoundWaveformFrame);
   customSoundWaveformFrame = 0;
   customSoundWaveformDrag = "";
-  if (customSoundEditor?.previewUrl) URL.revokeObjectURL(customSoundEditor.previewUrl);
+  if (customSoundEditor?.previewUrl)
+    URL.revokeObjectURL(customSoundEditor.previewUrl);
   customSoundEditor = null;
   customSoundFileInput.value = "";
   customSoundModal.classList.add("hidden");
@@ -3764,7 +4002,10 @@ function drawCustomSoundWaveform() {
   context.fillRect(startX, 0, Math.max(0, endX - startX), height);
   for (let x = 0; x < width; x += 1) {
     const first = Math.floor((x / width) * channel.length);
-    const last = Math.min(channel.length, Math.floor(((x + 1) / width) * channel.length));
+    const last = Math.min(
+      channel.length,
+      Math.floor(((x + 1) / width) * channel.length),
+    );
     const stride = Math.max(1, Math.floor((last - first) / 72));
     let peak = 0;
     for (let index = first; index < last; index += stride) {
@@ -3783,15 +4024,24 @@ function drawCustomSoundWaveform() {
   context.fillRect(startX, 0, 2, height);
   context.fillRect(Math.max(0, endX - 2), 0, 2, height);
   if (!customSoundPreview.paused) {
-    const playheadX = Math.max(startX, Math.min(endX, (customSoundPreview.currentTime / duration) * width));
+    const playheadX = Math.max(
+      startX,
+      Math.min(endX, (customSoundPreview.currentTime / duration) * width),
+    );
     context.fillStyle = "rgba(255, 255, 255, 0.92)";
     context.fillRect(playheadX, 0, 1, height);
   }
   customSoundWaveformStartHandle.style.left = `calc(${(start / duration) * 100}% - 1px)`;
   customSoundWaveformEndHandle.style.left = `calc(${(end / duration) * 100}% - 1px)`;
   customSoundWaveform.setAttribute("aria-valuemin", "0");
-  customSoundWaveform.setAttribute("aria-valuemax", String(Math.round(duration * 100) / 100));
-  customSoundWaveform.setAttribute("aria-valuetext", `${formatCustomSoundDuration(start)} to ${formatCustomSoundDuration(end)}`);
+  customSoundWaveform.setAttribute(
+    "aria-valuemax",
+    String(Math.round(duration * 100) / 100),
+  );
+  customSoundWaveform.setAttribute(
+    "aria-valuetext",
+    `${formatCustomSoundDuration(start)} to ${formatCustomSoundDuration(end)}`,
+  );
 }
 
 function scheduleCustomSoundWaveform() {
@@ -3803,10 +4053,15 @@ function scheduleCustomSoundWaveform() {
 function setCustomSoundWaveformBoundary(event) {
   if (!customSoundEditor) return;
   const bounds = customSoundWaveform.getBoundingClientRect();
-  const ratio = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+  const ratio = Math.max(
+    0,
+    Math.min(1, (event.clientX - bounds.left) / bounds.width),
+  );
   const time = ratio * customSoundEditor.duration;
   const { start, end } = customSoundEditor;
-  const boundary = customSoundWaveformDrag || (Math.abs(time - start) <= Math.abs(time - end) ? "start" : "end");
+  const boundary =
+    customSoundWaveformDrag ||
+    (Math.abs(time - start) <= Math.abs(time - end) ? "start" : "end");
   if (boundary === "start") {
     customSoundEditor.start = Math.min(time, end - 0.01);
   } else {
@@ -3821,17 +4076,28 @@ function updateCustomSoundTrimUi() {
   if (start >= end) {
     customSoundEditor.end = Math.min(customSoundEditor.duration, start + 0.01);
   }
-  customSoundStartValue.textContent = formatCustomSoundDuration(customSoundEditor.start);
-  customSoundEndValue.textContent = formatCustomSoundDuration(customSoundEditor.end);
+  customSoundStartValue.textContent = formatCustomSoundDuration(
+    customSoundEditor.start,
+  );
+  customSoundEndValue.textContent = formatCustomSoundDuration(
+    customSoundEditor.end,
+  );
   syncCustomSoundPlayer();
   scheduleCustomSoundWaveform();
 }
 
 function syncCustomSoundPlayer() {
   if (!customSoundEditor) return;
-  const current = Math.max(0, Math.min(customSoundEditor.duration, customSoundPreview.currentTime || 0));
-  const selectionStart = (customSoundEditor.start / customSoundEditor.duration) * 100;
-  const selectionWidth = ((customSoundEditor.end - customSoundEditor.start) / customSoundEditor.duration) * 100;
+  const current = Math.max(
+    0,
+    Math.min(customSoundEditor.duration, customSoundPreview.currentTime || 0),
+  );
+  const selectionStart =
+    (customSoundEditor.start / customSoundEditor.duration) * 100;
+  const selectionWidth =
+    ((customSoundEditor.end - customSoundEditor.start) /
+      customSoundEditor.duration) *
+    100;
   const playedWidth = Math.max(
     0,
     ((Math.min(customSoundEditor.end, current) - customSoundEditor.start) /
@@ -3839,7 +4105,9 @@ function syncCustomSoundPlayer() {
       100,
   );
   customSoundCurrentTime.textContent = formatCustomSoundDuration(current);
-  customSoundDuration.textContent = formatCustomSoundDuration(customSoundEditor.duration);
+  customSoundDuration.textContent = formatCustomSoundDuration(
+    customSoundEditor.duration,
+  );
   customSoundProgressSelection.style.left = `${selectionStart}%`;
   customSoundProgressSelection.style.width = `${selectionWidth}%`;
   customSoundProgressFill.style.left = `${selectionStart}%`;
@@ -3856,7 +4124,12 @@ function syncCustomSoundPlayer() {
 async function openCustomSoundEditor(soundId, file) {
   if (!file || !customSoundDefinitions[soundId]) return;
   if (file.size > CUSTOM_SOUND_MAX_SOURCE_BYTES) {
-    await showAppDialog({ title: "Sound is too large", message: "Choose an audio file smaller than 25 MB.", confirmText: "OK", cancelText: "Close" });
+    await showAppDialog({
+      title: "Sound is too large",
+      message: "Choose an audio file smaller than 25 MB.",
+      confirmText: "OK",
+      cancelText: "Close",
+    });
     return;
   }
 
@@ -3866,13 +4139,28 @@ async function openCustomSoundEditor(soundId, file) {
     context = new AudioContext();
     decoded = await context.decodeAudioData(await file.arrayBuffer());
   } catch {
-    await showAppDialog({ title: "Unsupported audio", message: "Aero could not read this audio file. Try MP3, WAV, M4A, or OGG.", confirmText: "OK", cancelText: "Close" });
+    await showAppDialog({
+      title: "Unsupported audio",
+      message:
+        "Aero could not read this audio file. Try MP3, WAV, M4A, or OGG.",
+      confirmText: "OK",
+      cancelText: "Close",
+    });
     return;
   } finally {
     await context?.close().catch(() => {});
   }
-  if (!Number.isFinite(decoded.duration) || decoded.duration <= 0 || decoded.duration > CUSTOM_SOUND_MAX_DURATION_SECONDS) {
-    await showAppDialog({ title: "Sound length", message: "Choose a sound between 1 second and 5 minutes.", confirmText: "OK", cancelText: "Close" });
+  if (
+    !Number.isFinite(decoded.duration) ||
+    decoded.duration <= 0 ||
+    decoded.duration > CUSTOM_SOUND_MAX_DURATION_SECONDS
+  ) {
+    await showAppDialog({
+      title: "Sound length",
+      message: "Choose a sound between 1 second and 5 minutes.",
+      confirmText: "OK",
+      cancelText: "Close",
+    });
     return;
   }
 
@@ -3910,7 +4198,9 @@ function createTrimmedSoundBuffer(sourceBuffer, start, end, normalize) {
   let peak = 0;
   for (let channel = 0; channel < output.numberOfChannels; channel += 1) {
     const data = output.getChannelData(channel);
-    data.set(sourceBuffer.getChannelData(channel).subarray(offset, offset + length));
+    data.set(
+      sourceBuffer.getChannelData(channel).subarray(offset, offset + length),
+    );
     for (const sample of data) peak = Math.max(peak, Math.abs(sample));
   }
   const gain = normalize && peak > 0 ? Math.min(4, 0.98 / peak) : 1;
@@ -3929,9 +4219,10 @@ function getOggCrcTable() {
   for (let index = 0; index < 256; index += 1) {
     let value = index << 24;
     for (let bit = 0; bit < 8; bit += 1) {
-      value = (value & 0x80000000)
-        ? ((value << 1) ^ 0x04c11db7) >>> 0
-        : (value << 1) >>> 0;
+      value =
+        value & 0x80000000
+          ? ((value << 1) ^ 0x04c11db7) >>> 0
+          : (value << 1) >>> 0;
     }
     oggCrcTable[index] = value;
   }
@@ -3942,12 +4233,16 @@ function getOggChecksum(page) {
   let checksum = 0;
   const table = getOggCrcTable();
   for (const byte of page) {
-    checksum = ((checksum << 8) ^ table[((checksum >>> 24) ^ byte) & 0xff]) >>> 0;
+    checksum =
+      ((checksum << 8) ^ table[((checksum >>> 24) ^ byte) & 0xff]) >>> 0;
   }
   return checksum;
 }
 
-function createOggPage(packet, { serial, sequence, granulePosition, headerType }) {
+function createOggPage(
+  packet,
+  { serial, sequence, granulePosition, headerType },
+) {
   const segments = [];
   for (let remaining = packet.length; remaining >= 255; remaining -= 255) {
     segments.push(255);
@@ -3994,7 +4289,9 @@ function createOpusTags() {
 
 async function resampleCustomSoundBuffer(audioBuffer) {
   if (audioBuffer.sampleRate === 48_000) return audioBuffer;
-  const frameCount = Math.ceil((audioBuffer.length / audioBuffer.sampleRate) * 48_000);
+  const frameCount = Math.ceil(
+    (audioBuffer.length / audioBuffer.sampleRate) * 48_000,
+  );
   const context = new OfflineAudioContext(
     audioBuffer.numberOfChannels,
     frameCount,
@@ -4009,7 +4306,9 @@ async function resampleCustomSoundBuffer(audioBuffer) {
 
 async function encodeCustomSoundToOgg(audioBuffer) {
   if (!window.AudioEncoder || !window.AudioData) {
-    throw new Error("This app runtime does not support local OGG/Opus encoding.");
+    throw new Error(
+      "This app runtime does not support local OGG/Opus encoding.",
+    );
   }
   const buffer = await resampleCustomSoundBuffer(audioBuffer);
   const config = {
@@ -4020,7 +4319,9 @@ async function encodeCustomSoundToOgg(audioBuffer) {
   };
   const support = await AudioEncoder.isConfigSupported(config);
   if (!support?.supported) {
-    throw new Error("This app runtime does not support local OGG/Opus encoding.");
+    throw new Error(
+      "This app runtime does not support local OGG/Opus encoding.",
+    );
   }
 
   const packets = [];
@@ -4031,7 +4332,9 @@ async function encodeCustomSoundToOgg(audioBuffer) {
       chunk.copyTo(packet);
       packets.push({ packet, duration: chunk.duration || 20_000 });
     },
-    error: (error) => { encoderError = error; },
+    error: (error) => {
+      encoderError = error;
+    },
   });
   try {
     encoder.configure(config);
@@ -4083,7 +4386,9 @@ async function encodeCustomSoundToOgg(audioBuffer) {
   ];
   let granulePosition = 0;
   for (let index = 0; index < packets.length; index += 1) {
-    granulePosition += Math.round((packets[index].duration * 48_000) / 1_000_000);
+    granulePosition += Math.round(
+      (packets[index].duration * 48_000) / 1_000_000,
+    );
     pages.push(
       createOggPage(packets[index].packet, {
         serial,
@@ -4112,7 +4417,8 @@ async function saveCustomSoundEditor() {
     }
     const encodedBytes = new Uint8Array(await encoded.arrayBuffer());
     const saved = await platformApi.saveCustomSound(soundId, encodedBytes);
-    if (!saved?.ok) throw new Error(saved?.error || "Sound could not be saved.");
+    if (!saved?.ok)
+      throw new Error(saved?.error || "Sound could not be saved.");
     appConfig.soundSettings.custom[soundId] = {
       name: fileName,
       duration: end - start,
@@ -4126,7 +4432,8 @@ async function saveCustomSoundEditor() {
     renderCustomSoundList();
     closeCustomSoundEditor();
   } catch (error) {
-    customSoundStatus.textContent = error?.message || "Sound could not be converted.";
+    customSoundStatus.textContent =
+      error?.message || "Sound could not be converted.";
     customSoundStatus.className = "custom-sound-status is-error";
   } finally {
     customSoundSave.disabled = false;
@@ -4180,16 +4487,21 @@ async function isUsableCustomWallpaper(data) {
 function applyCustomWallpaperStyle() {
   const enabled = appConfig.wallpaperSettings?.enabled !== false;
   const lightUrl = enabled
-    ? customWallpaperObjectUrls.get("light") || customWallpaperObjectUrls.get("both")
+    ? customWallpaperObjectUrls.get("light") ||
+      customWallpaperObjectUrls.get("both")
     : "";
   const darkUrl = enabled
-    ? customWallpaperObjectUrls.get("dark") || customWallpaperObjectUrls.get("both")
+    ? customWallpaperObjectUrls.get("dark") ||
+      customWallpaperObjectUrls.get("both")
     : "";
   const tint = appConfig.wallpaperSettings?.tintWithAccent === true;
   const useCustomDuringBoot =
     appConfig.wallpaperSettings?.useCustomDuringBoot !== false;
   document.body.classList.toggle("wallpapers-disabled", !enabled);
-  document.body.classList.toggle("has-custom-wallpaper-light", Boolean(lightUrl));
+  document.body.classList.toggle(
+    "has-custom-wallpaper-light",
+    Boolean(lightUrl),
+  );
   document.body.classList.toggle("has-custom-wallpaper-dark", Boolean(darkUrl));
 
   const buildRule = (selector, imageUrl) => {
@@ -4205,7 +4517,7 @@ function applyCustomWallpaperStyle() {
       lightUrl,
     ),
     buildRule(
-      "html:is([data-theme=\"dark\"],[data-theme=\"ultra-dark\"]) body.chat-wallpaper-ready.has-custom-wallpaper-dark .messages,body:is([data-theme=\"dark\"],[data-theme=\"ultra-dark\"]).chat-wallpaper-ready.has-custom-wallpaper-dark .messages",
+      'html:is([data-theme="dark"],[data-theme="ultra-dark"]) body.chat-wallpaper-ready.has-custom-wallpaper-dark .messages,body:is([data-theme="dark"],[data-theme="ultra-dark"]).chat-wallpaper-ready.has-custom-wallpaper-dark .messages',
       darkUrl,
     ),
     ...(useCustomDuringBoot
@@ -4215,7 +4527,7 @@ function applyCustomWallpaperStyle() {
             lightUrl,
           ),
           buildRule(
-            "html:is([data-theme=\"dark\"],[data-theme=\"ultra-dark\"]) body.app-loading.has-custom-wallpaper-dark .boot-screen,body:is([data-theme=\"dark\"],[data-theme=\"ultra-dark\"]).app-loading.has-custom-wallpaper-dark .boot-screen",
+            'html:is([data-theme="dark"],[data-theme="ultra-dark"]) body.app-loading.has-custom-wallpaper-dark .boot-screen,body:is([data-theme="dark"],[data-theme="ultra-dark"]).app-loading.has-custom-wallpaper-dark .boot-screen',
             darkUrl,
           ),
         ]
@@ -4231,7 +4543,10 @@ async function applyCustomWallpaper(wallpaperId) {
     return false;
   }
   const result = await platformApi.loadCustomWallpaper(wallpaperId);
-  if (!result?.ok || metadata.sha256 !== await getCustomSoundSha256(result.data)) {
+  if (
+    !result?.ok ||
+    metadata.sha256 !== (await getCustomSoundSha256(result.data))
+  ) {
     customWallpaperAvailability.set(
       wallpaperId,
       result?.missing ? "missing" : "invalid",
@@ -4285,7 +4600,8 @@ function renderCustomWallpaperList() {
   if (!supported) {
     const unavailable = document.createElement("span");
     unavailable.className = "settings-help";
-    unavailable.textContent = "Custom wallpapers are available in the desktop app.";
+    unavailable.textContent =
+      "Custom wallpapers are available in the desktop app.";
     customWallpaperList.append(unavailable);
     return;
   }
@@ -4387,8 +4703,12 @@ async function saveCustomWallpaper(wallpaperId, file) {
   if (!CUSTOM_WALLPAPER_IDS.includes(wallpaperId) || !file) return;
   try {
     const encoded = await encodeCustomWallpaper(file);
-    const result = await platformApi.saveCustomWallpaper(wallpaperId, encoded.data);
-    if (!result?.ok) throw new Error(result?.error || "Wallpaper could not be saved.");
+    const result = await platformApi.saveCustomWallpaper(
+      wallpaperId,
+      encoded.data,
+    );
+    if (!result?.ok)
+      throw new Error(result?.error || "Wallpaper could not be saved.");
     appConfig.wallpaperSettings.custom[wallpaperId] = {
       name: file.name || "Custom wallpaper",
       width: encoded.width,
@@ -4525,7 +4845,10 @@ function migrateContactIdentity(previousIds, nextId, nickname = "") {
       oldContacts.some((contact) => contact.blocked) ||
       existingTarget?.blocked ||
       false,
-    muted: oldContacts.some((contact) => contact.muted) || existingTarget?.muted || false,
+    muted:
+      oldContacts.some((contact) => contact.muted) ||
+      existingTarget?.muted ||
+      false,
     playbackVolume:
       existingTarget?.playbackVolume ?? preferred.playbackVolume ?? 100,
     showVideoName:
@@ -4547,11 +4870,11 @@ function rememberRemoteIdentity(id, nickname, nameStyle) {
 
   const existing = findContact(id);
   upsertContact(id, {
-      remoteNickname,
-      label: existing?.customLabel ? existing.label : remoteNickname,
-      pinned: existing?.pinned ?? true,
-      nameStyle: normalizeNameStyle(nameStyle),
-    });
+    remoteNickname,
+    label: existing?.customLabel ? existing.label : remoteNickname,
+    pinned: existing?.pinned ?? true,
+    nameStyle: normalizeNameStyle(nameStyle),
+  });
 }
 
 function setContactNickname(id, nickname) {
@@ -4976,18 +5299,21 @@ function startConnectTimeout(peerId, conn, { waitingForAnswer = false } = {}) {
   clearConnectTimeout(peerId);
   connectTimeouts.set(
     peerId,
-    setTimeout(() => {
-      const entry = pendingConnections.get(peerId);
-      if (!entry || entry.conn !== conn || entry.direction !== "outgoing") {
-        return;
-      }
-      showUnreachablePeerFeedback(peerId, {
-        label: getPeerLabel(peerId, conn),
-        reason: waitingForAnswer
-          ? `${getPeerLabel(peerId, conn)} did not answer the connection request in time.`
-          : `${getPeerLabel(peerId, conn)} could not be reached in time.`,
-      });
-    }, waitingForAnswer ? CONNECTION_REQUEST_TIMEOUT_MS : CONNECT_TIMEOUT_MS),
+    setTimeout(
+      () => {
+        const entry = pendingConnections.get(peerId);
+        if (!entry || entry.conn !== conn || entry.direction !== "outgoing") {
+          return;
+        }
+        showUnreachablePeerFeedback(peerId, {
+          label: getPeerLabel(peerId, conn),
+          reason: waitingForAnswer
+            ? `${getPeerLabel(peerId, conn)} did not answer the connection request in time.`
+            : `${getPeerLabel(peerId, conn)} could not be reached in time.`,
+        });
+      },
+      waitingForAnswer ? CONNECTION_REQUEST_TIMEOUT_MS : CONNECT_TIMEOUT_MS,
+    ),
   );
 }
 
@@ -5000,7 +5326,9 @@ function getOutgoingPendingPeerId(error) {
     errorMessage.includes(peerId.toLowerCase()),
   );
 
-  return matchingPeerId || (outgoingPeerIds.length === 1 ? outgoingPeerIds[0] : "");
+  return (
+    matchingPeerId || (outgoingPeerIds.length === 1 ? outgoingPeerIds[0] : "")
+  );
 }
 
 function clearOutgoingMessageQueue(peerId) {
@@ -5195,7 +5523,9 @@ function syncChatActionAvailability() {
   chatMoreButton.disabled = !activePeerId;
   chatActions.classList.toggle(
     "unavailable",
-    [callChat, disconnectChat, chatMoreButton].every((button) => button.disabled),
+    [callChat, disconnectChat, chatMoreButton].every(
+      (button) => button.disabled,
+    ),
   );
 }
 
@@ -5204,7 +5534,9 @@ function updateTypingIndicator() {
     return;
   }
 
-  const recording = Boolean(activePeerId && voiceRecordingStates.get(activePeerId));
+  const recording = Boolean(
+    activePeerId && voiceRecordingStates.get(activePeerId),
+  );
   const typing = Boolean(activePeerId && typingStates.get(activePeerId));
   if (!activePeerId || (!typing && !recording)) {
     typingIndicator.classList.add("hidden");
@@ -5228,7 +5560,11 @@ function updateTypingIndicator() {
       microphone.className = "fa-solid fa-microphone-lines";
       const wave = document.createElement("span");
       wave.className = "chat-recording-wave";
-      wave.append(document.createElement("i"), document.createElement("i"), document.createElement("i"));
+      wave.append(
+        document.createElement("i"),
+        document.createElement("i"),
+        document.createElement("i"),
+      );
       visual.append(microphone, wave);
     } else {
       visual.className = "chat-typing-indicator";
@@ -5236,7 +5572,11 @@ function updateTypingIndicator() {
       speechBubble.className = "fa-regular fa-comment";
       const dots = document.createElement("span");
       dots.className = "chat-typing-dots";
-      dots.append(document.createElement("i"), document.createElement("i"), document.createElement("i"));
+      dots.append(
+        document.createElement("i"),
+        document.createElement("i"),
+        document.createElement("i"),
+      );
       visual.append(speechBubble, dots);
     }
     const announcement = document.createElement("span");
@@ -5294,22 +5634,69 @@ function setRemoteVoiceRecording(peerId, recording) {
 
 const EXTERNAL_LINK_PATTERN = /https?:\/\/[^\s<>"'`]+/gi;
 const DEFAULT_TRUSTED_LINK_DOMAINS = new Set([
-  "google.com", "youtube.com", "microsoft.com", "apple.com", "amazon.com", "primevideo.com",
-  "wikipedia.org", "wikimedia.org", "github.com", "gitlab.com", "bitbucket.org", "stackoverflow.com", "stackexchange.com", "npmjs.com", "mozilla.org",
-  "openai.com", "chatgpt.com", "discord.com", "discordapp.com", "twitch.tv", "spotify.com", "netflix.com",
-  "reddit.com", "linkedin.com", "facebook.com", "instagram.com", "tiktok.com", "x.com", "twitter.com",
-  "whatsapp.com", "telegram.org", "signal.org", "steampowered.com", "steamcommunity.com", "epicgames.com",
-  "adobe.com", "cloudflare.com", "dropbox.com", "notion.so", "figma.com", "canva.com", "vercel.com",
-  "nvidia.com", "amd.com", "intel.com", "zoom.us", "slack.com", "trello.com", "atlassian.com",
+  "google.com",
+  "youtube.com",
+  "microsoft.com",
+  "apple.com",
+  "amazon.com",
+  "primevideo.com",
+  "wikipedia.org",
+  "wikimedia.org",
+  "github.com",
+  "gitlab.com",
+  "bitbucket.org",
+  "stackoverflow.com",
+  "stackexchange.com",
+  "npmjs.com",
+  "mozilla.org",
+  "openai.com",
+  "chatgpt.com",
+  "discord.com",
+  "discordapp.com",
+  "twitch.tv",
+  "spotify.com",
+  "netflix.com",
+  "reddit.com",
+  "linkedin.com",
+  "facebook.com",
+  "instagram.com",
+  "tiktok.com",
+  "x.com",
+  "twitter.com",
+  "whatsapp.com",
+  "telegram.org",
+  "signal.org",
+  "steampowered.com",
+  "steamcommunity.com",
+  "epicgames.com",
+  "adobe.com",
+  "cloudflare.com",
+  "dropbox.com",
+  "notion.so",
+  "figma.com",
+  "canva.com",
+  "vercel.com",
+  "nvidia.com",
+  "amd.com",
+  "intel.com",
+  "zoom.us",
+  "slack.com",
+  "trello.com",
+  "atlassian.com",
 ]);
 let pendingExternalLinkOpen = false;
 
 function normalizeTrustedLinkDomain(value) {
   try {
-    const source = String(value || "").trim().toLowerCase();
+    const source = String(value || "")
+      .trim()
+      .toLowerCase();
     const url = new URL(source.includes("://") ? source : `https://${source}`);
     if (!url.hostname || url.username || url.password) return "";
-    return getDomain(url.hostname, { allowPrivateDomains: true })?.toLowerCase() || "";
+    return (
+      getDomain(url.hostname, { allowPrivateDomains: true })?.toLowerCase() ||
+      ""
+    );
   } catch {
     return "";
   }
@@ -5318,7 +5705,8 @@ function normalizeTrustedLinkDomain(value) {
 function isTrustedDomain(hostname, trustedDomains) {
   const normalizedHost = String(hostname || "").toLowerCase();
   return [...trustedDomains].some(
-    (domain) => normalizedHost === domain || normalizedHost.endsWith(`.${domain}`),
+    (domain) =>
+      normalizedHost === domain || normalizedHost.endsWith(`.${domain}`),
   );
 }
 
@@ -5360,7 +5748,8 @@ async function openExternalLinkWithConfirmation(url) {
   if (pendingExternalLinkOpen) return;
   const link = getSafeExternalLink(url);
   if (!link) return;
-  const personalTrustedDomains = appConfig.appSettings?.trustedLinkDomains || [];
+  const personalTrustedDomains =
+    appConfig.appSettings?.trustedLinkDomains || [];
   if (
     isTrustedDomain(link.domain, DEFAULT_TRUSTED_LINK_DOMAINS) ||
     isTrustedDomain(link.domain, personalTrustedDomains)
@@ -5376,12 +5765,15 @@ async function openExternalLinkWithConfirmation(url) {
       message: "This link opens in your browser.",
       confirmText: "Open",
       cancelText: "Cancel",
-      checkboxLabel: link.trustedDomain ? `Always trust ${link.trustedDomain}` : "",
+      checkboxLabel: link.trustedDomain
+        ? `Always trust ${link.trustedDomain}`
+        : "",
       linkDetails: link,
     });
-    const confirmation = typeof result === "boolean"
-      ? { confirmed: result, checkboxChecked: false }
-      : result;
+    const confirmation =
+      typeof result === "boolean"
+        ? { confirmed: result, checkboxChecked: false }
+        : result;
     if (!confirmation.confirmed) return;
     if (confirmation.checkboxChecked && link.trustedDomain) {
       await saveAppSettings({
@@ -5477,7 +5869,12 @@ function sendReadReceiptsForActiveChat() {
     if (item.sender !== "them" || item.readReceiptSent || !item.id) {
       continue;
     }
-    if (sendProtocolMessage(conn, "message-read", { messageId: item.id, at: Date.now() })) {
+    if (
+      sendProtocolMessage(conn, "message-read", {
+        messageId: item.id,
+        at: Date.now(),
+      })
+    ) {
       item.readReceiptSent = true;
     }
   }
@@ -5502,9 +5899,12 @@ function applyVoiceWaveform(waveform, values) {
 
 async function analyzeVoiceWaveform(voice, waveform) {
   if (
-    voice.waveform || !voice.blob || !window.AudioContext ||
+    voice.waveform ||
+    !voice.blob ||
+    !window.AudioContext ||
     voice.blob.size > 24 * 1024 * 1024
-  ) return;
+  )
+    return;
   try {
     voiceWaveformAudioContext ||= new AudioContext();
     const audioBuffer = await voiceWaveformAudioContext.decodeAudioData(
@@ -5539,13 +5939,16 @@ function createVoiceWaveform(voice, audio) {
   waveform.title = "Click or drag to seek";
   applyVoiceWaveform(waveform, voice.waveform || Array(48).fill(0.2));
 
-  const getDuration = () => Number.isFinite(audio.duration) && audio.duration > 0
-    ? audio.duration
-    : Math.max(0, Number(voice.duration) || 0);
+  const getDuration = () =>
+    Number.isFinite(audio.duration) && audio.duration > 0
+      ? audio.duration
+      : Math.max(0, Number(voice.duration) || 0);
   const updateProgress = () => {
     const duration = getDuration();
     const currentTime = Math.max(0, Number(audio.currentTime) || 0);
-    const progress = duration ? Math.min(100, (currentTime / duration) * 100) : 0;
+    const progress = duration
+      ? Math.min(100, (currentTime / duration) * 100)
+      : 0;
     waveform.style.setProperty("--voice-progress", `${progress}%`);
     waveform.setAttribute("aria-valuemax", String(Math.round(duration)));
     waveform.setAttribute("aria-valuenow", String(Math.round(currentTime)));
@@ -5574,7 +5977,8 @@ function createVoiceWaveform(voice, audio) {
     if (waveform.hasPointerCapture(event.pointerId)) seekFromPointer(event);
   });
   const finishSeeking = (event) => {
-    if (waveform.hasPointerCapture(event.pointerId)) waveform.releasePointerCapture(event.pointerId);
+    if (waveform.hasPointerCapture(event.pointerId))
+      waveform.releasePointerCapture(event.pointerId);
     waveform.classList.remove("seeking");
   };
   waveform.addEventListener("pointerup", finishSeeking);
@@ -5583,8 +5987,10 @@ function createVoiceWaveform(voice, audio) {
     const duration = getDuration();
     if (!duration) return;
     const seekStep = event.shiftKey ? 15 : 5;
-    if (["ArrowLeft", "ArrowDown"].includes(event.key)) audio.currentTime = Math.max(0, audio.currentTime - seekStep);
-    else if (["ArrowRight", "ArrowUp"].includes(event.key)) audio.currentTime = Math.min(duration, audio.currentTime + seekStep);
+    if (["ArrowLeft", "ArrowDown"].includes(event.key))
+      audio.currentTime = Math.max(0, audio.currentTime - seekStep);
+    else if (["ArrowRight", "ArrowUp"].includes(event.key))
+      audio.currentTime = Math.min(duration, audio.currentTime + seekStep);
     else if (event.key === "Home") audio.currentTime = 0;
     else if (event.key === "End") audio.currentTime = duration;
     else return;
@@ -5638,12 +6044,17 @@ function createVoiceMessageBody(item) {
     const time = document.createElement("span");
     time.className = "voice-play-time";
     const updatePlayer = () => {
-      const duration = Number.isFinite(audio.duration) ? audio.duration : voice.duration;
+      const duration = Number.isFinite(audio.duration)
+        ? audio.duration
+        : voice.duration;
       time.textContent = `${formatVoiceDuration(audio.currentTime)} / ${formatVoiceDuration(duration)}`;
       const playing = !audio.paused && !audio.ended;
       player.classList.toggle("playing", playing);
       playIcon.className = playing ? "fa-solid fa-pause" : "fa-solid fa-play";
-      playButton.setAttribute("aria-label", playing ? "Pause voice message" : "Play voice message");
+      playButton.setAttribute(
+        "aria-label",
+        playing ? "Pause voice message" : "Play voice message",
+      );
     };
     playButton.addEventListener("click", () => {
       if (audio.paused || audio.ended) {
@@ -5670,33 +6081,37 @@ function createVoiceMessageBody(item) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "voice-download-button";
-    button.disabled = voice.downloadState === "requested" || voice.downloadState === "invalid";
-    button.title = voice.downloadState === "invalid"
-      ? "Integrity check failed"
-      : voice.downloadState === "requested"
-        ? "Downloading and verifying voice message"
-        : "Download and verify voice message";
+    button.disabled =
+      voice.downloadState === "requested" || voice.downloadState === "invalid";
+    button.title =
+      voice.downloadState === "invalid"
+        ? "Integrity check failed"
+        : voice.downloadState === "requested"
+          ? "Downloading and verifying voice message"
+          : "Download and verify voice message";
     button.setAttribute("aria-label", button.title);
     const icon = document.createElement("i");
-    icon.className = voice.downloadState === "invalid"
-      ? "fa-solid fa-triangle-exclamation"
-      : voice.downloadState === "requested"
-        ? "fa-solid fa-spinner fa-spin"
-        : voice.downloadState === "failed"
-          ? "fa-solid fa-rotate-right"
-        : "fa-solid fa-download";
+    icon.className =
+      voice.downloadState === "invalid"
+        ? "fa-solid fa-triangle-exclamation"
+        : voice.downloadState === "requested"
+          ? "fa-solid fa-spinner fa-spin"
+          : voice.downloadState === "failed"
+            ? "fa-solid fa-rotate-right"
+            : "fa-solid fa-download";
     icon.setAttribute("aria-hidden", "true");
     button.append(icon);
     button.addEventListener("click", () => requestVoiceMessage(item));
     const status = document.createElement("span");
     status.className = "voice-transfer-status";
-    status.textContent = voice.downloadState === "invalid"
-      ? "Integrity check failed"
-      : voice.downloadState === "requested"
-        ? "Requesting download..."
-        : voice.downloadState === "failed"
-          ? (voice.transferStatus || "Download interrupted - retry")
-        : "Download & verify";
+    status.textContent =
+      voice.downloadState === "invalid"
+        ? "Integrity check failed"
+        : voice.downloadState === "requested"
+          ? "Requesting download..."
+          : voice.downloadState === "failed"
+            ? voice.transferStatus || "Download interrupted - retry"
+            : "Download & verify";
     const progress = document.createElement("span");
     progress.className = "voice-transfer-progress";
     transfer.append(button, status, progress);
@@ -5707,9 +6122,12 @@ function createVoiceMessageBody(item) {
 
 function formatFileSize(bytes) {
   const size = Math.max(0, Number(bytes) || 0);
-  if (size >= 1024 ** 4) return `${(size / 1024 ** 4).toFixed(size >= 10 * 1024 ** 4 ? 0 : 1)} TB`;
-  if (size >= 1024 ** 3) return `${(size / 1024 ** 3).toFixed(size >= 10 * 1024 ** 3 ? 0 : 1)} GB`;
-  if (size >= 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(size >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
+  if (size >= 1024 ** 4)
+    return `${(size / 1024 ** 4).toFixed(size >= 10 * 1024 ** 4 ? 0 : 1)} TB`;
+  if (size >= 1024 ** 3)
+    return `${(size / 1024 ** 3).toFixed(size >= 10 * 1024 ** 3 ? 0 : 1)} GB`;
+  if (size >= 1024 * 1024)
+    return `${(size / (1024 * 1024)).toFixed(size >= 10 * 1024 * 1024 ? 0 : 1)} MB`;
   if (size >= 1024) return `${Math.ceil(size / 1024)} KB`;
   return `${size} B`;
 }
@@ -5717,7 +6135,12 @@ function formatFileSize(bytes) {
 function getFileMessageIcon(file) {
   if (file.security?.previewKind === "audio") return "fa-regular fa-file-audio";
   if (file.security?.previewKind === "video") return "fa-regular fa-file-video";
-  if (file.security?.previewKind === "image" || file.security?.canPreview || String(file.mimeType).startsWith("image/")) return "fa-regular fa-image";
+  if (
+    file.security?.previewKind === "image" ||
+    file.security?.canPreview ||
+    String(file.mimeType).startsWith("image/")
+  )
+    return "fa-regular fa-image";
   return "fa-regular fa-file";
 }
 
@@ -5747,7 +6170,10 @@ function createFileAudioPlayer(file) {
     const playing = !audio.paused && !audio.ended;
     player.classList.toggle("playing", playing);
     playIcon.className = playing ? "fa-solid fa-pause" : "fa-solid fa-play";
-    playButton.setAttribute("aria-label", playing ? "Pause audio file" : "Play audio file");
+    playButton.setAttribute(
+      "aria-label",
+      playing ? "Pause audio file" : "Play audio file",
+    );
   };
   playButton.addEventListener("click", () => {
     if (audio.paused || audio.ended) {
@@ -5831,8 +6257,7 @@ function createFileMessageBody(item) {
     : securityLabel;
   securityBadge.setAttribute("role", "img");
   securityBadge.setAttribute("aria-label", securityBadge.dataset.tooltip);
-  securityBadge.innerHTML =
-    `<i class="fa-solid ${securityIcons[securityLevel] || securityIcons.warning}" aria-hidden="true"></i>`;
+  securityBadge.innerHTML = `<i class="fa-solid ${securityIcons[securityLevel] || securityIcons.warning}" aria-hidden="true"></i>`;
   icon.append(securityBadge);
 
   const meta = document.createElement("span");
@@ -5846,7 +6271,10 @@ function createFileMessageBody(item) {
 
   const actions = document.createElement("span");
   actions.className = "file-message-actions";
-  if (item.sender === "them" && ["offered", "failed", "released"].includes(file.downloadState)) {
+  if (
+    item.sender === "them" &&
+    ["offered", "failed", "released"].includes(file.downloadState)
+  ) {
     const accept = document.createElement("button");
     accept.type = "button";
     accept.className = "file-message-action primary";
@@ -5872,7 +6300,8 @@ function createFileMessageBody(item) {
     const save = document.createElement("button");
     save.type = "button";
     save.className = "file-message-action primary";
-    save.title = file.downloadState === "saved" ? "Save another copy" : "Save file";
+    save.title =
+      file.downloadState === "saved" ? "Save another copy" : "Save file";
     save.setAttribute("aria-label", save.title);
     save.innerHTML = `<i class="fa-solid ${file.downloadState === "saved" ? "fa-check" : "fa-download"}" aria-hidden="true"></i>`;
     save.addEventListener("click", () => void saveFileMessage(item));
@@ -5880,7 +6309,8 @@ function createFileMessageBody(item) {
   } else if (["requested", "saving"].includes(file.downloadState)) {
     const progressIcon = document.createElement("span");
     progressIcon.className = "file-message-action";
-    progressIcon.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>';
+    progressIcon.innerHTML =
+      '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>';
     actions.append(progressIcon);
   }
   header.append(icon, meta, actions);
@@ -5889,25 +6319,40 @@ function createFileMessageBody(item) {
   const mediaPreview = createFileMediaPreview(file);
   if (mediaPreview) body.append(mediaPreview);
 
-  if (["requested", "saving", "failed", "invalid", "declined", "released", "expired"].includes(file.downloadState)) {
+  if (
+    [
+      "requested",
+      "saving",
+      "failed",
+      "invalid",
+      "declined",
+      "released",
+      "expired",
+    ].includes(file.downloadState)
+  ) {
     const transfer = document.createElement("div");
     transfer.className = "file-transfer-status";
     const label = document.createElement("span");
     label.className = `file-security-status ${file.downloadState === "invalid" ? "blocked" : ""}`;
-    label.textContent = file.transferStatus || {
-      requested: "Downloading securely...",
-      saving: "Scanning and saving...",
-      failed: "Transfer interrupted – retry",
-      invalid: "Blocked by security checks",
-      declined: "File declined",
-      released: "Temporary file removed – download again if needed",
-      expired: "File offer expired",
-    }[file.downloadState];
+    label.textContent =
+      file.transferStatus ||
+      {
+        requested: "Downloading securely...",
+        saving: "Scanning and saving...",
+        failed: "Transfer interrupted – retry",
+        invalid: "Blocked by security checks",
+        declined: "File declined",
+        released: "Temporary file removed – download again if needed",
+        expired: "File offer expired",
+      }[file.downloadState];
     transfer.append(label);
     if (file.downloadState === "requested") {
       const progress = document.createElement("span");
       progress.className = "file-transfer-progress";
-      progress.style.setProperty("--file-transfer-progress", `${file.transferProgress || 0}%`);
+      progress.style.setProperty(
+        "--file-transfer-progress",
+        `${file.transferProgress || 0}%`,
+      );
       transfer.append(progress);
     }
     body.append(transfer);
@@ -5968,12 +6413,18 @@ function createChatMessage(item) {
     quote.type = "button";
     quote.className = "message-reply-quote";
     const author = document.createElement("strong");
-    author.textContent = item.replyTo.sender === "me" ? "You" : getPeerLabel(peerId, connections.get(peerId));
+    author.textContent =
+      item.replyTo.sender === "me"
+        ? "You"
+        : getPeerLabel(peerId, connections.get(peerId));
     const preview = document.createElement("span");
     preview.textContent = String(item.replyTo.text || "Message").slice(0, 120);
     quote.append(author, preview);
     quote.addEventListener("click", () => {
-      findRenderedMessageRow(item.replyTo.id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      findRenderedMessageRow(item.replyTo.id)?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     });
     bubble.append(quote);
   }
@@ -6075,7 +6526,12 @@ function refreshMessageDeliveryState(peerId, messageId) {
   );
 }
 
-function setMessageDeliveryState(peerId, messageId, status, statusAt = Date.now()) {
+function setMessageDeliveryState(
+  peerId,
+  messageId,
+  status,
+  statusAt = Date.now(),
+) {
   const item = ensureChatHistory(peerId).find(
     (message) => message.id === messageId && message.sender === "me",
   );
@@ -6094,12 +6550,14 @@ function setMessageDeliveryState(peerId, messageId, status, statusAt = Date.now(
   const now = Number.isFinite(statusAt) ? statusAt : Date.now();
   if (status === "delivered") {
     item.deliveredAt ||= now;
-    if (item.sentAt && item.roundTripMs == null) item.roundTripMs = Math.max(0, now - item.sentAt);
+    if (item.sentAt && item.roundTripMs == null)
+      item.roundTripMs = Math.max(0, now - item.sentAt);
   }
   if (status === "read") {
     item.deliveredAt ||= now;
     item.readAt ||= now;
-    if (item.sentAt && item.roundTripMs == null) item.roundTripMs = Math.max(0, now - item.sentAt);
+    if (item.sentAt && item.roundTripMs == null)
+      item.roundTripMs = Math.max(0, now - item.sentAt);
   }
   refreshMessageDeliveryState(peerId, messageId);
 }
@@ -6163,7 +6621,10 @@ function appendMessageRow(row, { animate = false } = {}) {
   const shouldFollowNewMessage = isChatScrolledToBottom();
   if (animate && !shouldReduceMessageMotion()) {
     row.classList.add("message-entering");
-    setTimeout(() => row.classList.remove("message-entering"), MESSAGE_TRANSITION_MS + 80);
+    setTimeout(
+      () => row.classList.remove("message-entering"),
+      MESSAGE_TRANSITION_MS + 80,
+    );
   }
   messages.append(row);
   if (shouldFollowNewMessage) {
@@ -6259,7 +6720,9 @@ function clearUpdateAvailableUi() {
   appMenuUpdate.disabled = false;
   setTitlebarActionLabel(
     appMenuUpdate,
-    platformApi.isWindowsStore ? "Open Microsoft Store updates" : "Check for updates",
+    platformApi.isWindowsStore
+      ? "Open Microsoft Store updates"
+      : "Check for updates",
   );
   appMenuUpdate.querySelector("i").className = "fa-solid fa-rotate-right";
   appMenuUpdateIgnore.classList.add("hidden");
@@ -6277,7 +6740,8 @@ function syncAvailableUpdateUi() {
   }
 
   const isMandatory = Boolean(availableUpdate.mandatory);
-  const isIgnored = !isMandatory && ignoredUpdateVersion === availableUpdate.version;
+  const isIgnored =
+    !isMandatory && ignoredUpdateVersion === availableUpdate.version;
   const directInstallUnavailable = Boolean(
     availableUpdate.directInstallUnavailable,
   );
@@ -6287,18 +6751,18 @@ function syncAvailableUpdateUi() {
   const updateHeading = useLinuxCommand
     ? "Update available"
     : directInstallUnavailable
-    ? "Direct update unavailable"
-    : isMandatory
-      ? "Update required"
-      : "Update available";
+      ? "Direct update unavailable"
+      : isMandatory
+        ? "Update required"
+        : "Update available";
   const updateDescription = useLinuxCommand
     ? `Version ${availableUpdate.version} is ready. Copy the Linux update command to install it.`
     : directInstallUnavailable
-    ? availableUpdate.unavailableReason ||
-      "A verified direct download could not be found. Open the latest GitHub release instead."
-    : isMandatory
-      ? `Version ${availableUpdate.minimumVersion} or later is required to continue.`
-      : `Version ${availableUpdate.version} is ready. You are using ${currentVersion}.`;
+      ? availableUpdate.unavailableReason ||
+        "A verified direct download could not be found. Open the latest GitHub release instead."
+      : isMandatory
+        ? `Version ${availableUpdate.minimumVersion} or later is required to continue.`
+        : `Version ${availableUpdate.version} is ready. You are using ${currentVersion}.`;
   updateTitle.textContent = updateHeading;
   updateText.textContent = updateDescription;
   updateButton.textContent = directInstallUnavailable
@@ -6434,7 +6898,9 @@ async function maybeAutoDownloadAvailableUpdate() {
   }
 
   updateAutoDownloadInFlight = true;
-  renderUpdateSettingsStatus(`Preparing verified update ${availableUpdate.version}...`);
+  renderUpdateSettingsStatus(
+    `Preparing verified update ${availableUpdate.version}...`,
+  );
   try {
     const result = await platformApi.downloadUpdate(details);
     if (!result?.ok) {
@@ -6512,7 +6978,9 @@ async function checkForUpdates({ manual = false } = {}) {
 
     const manifest = parseManifest(manifestText);
     const latestVersion = manifest.version;
-    const effectiveCurrentVersion = debugSimulateUpdate ? "0.0.0" : currentVersion;
+    const effectiveCurrentVersion = debugSimulateUpdate
+      ? "0.0.0"
+      : currentVersion;
     const minimumVersion = /^\d+\.\d+\.\d+$/.test(manifest.minimumVersion || "")
       ? manifest.minimumVersion
       : "";
@@ -6522,7 +6990,10 @@ async function checkForUpdates({ manual = false } = {}) {
     if (!/^\d+\.\d+\.\d+$/.test(latestVersion || "")) {
       throw new Error("Update manifest has no valid release version.");
     }
-    if (!mandatory && compareVersions(latestVersion, effectiveCurrentVersion) <= 0) {
+    if (
+      !mandatory &&
+      compareVersions(latestVersion, effectiveCurrentVersion) <= 0
+    ) {
       clearUpdateAvailableUi();
       writeDiagnosticLog("update-check-complete", {
         manual,
@@ -6560,7 +7031,9 @@ async function checkForUpdates({ manual = false } = {}) {
       if (manual) {
         setUpdateMenuStatus("No macOS build found");
         setStatus("offline", "Update manifest has no macOS installer.");
-        renderUpdateSettingsStatus("No installer is available for this platform.");
+        renderUpdateSettingsStatus(
+          "No installer is available for this platform.",
+        );
       }
       return;
     }
@@ -6689,7 +7162,8 @@ function disposeMessageAssets(item) {
   for (const objectUrl of [item?.voice?.objectUrl, item?.file?.previewUrl]) {
     if (objectUrl) URL.revokeObjectURL(objectUrl);
   }
-  if (item?.file?.tempRef) void platformApi.releaseReceivedFile(item.file.tempRef);
+  if (item?.file?.tempRef)
+    void platformApi.releaseReceivedFile(item.file.tempRef);
 }
 
 function addChatMessage({
@@ -6775,12 +7249,15 @@ function showAppNotification(details) {
   const promise = platformApi
     .showNotification({
       ...details,
-      theme: document.documentElement.dataset.theme || appConfig.appSettings.theme,
-      accent: getComputedStyle(document.documentElement).getPropertyValue("--accent").trim(),
+      theme:
+        document.documentElement.dataset.theme || appConfig.appSettings.theme,
+      accent: getComputedStyle(document.documentElement)
+        .getPropertyValue("--accent")
+        .trim(),
       showWhenFocused: appConfig.notificationSettings.showWhenFocused,
     })
     .catch(() => {});
-    
+
   if (!details.silent) {
     playSound(messageAudio, "messages");
   }
@@ -6903,7 +7380,9 @@ function playConnectedSound() {
 }
 
 function formatIncomingMessagePreview(text) {
-  const compact = String(text || "").replace(/\s+/g, " ").trim();
+  const compact = String(text || "")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!compact) return "New message";
   return compact.length > 140 ? `${compact.slice(0, 137).trimEnd()}…` : compact;
 }
@@ -6911,7 +7390,11 @@ function formatIncomingMessagePreview(text) {
 function notifyIncomingMessage(peerId, text, { variant = "chat" } = {}) {
   normalizeAppSettings();
   refreshNotificationState();
-  if (isPresenceDnd() || isPresenceOffline() || findContact(getPeerIdentityId(peerId, connections.get(peerId)))?.muted) {
+  if (
+    isPresenceDnd() ||
+    isPresenceOffline() ||
+    findContact(getPeerIdentityId(peerId, connections.get(peerId)))?.muted
+  ) {
     return;
   }
 
@@ -6979,8 +7462,13 @@ function setReplyTarget(item) {
   replyTarget = item || null;
   if (!replyTarget) return;
   const preview = String(
-    replyTarget.text || (replyTarget.voice ? "Voice message" : replyTarget.file?.name || "Message"),
-  ).replace(/\s+/g, " ").slice(0, 54);
+    replyTarget.text ||
+      (replyTarget.voice
+        ? "Voice message"
+        : replyTarget.file?.name || "Message"),
+  )
+    .replace(/\s+/g, " ")
+    .slice(0, 54);
   messageInput.placeholder = `Replying to “${preview}${preview.length >= 54 ? "…" : ""}”`;
   messageInput.focus();
 }
@@ -7020,13 +7508,21 @@ function sendChatText(peerId, rawText) {
 
   const messageId = createMessageId();
   const createdAt = Date.now();
-  const reply = replyTarget?.peerId === peerId
-    ? {
-        id: replyTarget.id,
-        text: String(replyTarget.text || (replyTarget.voice ? "Voice message" : replyTarget.file ? replyTarget.file.name : "Message")).slice(0, 160),
-        sender: replyTarget.sender,
-      }
-    : null;
+  const reply =
+    replyTarget?.peerId === peerId
+      ? {
+          id: replyTarget.id,
+          text: String(
+            replyTarget.text ||
+              (replyTarget.voice
+                ? "Voice message"
+                : replyTarget.file
+                  ? replyTarget.file.name
+                  : "Message"),
+          ).slice(0, 160),
+          sender: replyTarget.sender,
+        }
+      : null;
   const payload = {
     type: "chat-message",
     id: messageId,
@@ -7078,18 +7574,29 @@ function formatVoiceSize(bytes) {
 }
 
 function getVoiceMessageMimeType() {
-  if (!window.MediaRecorder || !navigator.mediaDevices?.getUserMedia || typeof MediaRecorder.isTypeSupported !== "function") {
+  if (
+    !window.MediaRecorder ||
+    !navigator.mediaDevices?.getUserMedia ||
+    typeof MediaRecorder.isTypeSupported !== "function"
+  ) {
     return "";
   }
-  return [...VOICE_MESSAGE_MIME_TYPES].find((type) =>
-    MediaRecorder.isTypeSupported(type),
-  ) || "";
+  return (
+    [...VOICE_MESSAGE_MIME_TYPES].find((type) =>
+      MediaRecorder.isTypeSupported(type),
+    ) || ""
+  );
 }
 
 function syncComposerAction() {
   const recording = voiceRecorder?.state === "recording";
   const hasText = messageInput.value.trim().length > 0;
-  const canSend = Boolean(activePeerId && connections.get(activePeerId)?.open && hasText && !recording);
+  const canSend = Boolean(
+    activePeerId &&
+    connections.get(activePeerId)?.open &&
+    hasText &&
+    !recording,
+  );
   sendButton.disabled = !canSend;
   sendButton.classList.toggle("hidden", !hasText || recording);
   voiceRecordButton.classList.toggle("hidden", hasText && !recording);
@@ -7113,7 +7620,10 @@ function enableCountryFlagEmojiSupport() {
   if (countryFlagEmojiSupportPromise) return countryFlagEmojiSupportPromise;
   countryFlagEmojiSupportPromise = import("country-flag-emoji-polyfill")
     .then(({ polyfillCountryFlagEmojis }) =>
-      polyfillCountryFlagEmojis("Twemoji Country Flags", countryFlagEmojiFontUrl),
+      polyfillCountryFlagEmojis(
+        "Twemoji Country Flags",
+        countryFlagEmojiFontUrl,
+      ),
     )
     .catch((error) => {
       console.warn("[Aero] Country flag emoji fallback could not load.", error);
@@ -7134,12 +7644,19 @@ async function ensureEmojiPicker() {
       dataSource: emojiShortcodeDataUrl,
       locale: "en",
     });
-    picker.shadowRoot.addEventListener("click", (event) => {
-      const emojiTarget = event.target instanceof Element ? event.target.closest(".emoji") : null;
-      if (emojiTarget?.id?.match(/^(?:emo|fav)-/)) {
-        emojiPickerClickModifiers.push({ keepOpen: event.shiftKey });
-      }
-    }, true);
+    picker.shadowRoot.addEventListener(
+      "click",
+      (event) => {
+        const emojiTarget =
+          event.target instanceof Element
+            ? event.target.closest(".emoji")
+            : null;
+        if (emojiTarget?.id?.match(/^(?:emo|fav)-/)) {
+          emojiPickerClickModifiers.push({ keepOpen: event.shiftKey });
+        }
+      },
+      true,
+    );
     picker.addEventListener("emoji-click-sync", (event) => {
       const { keepOpen = false } = emojiPickerClickModifiers.shift() || {};
       Promise.resolve(event.detail).then((detail) => {
@@ -7156,7 +7673,10 @@ async function ensureEmojiPicker() {
       });
     });
     const removeNativeEmojiTitles = () => {
-      picker.shadowRoot.querySelectorAll(".emoji[id^='emo-'][title], .emoji[id^='fav-'][title]")
+      picker.shadowRoot
+        .querySelectorAll(
+          ".emoji[id^='emo-'][title], .emoji[id^='fav-'][title]",
+        )
         .forEach((emojiElement) => emojiElement.removeAttribute("title"));
     };
     removeNativeEmojiTitles();
@@ -7167,7 +7687,8 @@ async function ensureEmojiPicker() {
       attributeFilter: ["title"],
     });
     picker.shadowRoot.addEventListener("pointerover", async (event) => {
-      const target = event.target instanceof Element ? event.target.closest(".emoji") : null;
+      const target =
+        event.target instanceof Element ? event.target.closest(".emoji") : null;
       if (!target?.id?.match(/^(?:emo|fav)-/)) return;
       const pointer = { x: event.clientX, y: event.clientY };
       emojiPickerHoverTarget = target;
@@ -7191,17 +7712,23 @@ async function ensureEmojiPicker() {
       }
     });
     picker.shadowRoot.addEventListener("pointermove", (event) => {
-      const target = event.target instanceof Element ? event.target.closest(".emoji") : null;
+      const target =
+        event.target instanceof Element ? event.target.closest(".emoji") : null;
       if (target?.id?.match(/^(?:emo|fav)-/)) {
         emojiPickerHoverTarget = target;
         emojiPickerHoverPointer = { x: event.clientX, y: event.clientY };
       }
-      if (activeTooltipTarget !== target || tooltipEl.classList.contains("hidden")) return;
+      if (
+        activeTooltipTarget !== target ||
+        tooltipEl.classList.contains("hidden")
+      )
+        return;
       lastTooltipPointer = emojiPickerHoverPointer;
       positionTooltipAtPointer(lastTooltipPointer);
     });
     picker.shadowRoot.addEventListener("pointerout", (event) => {
-      const target = event.target instanceof Element ? event.target.closest(".emoji") : null;
+      const target =
+        event.target instanceof Element ? event.target.closest(".emoji") : null;
       if (target && !target.contains(event.relatedTarget)) {
         if (emojiPickerHoverTarget === target) {
           emojiPickerHoverTarget = null;
@@ -7223,7 +7750,9 @@ async function ensureEmojiPicker() {
 }
 
 async function setEmojiPickerOpen(open) {
-  const shouldOpen = Boolean(open && !messageInput.disabled && !emojiPickerButton.disabled);
+  const shouldOpen = Boolean(
+    open && !messageInput.disabled && !emojiPickerButton.disabled,
+  );
   if (!shouldOpen) {
     emojiPickerPopover.classList.add("hidden");
     emojiPickerButton.setAttribute("aria-expanded", "false");
@@ -7235,10 +7764,12 @@ async function setEmojiPickerOpen(open) {
   emojiPickerButton.setAttribute("aria-expanded", "true");
   if (emojiPicker) return;
 
-  emojiPickerPopover.replaceChildren(Object.assign(document.createElement("div"), {
-    className: "emoji-picker-loading",
-    textContent: "Loading emoji…",
-  }));
+  emojiPickerPopover.replaceChildren(
+    Object.assign(document.createElement("div"), {
+      className: "emoji-picker-loading",
+      textContent: "Loading emoji…",
+    }),
+  );
   emojiPickerButton.setAttribute("aria-busy", "true");
   try {
     await ensureEmojiPicker();
@@ -7286,20 +7817,24 @@ async function loadEmojiShortcodeIndex() {
   if (emojiShortcodeIndexLoading) return emojiShortcodeIndexLoading;
   emojiShortcodeIndexLoading = fetch(emojiShortcodeDataUrl)
     .then((response) => {
-      if (!response.ok) throw new Error(`Emoji data request failed (${response.status})`);
+      if (!response.ok)
+        throw new Error(`Emoji data request failed (${response.status})`);
       return response.json();
     })
-    .then((emojiData) => emojiData.flatMap((emoji) =>
-      (emoji.shortcodes || []).map((shortcode) => ({
-        emoji: emoji.emoji,
-        shortcode: String(shortcode).toLowerCase(),
-      })),
-    ));
+    .then((emojiData) =>
+      emojiData.flatMap((emoji) =>
+        (emoji.shortcodes || []).map((shortcode) => ({
+          emoji: emoji.emoji,
+          shortcode: String(shortcode).toLowerCase(),
+        })),
+      ),
+    );
   try {
     emojiShortcodeIndex = await emojiShortcodeIndexLoading;
     emojiShortcodeTooltipMap = new Map();
     for (const { emoji, shortcode } of emojiShortcodeIndex) {
-      if (!emojiShortcodeTooltipMap.has(emoji)) emojiShortcodeTooltipMap.set(emoji, shortcode);
+      if (!emojiShortcodeTooltipMap.has(emoji))
+        emojiShortcodeTooltipMap.set(emoji, shortcode);
     }
     return emojiShortcodeIndex;
   } finally {
@@ -7310,8 +7845,15 @@ async function loadEmojiShortcodeIndex() {
 async function getEmojiShortcodeTooltip(unicode) {
   if (!unicode) return "";
   await loadEmojiShortcodeIndex();
-  const normalizedUnicode = String(unicode).replace(/[\u{1F3FB}-\u{1F3FF}]/gu, "");
-  return emojiShortcodeTooltipMap.get(unicode) || emojiShortcodeTooltipMap.get(normalizedUnicode) || "";
+  const normalizedUnicode = String(unicode).replace(
+    /[\u{1F3FB}-\u{1F3FF}]/gu,
+    "",
+  );
+  return (
+    emojiShortcodeTooltipMap.get(unicode) ||
+    emojiShortcodeTooltipMap.get(normalizedUnicode) ||
+    ""
+  );
 }
 
 function scheduleEmojiPickerTooltip(target, pointer) {
@@ -7326,30 +7868,54 @@ function scheduleEmojiPickerTooltip(target, pointer) {
 
 function renderEmojiShortcodeSuggestions(suggestions) {
   emojiShortcodeSuggestions = suggestions;
-  emojiShortcodeSelection = Math.min(emojiShortcodeSelection, Math.max(0, suggestions.length - 1));
-  emojiShortcodePopover.replaceChildren(...suggestions.map((suggestion, index) => {
-    const option = document.createElement("button");
-    option.id = `emoji-shortcode-option-${index}`;
-    option.type = "button";
-    option.className = "emoji-shortcode-option";
-    option.setAttribute("role", "option");
-    option.setAttribute("aria-selected", String(index === emojiShortcodeSelection));
-    option.append(
-      Object.assign(document.createElement("span"), { className: "emoji-shortcode-symbol", textContent: suggestion.emoji }),
-      Object.assign(document.createElement("span"), { className: "emoji-shortcode-name", textContent: `:${suggestion.shortcode}:` }),
-    );
-    option.addEventListener("click", () => insertEmojiShortcodeSuggestion(suggestion));
-    return option;
-  }));
+  emojiShortcodeSelection = Math.min(
+    emojiShortcodeSelection,
+    Math.max(0, suggestions.length - 1),
+  );
+  emojiShortcodePopover.replaceChildren(
+    ...suggestions.map((suggestion, index) => {
+      const option = document.createElement("button");
+      option.id = `emoji-shortcode-option-${index}`;
+      option.type = "button";
+      option.className = "emoji-shortcode-option";
+      option.setAttribute("role", "option");
+      option.setAttribute(
+        "aria-selected",
+        String(index === emojiShortcodeSelection),
+      );
+      option.append(
+        Object.assign(document.createElement("span"), {
+          className: "emoji-shortcode-symbol",
+          textContent: suggestion.emoji,
+        }),
+        Object.assign(document.createElement("span"), {
+          className: "emoji-shortcode-name",
+          textContent: `:${suggestion.shortcode}:`,
+        }),
+      );
+      option.addEventListener("click", () =>
+        insertEmojiShortcodeSuggestion(suggestion),
+      );
+      return option;
+    }),
+  );
   emojiShortcodePopover.classList.remove("hidden");
   messageInput.setAttribute("aria-expanded", "true");
-  messageInput.setAttribute("aria-activedescendant", `emoji-shortcode-option-${emojiShortcodeSelection}`);
+  messageInput.setAttribute(
+    "aria-activedescendant",
+    `emoji-shortcode-option-${emojiShortcodeSelection}`,
+  );
 }
 
 function insertEmojiShortcodeSuggestion(suggestion) {
   const trigger = getEmojiShortcodeTrigger();
   if (!trigger) return;
-  messageInput.setRangeText(suggestion.emoji, trigger.start, trigger.end, "end");
+  messageInput.setRangeText(
+    suggestion.emoji,
+    trigger.start,
+    trigger.end,
+    "end",
+  );
   messageInput.dispatchEvent(new Event("input", { bubbles: true }));
   closeEmojiShortcodeSuggestions();
   messageInput.focus();
@@ -7363,24 +7929,38 @@ async function refreshEmojiShortcodeSuggestions() {
   }
 
   const searchVersion = ++emojiShortcodeSearchVersion;
-  emojiShortcodePopover.replaceChildren(Object.assign(document.createElement("div"), {
-    className: "emoji-shortcode-loading",
-    textContent: "Searching emoji…",
-  }));
+  emojiShortcodePopover.replaceChildren(
+    Object.assign(document.createElement("div"), {
+      className: "emoji-shortcode-loading",
+      textContent: "Searching emoji…",
+    }),
+  );
   emojiShortcodePopover.classList.remove("hidden");
   messageInput.setAttribute("aria-expanded", "true");
   try {
     const index = await loadEmojiShortcodeIndex();
     if (searchVersion !== emojiShortcodeSearchVersion) return;
     const currentTrigger = getEmojiShortcodeTrigger();
-    if (!currentTrigger || currentTrigger.query !== trigger.query) return closeEmojiShortcodeSuggestions();
+    if (!currentTrigger || currentTrigger.query !== trigger.query)
+      return closeEmojiShortcodeSuggestions();
     const suggestions = index
       .map((item) => ({
         ...item,
-        score: item.shortcode === trigger.query ? 0 : item.shortcode.startsWith(trigger.query) ? 1 : 2,
+        score:
+          item.shortcode === trigger.query
+            ? 0
+            : item.shortcode.startsWith(trigger.query)
+              ? 1
+              : 2,
       }))
-      .filter((item) => item.score < 2 || item.shortcode.includes(trigger.query))
-      .sort((first, second) => first.score - second.score || first.shortcode.localeCompare(second.shortcode))
+      .filter(
+        (item) => item.score < 2 || item.shortcode.includes(trigger.query),
+      )
+      .sort(
+        (first, second) =>
+          first.score - second.score ||
+          first.shortcode.localeCompare(second.shortcode),
+      )
       .slice(0, 6);
     if (!suggestions.length) return closeEmojiShortcodeSuggestions();
     emojiShortcodeSelection = 0;
@@ -7394,8 +7974,14 @@ async function refreshEmojiShortcodeSuggestions() {
 function updateVoiceRecordUi() {
   const recording = voiceRecorder?.state === "recording";
   voiceRecordButton.classList.toggle("recording", recording);
-  voiceRecordButton.disabled = !recording && (!activePeerId || !connections.get(activePeerId)?.open || !getVoiceMessageMimeType());
-  voiceRecordButton.title = recording ? "Stop and send voice message" : "Record voice message";
+  voiceRecordButton.disabled =
+    !recording &&
+    (!activePeerId ||
+      !connections.get(activePeerId)?.open ||
+      !getVoiceMessageMimeType());
+  voiceRecordButton.title = recording
+    ? "Stop and send voice message"
+    : "Record voice message";
   voiceRecordButton.setAttribute("aria-label", voiceRecordButton.title);
   voiceRecordButton.querySelector("i").className = recording
     ? "fa-solid fa-stop"
@@ -7408,7 +7994,11 @@ function updateVoiceRecordUi() {
 async function sha256Hex(blob) {
   const hash = sha256.create();
   for (let offset = 0; offset < blob.size; offset += 4 * 1024 * 1024) {
-    hash.update(new Uint8Array(await blob.slice(offset, offset + 4 * 1024 * 1024).arrayBuffer()));
+    hash.update(
+      new Uint8Array(
+        await blob.slice(offset, offset + 4 * 1024 * 1024).arrayBuffer(),
+      ),
+    );
   }
   return Array.from(hash.digest(), (byte) =>
     byte.toString(16).padStart(2, "0"),
@@ -7419,15 +8009,19 @@ async function hasExpectedVoiceSignature(blob, mimeType) {
   const header = new Uint8Array(await blob.slice(0, 8192).arrayBuffer());
   const headerText = new TextDecoder().decode(header);
   if (mimeType.startsWith("audio/webm")) {
-    return header[0] === 0x1a && header[1] === 0x45 && header[2] === 0xdf && header[3] === 0xa3 && headerText.includes("A_OPUS");
+    return (
+      header[0] === 0x1a &&
+      header[1] === 0x45 &&
+      header[2] === 0xdf &&
+      header[3] === 0xa3 &&
+      headerText.includes("A_OPUS")
+    );
   }
   return headerText.startsWith("OggS") && headerText.includes("OpusHead");
 }
 
 function findVoiceMessage(peerId, voiceId) {
-  return ensureChatHistory(peerId).find(
-    (item) => item.voice?.id === voiceId,
-  );
+  return ensureChatHistory(peerId).find((item) => item.voice?.id === voiceId);
 }
 
 function normalizeVoiceOffer(voice) {
@@ -7440,8 +8034,12 @@ function normalizeVoiceOffer(voice) {
   if (
     !/^voice-[a-f0-9]{24}$/.test(id) ||
     !VOICE_MESSAGE_MIME_TYPES.has(mimeType) ||
-    !Number.isInteger(size) || size < 1 || size > VOICE_MESSAGE_MAX_BYTES ||
-    !Number.isFinite(duration) || duration < 0 || duration > VOICE_MESSAGE_MAX_DURATION_SECONDS ||
+    !Number.isInteger(size) ||
+    size < 1 ||
+    size > VOICE_MESSAGE_MAX_BYTES ||
+    !Number.isFinite(duration) ||
+    duration < 0 ||
+    duration > VOICE_MESSAGE_MAX_DURATION_SECONDS ||
     !/^[a-f0-9]{64}$/.test(sha256)
   ) {
     return null;
@@ -7463,7 +8061,10 @@ async function sendRecordedVoiceMessage(blob, duration, peerId) {
     id: createVoiceMessageId(),
     mimeType: blob.type.toLowerCase(),
     size: blob.size,
-    duration: Math.min(VOICE_MESSAGE_MAX_DURATION_SECONDS, Math.max(0, duration)),
+    duration: Math.min(
+      VOICE_MESSAGE_MAX_DURATION_SECONDS,
+      Math.max(0, duration),
+    ),
     sha256: await sha256Hex(blob),
   };
   const messageId = createMessageId();
@@ -7474,8 +8075,16 @@ async function sendRecordedVoiceMessage(blob, duration, peerId) {
   while (pendingVoiceUploads.size >= MAX_PENDING_VOICE_UPLOADS) {
     pendingVoiceUploads.delete(pendingVoiceUploads.keys().next().value);
   }
-  pendingVoiceUploads.set(voice.id, { blob, peerId, voice, expiresAt: Date.now() + VOICE_MESSAGE_EXPIRY_MS });
-  setTimeout(() => pendingVoiceUploads.delete(voice.id), VOICE_MESSAGE_EXPIRY_MS);
+  pendingVoiceUploads.set(voice.id, {
+    blob,
+    peerId,
+    voice,
+    expiresAt: Date.now() + VOICE_MESSAGE_EXPIRY_MS,
+  });
+  setTimeout(
+    () => pendingVoiceUploads.delete(voice.id),
+    VOICE_MESSAGE_EXPIRY_MS,
+  );
   writeDevLog(`Voice message offered (${Math.round(blob.size / 1024)} KB).`);
   addChatMessage({
     id: messageId,
@@ -7484,7 +8093,12 @@ async function sendRecordedVoiceMessage(blob, duration, peerId) {
     peerId,
     time: formatTime(),
     deliveryStatus: "sent",
-    voice: { ...voice, downloadState: "ready", objectUrl: URL.createObjectURL(blob), blob },
+    voice: {
+      ...voice,
+      downloadState: "ready",
+      objectUrl: URL.createObjectURL(blob),
+      blob,
+    },
   });
 }
 
@@ -7500,7 +8114,11 @@ async function startVoiceRecording() {
   }
   try {
     voiceRecordingStream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
     });
     const chunks = [];
     voiceRecorder = new MediaRecorder(voiceRecordingStream, {
@@ -7518,7 +8136,11 @@ async function startVoiceRecording() {
     voiceRecordingStartedAt = Date.now();
     voiceRecorder.ondataavailable = ({ data }) => {
       if (data.size) chunks.push(data);
-      if (voiceRecorder?.state === "recording" && chunks.reduce((total, chunk) => total + chunk.size, 0) > VOICE_MESSAGE_MAX_BYTES) {
+      if (
+        voiceRecorder?.state === "recording" &&
+        chunks.reduce((total, chunk) => total + chunk.size, 0) >
+          VOICE_MESSAGE_MAX_BYTES
+      ) {
         voiceRecorder?.stop();
       }
     };
@@ -7553,7 +8175,8 @@ async function startVoiceRecording() {
   } catch (error) {
     clearInterval(voiceRecordingPresenceTimer);
     voiceRecordingPresenceTimer = null;
-    if (voiceRecordingPeerId) sendVoiceRecordingState(voiceRecordingPeerId, false);
+    if (voiceRecordingPeerId)
+      sendVoiceRecordingState(voiceRecordingPeerId, false);
     voiceRecordingPeerId = null;
     voiceRecordingStream?.getTracks().forEach((track) => track.stop());
     voiceRecordingStream = null;
@@ -7565,16 +8188,25 @@ async function startVoiceRecording() {
 function getBinaryChunk(value) {
   if (value instanceof ArrayBuffer) return value;
   if (ArrayBuffer.isView(value)) {
-    return value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
+    return value.buffer.slice(
+      value.byteOffset,
+      value.byteOffset + value.byteLength,
+    );
   }
   return null;
 }
 
 async function sendVoiceTransfer(conn, upload) {
-  if (!sendProtocolMessage(conn, "voice-transfer-start", { voice: upload.voice })) {
+  if (
+    !sendProtocolMessage(conn, "voice-transfer-start", { voice: upload.voice })
+  ) {
     throw new Error("Could not start transfer.");
   }
-  for (let offset = 0, index = 0; offset < upload.blob.size; offset += VOICE_MESSAGE_CHUNK_BYTES, index += 1) {
+  for (
+    let offset = 0, index = 0;
+    offset < upload.blob.size;
+    offset += VOICE_MESSAGE_CHUNK_BYTES, index += 1
+  ) {
     if (!conn.open) throw new Error("Transfer interrupted.");
     if (conn.bufferSize > 2 * 1024 * 1024) {
       await new Promise((resolve) => setTimeout(resolve, 30));
@@ -7582,12 +8214,22 @@ async function sendVoiceTransfer(conn, upload) {
       index -= 1;
       continue;
     }
-    const bytes = await upload.blob.slice(offset, offset + VOICE_MESSAGE_CHUNK_BYTES).arrayBuffer();
-    if (!sendProtocolMessage(conn, "voice-transfer-chunk", { voiceId: upload.voice.id, index, bytes })) {
+    const bytes = await upload.blob
+      .slice(offset, offset + VOICE_MESSAGE_CHUNK_BYTES)
+      .arrayBuffer();
+    if (
+      !sendProtocolMessage(conn, "voice-transfer-chunk", {
+        voiceId: upload.voice.id,
+        index,
+        bytes,
+      })
+    ) {
       throw new Error("Transfer interrupted.");
     }
   }
-  sendProtocolMessage(conn, "voice-transfer-complete", { voiceId: upload.voice.id });
+  sendProtocolMessage(conn, "voice-transfer-complete", {
+    voiceId: upload.voice.id,
+  });
 }
 
 function requestVoiceMessage(item) {
@@ -7609,7 +8251,11 @@ function requestVoiceMessage(item) {
   }
 }
 
-function failVoiceDownload(peerId, voiceId, message = "Download interrupted - retry") {
+function failVoiceDownload(
+  peerId,
+  voiceId,
+  message = "Download interrupted - retry",
+) {
   incomingVoiceTransfers.delete(`${peerId}:${voiceId}`);
   const item = findVoiceMessage(peerId, voiceId);
   if (!item?.voice || item.voice.downloadState !== "requested") return;
@@ -7624,23 +8270,44 @@ function updateVoiceDownloadStatus(peerId, voiceId, text, progress = 0) {
   const item = findVoiceMessage(peerId, voiceId);
   const row = item
     ? Array.from(messages.querySelectorAll(".message-row")).find(
-      (candidate) => candidate.dataset.messageId === item.id,
-    )
+        (candidate) => candidate.dataset.messageId === item.id,
+      )
     : null;
   row?.querySelector(".voice-transfer-status")?.replaceChildren(text);
-  row?.querySelector(".voice-transfer-progress")?.style.setProperty(
-    "--voice-transfer-progress",
-    `${Math.max(0, Math.min(100, progress))}%`,
-  );
+  row
+    ?.querySelector(".voice-transfer-progress")
+    ?.style.setProperty(
+      "--voice-transfer-progress",
+      `${Math.max(0, Math.min(100, progress))}%`,
+    );
 }
 
 function handleVoiceOffer(peerId, conn, data) {
   const voice = normalizeVoiceOffer(data.voice);
-  if (!voice || !shouldAcceptIncomingMessage(peerId) || findVoiceMessage(peerId, voice.id)) return;
-  const messageId = typeof data.id === "string" ? data.id.slice(0, 128) : createMessageId();
-  addChatMessage({ id: messageId, text: "", sender: "them", peerId, time: typeof data.time === "string" ? data.time : formatTime(), voice: { ...voice, downloadState: "offered" } });
-  if (appConfig.appSettings?.readReceipts) sendProtocolMessage(conn, "message-delivered", { messageId, at: Date.now() });
-  notifyIncomingMessage(peerId, formatIncomingVoiceNotification(voice), { variant: "voice" });
+  if (
+    !voice ||
+    !shouldAcceptIncomingMessage(peerId) ||
+    findVoiceMessage(peerId, voice.id)
+  )
+    return;
+  const messageId =
+    typeof data.id === "string" ? data.id.slice(0, 128) : createMessageId();
+  addChatMessage({
+    id: messageId,
+    text: "",
+    sender: "them",
+    peerId,
+    time: typeof data.time === "string" ? data.time : formatTime(),
+    voice: { ...voice, downloadState: "offered" },
+  });
+  if (appConfig.appSettings?.readReceipts)
+    sendProtocolMessage(conn, "message-delivered", {
+      messageId,
+      at: Date.now(),
+    });
+  notifyIncomingMessage(peerId, formatIncomingVoiceNotification(voice), {
+    variant: "voice",
+  });
   if (appConfig.appSettings?.voiceAutoDownload) {
     requestVoiceMessage(findVoiceMessage(peerId, voice.id));
   }
@@ -7654,23 +8321,41 @@ function handleVoiceRequest(peerId, conn, data) {
     return;
   }
   sendVoiceTransfer(conn, upload).catch(() => {
-    sendProtocolMessage(conn, "voice-transfer-failed", { voiceId: upload.voice.id });
+    sendProtocolMessage(conn, "voice-transfer-failed", {
+      voiceId: upload.voice.id,
+    });
   });
 }
 
 function handleVoiceTransferStart(peerId, conn, data) {
   const voice = normalizeVoiceOffer(data.voice);
   const item = voice && findVoiceMessage(peerId, voice.id);
-  if (!voice || !item || item.voice.downloadState !== "requested" || item.voice.sha256 !== voice.sha256 || incomingVoiceTransfers.size >= MAX_ACTIVE_VOICE_TRANSFERS) {
-    sendProtocolMessage(conn, "voice-transfer-failed", { voiceId: String(data.voice?.id || "") });
+  if (
+    !voice ||
+    !item ||
+    item.voice.downloadState !== "requested" ||
+    item.voice.sha256 !== voice.sha256 ||
+    incomingVoiceTransfers.size >= MAX_ACTIVE_VOICE_TRANSFERS
+  ) {
+    sendProtocolMessage(conn, "voice-transfer-failed", {
+      voiceId: String(data.voice?.id || ""),
+    });
     return;
   }
-  incomingVoiceTransfers.set(`${peerId}:${voice.id}`, { voice, chunks: [], receivedSize: 0, nextIndex: 0 });
-  writeDevLog(`Voice message transfer started (${Math.round(voice.size / 1024)} KB).`);
+  incomingVoiceTransfers.set(`${peerId}:${voice.id}`, {
+    voice,
+    chunks: [],
+    receivedSize: 0,
+    nextIndex: 0,
+  });
+  writeDevLog(
+    `Voice message transfer started (${Math.round(voice.size / 1024)} KB).`,
+  );
   updateVoiceDownloadStatus(peerId, voice.id, "Downloading...", 0);
   setTimeout(() => {
     const key = `${peerId}:${voice.id}`;
-    if (incomingVoiceTransfers.has(key)) failVoiceDownload(peerId, voice.id, "Download timed out - retry");
+    if (incomingVoiceTransfers.has(key))
+      failVoiceDownload(peerId, voice.id, "Download timed out - retry");
   }, VOICE_MESSAGE_EXPIRY_MS);
 }
 
@@ -7678,8 +8363,21 @@ function handleVoiceTransferChunk(peerId, data) {
   const key = `${peerId}:${String(data.voiceId || "")}`;
   const transfer = incomingVoiceTransfers.get(key);
   const bytes = getBinaryChunk(data.bytes);
-  if (!transfer || !bytes || !Number.isInteger(data.index) || data.index !== transfer.nextIndex || !bytes.byteLength || bytes.byteLength > VOICE_MESSAGE_CHUNK_BYTES || transfer.receivedSize + bytes.byteLength > transfer.voice.size) {
-    if (transfer) failVoiceDownload(peerId, transfer.voice.id, "Invalid transfer data - retry");
+  if (
+    !transfer ||
+    !bytes ||
+    !Number.isInteger(data.index) ||
+    data.index !== transfer.nextIndex ||
+    !bytes.byteLength ||
+    bytes.byteLength > VOICE_MESSAGE_CHUNK_BYTES ||
+    transfer.receivedSize + bytes.byteLength > transfer.voice.size
+  ) {
+    if (transfer)
+      failVoiceDownload(
+        peerId,
+        transfer.voice.id,
+        "Invalid transfer data - retry",
+      );
     return;
   }
   transfer.chunks.push(bytes);
@@ -7707,8 +8405,10 @@ async function handleVoiceTransferComplete(peerId, data) {
   const blob = new Blob(transfer.chunks, { type: transfer.voice.mimeType });
   updateVoiceDownloadStatus(peerId, voiceId, "Verifying integrity...", 100);
   try {
-    if ((await sha256Hex(blob)) !== transfer.voice.sha256) throw new Error("SHA-256 mismatch");
-    if (!(await hasExpectedVoiceSignature(blob, transfer.voice.mimeType))) throw new Error("Invalid audio format");
+    if ((await sha256Hex(blob)) !== transfer.voice.sha256)
+      throw new Error("SHA-256 mismatch");
+    if (!(await hasExpectedVoiceSignature(blob, transfer.voice.mimeType)))
+      throw new Error("Invalid audio format");
     item.voice.blob = blob;
     item.voice.objectUrl = URL.createObjectURL(blob);
     item.voice.downloadState = "ready";
@@ -7737,9 +8437,11 @@ function normalizeFileOffer(value) {
   const sha256 = String(value.sha256 || "").toLowerCase();
   if (
     !/^file-[a-f0-9]{24}$/.test(id) ||
-    !name || name !== sanitizeTransferFileName(name) ||
+    !name ||
+    name !== sanitizeTransferFileName(name) ||
     mimeType.length > 160 ||
-    !Number.isSafeInteger(size) || size < 1 ||
+    !Number.isSafeInteger(size) ||
+    size < 1 ||
     !/^[a-f0-9]{64}$/.test(sha256)
   ) {
     return null;
@@ -7758,10 +8460,15 @@ function findFileMessage(peerId, fileId) {
   return ensureChatHistory(peerId).find((item) => item.file?.id === fileId);
 }
 
-function releaseFilePayload(item, state = "released", status = "Temporary file removed") {
+function releaseFilePayload(
+  item,
+  state = "released",
+  status = "Temporary file removed",
+) {
   if (!item?.file) return;
   if (item.file.previewUrl) URL.revokeObjectURL(item.file.previewUrl);
-  if (item.file.tempRef) void platformApi.releaseReceivedFile(item.file.tempRef);
+  if (item.file.tempRef)
+    void platformApi.releaseReceivedFile(item.file.tempRef);
   delete item.file.blob;
   delete item.file.tempRef;
   item.file.previewUrl = "";
@@ -7787,7 +8494,11 @@ function expirePendingFileUpload(fileId) {
 }
 
 async function sendSelectedFile(selectedFile, peerId = activePeerId) {
-  if (!(selectedFile instanceof Blob) || !peerId || !connections.get(peerId)?.open) {
+  if (
+    !(selectedFile instanceof Blob) ||
+    !peerId ||
+    !connections.get(peerId)?.open
+  ) {
     return;
   }
   const name = sanitizeTransferFileName(selectedFile.name || "file");
@@ -7822,19 +8533,28 @@ async function sendSelectedFile(selectedFile, peerId = activePeerId) {
     if (!confirmed) return;
   }
   if (!connections.get(peerId)?.open) {
-    setStatus("offline", "The contact disconnected while the file was being checked.");
+    setStatus(
+      "offline",
+      "The contact disconnected while the file was being checked.",
+    );
     return;
   }
 
   const file = {
     id: createFileTransferId(),
     name,
-    mimeType: selectedFile.type || security.detectedMime || "application/octet-stream",
+    mimeType:
+      selectedFile.type || security.detectedMime || "application/octet-stream",
     size: selectedFile.size,
     sha256: await sha256Hex(selectedFile),
   };
   const messageId = createMessageId();
-  if (!sendProtocolMessage(connections.get(peerId), "file-offer", { id: messageId, file })) {
+  if (
+    !sendProtocolMessage(connections.get(peerId), "file-offer", {
+      id: messageId,
+      file,
+    })
+  ) {
     setStatus("pending", "The file offer could not be sent.");
     return;
   }
@@ -7879,28 +8599,52 @@ function waitForFileTransferAck(transfer, index) {
 
 async function sendFileTransferChunks(transfer) {
   const { conn, upload } = transfer;
-  for (let offset = 0, index = 0; offset < upload.blob.size; offset += FILE_TRANSFER_CHUNK_BYTES, index += 1) {
+  for (
+    let offset = 0, index = 0;
+    offset < upload.blob.size;
+    offset += FILE_TRANSFER_CHUNK_BYTES, index += 1
+  ) {
     if (!conn.open) throw new Error("Transfer interrupted.");
     while (conn.bufferSize > 2 * 1024 * 1024) {
       await new Promise((resolve) => setTimeout(resolve, 30));
     }
-    const bytes = await upload.blob.slice(offset, offset + FILE_TRANSFER_CHUNK_BYTES).arrayBuffer();
-    if (!sendProtocolMessage(conn, "file-transfer-chunk", { fileId: upload.file.id, index, bytes })) {
+    const bytes = await upload.blob
+      .slice(offset, offset + FILE_TRANSFER_CHUNK_BYTES)
+      .arrayBuffer();
+    if (
+      !sendProtocolMessage(conn, "file-transfer-chunk", {
+        fileId: upload.file.id,
+        index,
+        bytes,
+      })
+    ) {
       throw new Error("Transfer interrupted.");
     }
     const finalChunk = offset + bytes.byteLength >= upload.blob.size;
-    if (transfer.useAcks && ((index + 1) % FILE_TRANSFER_WINDOW_CHUNKS === 0 || finalChunk)) {
+    if (
+      transfer.useAcks &&
+      ((index + 1) % FILE_TRANSFER_WINDOW_CHUNKS === 0 || finalChunk)
+    ) {
       await waitForFileTransferAck(transfer, index);
     }
   }
-  if (!sendProtocolMessage(conn, "file-transfer-complete", { fileId: upload.file.id })) {
+  if (
+    !sendProtocolMessage(conn, "file-transfer-complete", {
+      fileId: upload.file.id,
+    })
+  ) {
     throw new Error("Transfer interrupted.");
   }
 }
 
 async function requestFileMessage(item, { automatic = false } = {}) {
   const file = item?.file;
-  if (!file || item.sender === "me" || !["offered", "failed", "released"].includes(file.downloadState)) return;
+  if (
+    !file ||
+    item.sender === "me" ||
+    !["offered", "failed", "released"].includes(file.downloadState)
+  )
+    return;
   if (file.security?.level === "blocked") return;
   if (automatic && file.security?.level !== "safe") return;
   if (!automatic && ["warning", "unsafe"].includes(file.security?.level)) {
@@ -7939,7 +8683,12 @@ async function requestFileMessage(item, { automatic = false } = {}) {
   file.tempRef = prepared.tempRef;
   file.transferStatus = "Requesting secure download...";
   renderChatHistory();
-  if (!sendProtocolMessage(conn, "file-request", { fileId: file.id, streamed: true })) {
+  if (
+    !sendProtocolMessage(conn, "file-request", {
+      fileId: file.id,
+      streamed: true,
+    })
+  ) {
     void platformApi.releaseReceivedFile(file.tempRef);
     delete file.tempRef;
     file.downloadState = "failed";
@@ -7953,18 +8702,25 @@ function declineFileMessage(item) {
   delete item.file.requestedAutomatically;
   item.file.downloadState = "declined";
   item.file.transferStatus = "File declined";
-  sendProtocolMessage(connections.get(item.peerId), "file-declined", { fileId: item.file.id });
+  sendProtocolMessage(connections.get(item.peerId), "file-declined", {
+    fileId: item.file.id,
+  });
   if (activePeerId === item.peerId) renderChatHistory();
 }
 
-function failFileDownload(peerId, fileId, message = "Transfer interrupted – retry") {
+function failFileDownload(
+  peerId,
+  fileId,
+  message = "Transfer interrupted – retry",
+) {
   const key = `${peerId}:${fileId}`;
   const transfer = incomingFileTransfers.get(key);
   incomingFileTransfers.delete(key);
   if (transfer?.idleTimer) clearTimeout(transfer.idleTimer);
   const item = findFileMessage(peerId, fileId);
   if (!item?.file || item.file.downloadState !== "requested") return;
-  if (item.file.tempRef) void platformApi.releaseReceivedFile(item.file.tempRef);
+  if (item.file.tempRef)
+    void platformApi.releaseReceivedFile(item.file.tempRef);
   delete item.file.tempRef;
   delete item.file.requestedAutomatically;
   item.file.downloadState = "failed";
@@ -7974,8 +8730,14 @@ function failFileDownload(peerId, fileId, message = "Transfer interrupted – re
 
 function handleFileOffer(peerId, conn, data) {
   const file = normalizeFileOffer(data.file);
-  if (!file || !shouldAcceptIncomingMessage(peerId) || findFileMessage(peerId, file.id)) return;
-  const messageId = typeof data.id === "string" ? data.id.slice(0, 128) : createMessageId();
+  if (
+    !file ||
+    !shouldAcceptIncomingMessage(peerId) ||
+    findFileMessage(peerId, file.id)
+  )
+    return;
+  const messageId =
+    typeof data.id === "string" ? data.id.slice(0, 128) : createMessageId();
   const blocked = file.security.level === "blocked";
   addChatMessage({
     id: messageId,
@@ -7990,10 +8752,17 @@ function handleFileOffer(peerId, conn, data) {
     },
   });
   if (blocked) {
-    sendProtocolMessage(conn, "file-declined", { fileId: file.id, blocked: true });
+    sendProtocolMessage(conn, "file-declined", {
+      fileId: file.id,
+      blocked: true,
+    });
     return;
   }
-  if (appConfig.appSettings?.readReceipts) sendProtocolMessage(conn, "message-delivered", { messageId, at: Date.now() });
+  if (appConfig.appSettings?.readReceipts)
+    sendProtocolMessage(conn, "message-delivered", {
+      messageId,
+      at: Date.now(),
+    });
   notifyIncomingMessage(
     peerId,
     `${file.name} · ${formatFileSize(file.size)}\nOpen chat to accept`,
@@ -8004,7 +8773,9 @@ function handleFileOffer(peerId, conn, data) {
     isTrusted(getPeerIdentityId(peerId, conn)) &&
     file.security.level === "safe"
   ) {
-    void requestFileMessage(findFileMessage(peerId, file.id), { automatic: true });
+    void requestFileMessage(findFileMessage(peerId, file.id), {
+      automatic: true,
+    });
   }
 }
 
@@ -8013,7 +8784,9 @@ function handleFileRequest(peerId, conn, data) {
   const upload = pendingFileUploads.get(fileId);
   const transferKey = `${peerId}:${fileId}`;
   if (
-    !upload || upload.peerId !== peerId || upload.expiresAt < Date.now() ||
+    !upload ||
+    upload.peerId !== peerId ||
+    upload.expiresAt < Date.now() ||
     activeOutgoingFileTransfers.has(transferKey) ||
     activeOutgoingFileTransfers.size >= MAX_ACTIVE_FILE_TRANSFERS
   ) {
@@ -8032,14 +8805,18 @@ function handleFileRequest(peerId, conn, data) {
     sendProtocolMessage(conn, "file-transfer-failed", { fileId });
   }, FILE_TRANSFER_ACK_TIMEOUT_MS);
   activeOutgoingFileTransfers.set(transferKey, transfer);
-  if (!sendProtocolMessage(conn, "file-transfer-start", { file: upload.file })) {
+  if (
+    !sendProtocolMessage(conn, "file-transfer-start", { file: upload.file })
+  ) {
     clearTimeout(transfer.startTimer);
     activeOutgoingFileTransfers.delete(transferKey);
   } else if (!transfer.useAcks) {
     transfer.started = true;
     clearTimeout(transfer.startTimer);
     sendFileTransferChunks(transfer)
-      .catch(() => sendProtocolMessage(conn, "file-transfer-failed", { fileId }))
+      .catch(() =>
+        sendProtocolMessage(conn, "file-transfer-failed", { fileId }),
+      )
       .finally(() => activeOutgoingFileTransfers.delete(transferKey));
   }
 }
@@ -8066,7 +8843,8 @@ function handleFileTransferAck(peerId, data) {
   const fileId = String(data.fileId || "");
   const transfer = activeOutgoingFileTransfers.get(`${peerId}:${fileId}`);
   const index = Number(data.index);
-  if (!transfer || !Number.isInteger(index) || index < transfer.ackedIndex) return;
+  if (!transfer || !Number.isInteger(index) || index < transfer.ackedIndex)
+    return;
   transfer.ackedIndex = index;
   if (transfer.ackWaiter && index >= transfer.ackWaiter.index) {
     const waiter = transfer.ackWaiter;
@@ -8076,7 +8854,11 @@ function handleFileTransferAck(peerId, data) {
   }
 }
 
-function handleFileTransferFailed(peerId, fileId, message = "Sender unavailable – retry") {
+function handleFileTransferFailed(
+  peerId,
+  fileId,
+  message = "Sender unavailable – retry",
+) {
   const transferKey = `${peerId}:${fileId}`;
   const outgoing = activeOutgoingFileTransfers.get(transferKey);
   if (outgoing) {
@@ -8095,12 +8877,17 @@ function handleFileTransferStart(peerId, conn, data) {
   const item = file && findFileMessage(peerId, file.id);
   const transferKey = file ? `${peerId}:${file.id}` : "";
   if (
-    !file || !item || item.file.downloadState !== "requested" ||
-    item.file.sha256 !== file.sha256 || !item.file.tempRef ||
+    !file ||
+    !item ||
+    item.file.downloadState !== "requested" ||
+    item.file.sha256 !== file.sha256 ||
+    !item.file.tempRef ||
     incomingFileTransfers.has(transferKey) ||
     incomingFileTransfers.size >= MAX_ACTIVE_FILE_TRANSFERS
   ) {
-    sendProtocolMessage(conn, "file-transfer-failed", { fileId: String(data.file?.id || "") });
+    sendProtocolMessage(conn, "file-transfer-failed", {
+      fileId: String(data.file?.id || ""),
+    });
     return;
   }
   incomingFileTransfers.set(transferKey, {
@@ -8133,12 +8920,20 @@ function handleFileTransferChunk(peerId, data) {
   const transfer = incomingFileTransfers.get(key);
   const bytes = getBinaryChunk(data.bytes);
   if (
-    !transfer || !bytes || !Number.isInteger(data.index) ||
-    data.index !== transfer.nextIndex || !bytes.byteLength ||
+    !transfer ||
+    !bytes ||
+    !Number.isInteger(data.index) ||
+    data.index !== transfer.nextIndex ||
+    !bytes.byteLength ||
     bytes.byteLength > FILE_TRANSFER_CHUNK_BYTES ||
     transfer.receivedSize + bytes.byteLength > transfer.file.size
   ) {
-    if (transfer) failFileDownload(peerId, transfer.file.id, "Invalid transfer data – retry");
+    if (transfer)
+      failFileDownload(
+        peerId,
+        transfer.file.id,
+        "Invalid transfer data – retry",
+      );
     return;
   }
   transfer.receivedSize += bytes.byteLength;
@@ -8147,24 +8942,46 @@ function handleFileTransferChunk(peerId, data) {
   const chunkIndex = data.index;
   const chunkBytes = new Uint8Array(bytes);
   const receivedAfterChunk = transfer.receivedSize;
-  transfer.writeQueue = transfer.writeQueue.then(async () => {
-    if (transfer.writeError) throw transfer.writeError;
-    const result = await platformApi.appendIncomingFile(transfer.tempRef, chunkBytes);
-    if (result?.ok === false) throw new Error(result.error || "Temporary file write failed.");
-    transfer.hash.update(chunkBytes);
-    if ((chunkIndex + 1) % FILE_TRANSFER_WINDOW_CHUNKS === 0 || receivedAfterChunk === transfer.file.size) {
-      if (!sendProtocolMessage(transfer.conn, "file-transfer-ack", { fileId: transfer.file.id, index: chunkIndex })) {
-        throw new Error("Transfer acknowledgement failed.");
+  transfer.writeQueue = transfer.writeQueue
+    .then(async () => {
+      if (transfer.writeError) throw transfer.writeError;
+      const result = await platformApi.appendIncomingFile(
+        transfer.tempRef,
+        chunkBytes,
+      );
+      if (result?.ok === false)
+        throw new Error(result.error || "Temporary file write failed.");
+      transfer.hash.update(chunkBytes);
+      if (
+        (chunkIndex + 1) % FILE_TRANSFER_WINDOW_CHUNKS === 0 ||
+        receivedAfterChunk === transfer.file.size
+      ) {
+        if (
+          !sendProtocolMessage(transfer.conn, "file-transfer-ack", {
+            fileId: transfer.file.id,
+            index: chunkIndex,
+          })
+        ) {
+          throw new Error("Transfer acknowledgement failed.");
+        }
       }
-    }
-  }).catch((error) => {
-    transfer.writeError = error;
-    failFileDownload(peerId, transfer.file.id, error?.message || "Temporary file write failed – retry");
-    sendProtocolMessage(transfer.conn, "file-transfer-failed", { fileId: transfer.file.id });
-  });
+    })
+    .catch((error) => {
+      transfer.writeError = error;
+      failFileDownload(
+        peerId,
+        transfer.file.id,
+        error?.message || "Temporary file write failed – retry",
+      );
+      sendProtocolMessage(transfer.conn, "file-transfer-failed", {
+        fileId: transfer.file.id,
+      });
+    });
   const item = findFileMessage(peerId, transfer.file.id);
   if (item?.file) {
-    item.file.transferProgress = Math.round((transfer.receivedSize / transfer.file.size) * 100);
+    item.file.transferProgress = Math.round(
+      (transfer.receivedSize / transfer.file.size) * 100,
+    );
     item.file.transferStatus = `Downloading ${item.file.transferProgress}%`;
     if (
       activePeerId === peerId &&
@@ -8196,8 +9013,11 @@ async function handleFileTransferComplete(peerId, data) {
     await transfer.writeQueue;
     if (transfer.writeError) throw transfer.writeError;
     clearTimeout(transfer.idleTimer);
-    if (transfer.receivedSize !== transfer.file.size) throw new Error("Incomplete download");
-    const digest = Array.from(transfer.hash.digest(), (byte) => byte.toString(16).padStart(2, "0")).join("");
+    if (transfer.receivedSize !== transfer.file.size)
+      throw new Error("Incomplete download");
+    const digest = Array.from(transfer.hash.digest(), (byte) =>
+      byte.toString(16).padStart(2, "0"),
+    ).join("");
     if (digest !== transfer.file.sha256) throw new Error("SHA-256 mismatch");
     const finalized = await platformApi.finalizeIncomingFile(transfer.tempRef);
     if (!finalized?.ok || finalized.size !== transfer.file.size) {
@@ -8206,20 +9026,18 @@ async function handleFileTransferComplete(peerId, data) {
     const security = await inspectFileHeader(finalized.header, transfer.file);
     item.file.security = security;
     item.file.detectedMime = security.detectedMime;
-    if (security.level === "blocked") throw new Error(security.reasons.join(" "));
-    if (
-      security.level === "unsafe" &&
-      platformApi.supportsReceivedFileScan
-    ) {
+    if (security.level === "blocked")
+      throw new Error(security.reasons.join(" "));
+    if (security.level === "unsafe" && platformApi.supportsReceivedFileScan) {
       item.file.transferStatus = "Scanning for threats...";
       if (activePeerId === peerId) renderChatHistory();
-      const scan = await platformApi.scanReceivedFile(transfer.tempRef).catch(
-        (error) => ({
+      const scan = await platformApi
+        .scanReceivedFile(transfer.tempRef)
+        .catch((error) => ({
           ok: false,
           scanStatus: "error",
           error: error?.message || "Antivirus scan failed.",
-        }),
-      );
+        }));
       if (scan?.blocked) {
         throw new Error(
           `${scan.scanner || "Desktop antivirus"} detected a threat.`,
@@ -8241,10 +9059,13 @@ async function handleFileTransferComplete(peerId, data) {
     }
     item.file.downloadState = "ready";
     item.file.transferStatus = "";
-    saveAfterVerification = !item.file.previewUrl && !item.file.requestedAutomatically;
+    saveAfterVerification =
+      !item.file.previewUrl && !item.file.requestedAutomatically;
     delete item.file.requestedAutomatically;
     sendProtocolMessage(connections.get(peerId), "file-received", { fileId });
-    writeDevLog(`File downloaded to private temporary storage and verified (${formatFileSize(transfer.file.size)}).`);
+    writeDevLog(
+      `File downloaded to private temporary storage and verified (${formatFileSize(transfer.file.size)}).`,
+    );
   } catch (error) {
     await platformApi.releaseReceivedFile(transfer.tempRef);
     delete item.file.tempRef;
@@ -8295,13 +9116,13 @@ async function scanFileMessage(item) {
   }
 
   setStatus("pending", `Scanning ${file.name} for threats...`);
-  const result = await platformApi.scanReceivedFile(file.tempRef).catch(
-    (error) => ({
+  const result = await platformApi
+    .scanReceivedFile(file.tempRef)
+    .catch((error) => ({
       ok: false,
       scanStatus: "error",
       error: error?.message || "Antivirus scan failed.",
-    }),
-  );
+    }));
   if (result?.blocked) {
     const scanner = result.scanner || "Desktop antivirus";
     releaseFilePayload(item, "invalid", `${scanner} detected a threat`);
@@ -8335,8 +9156,15 @@ async function saveFileMessage(
   { skipRiskConfirmation = false, releaseAfterSave = false } = {},
 ) {
   const file = item?.file;
-  if ((!file?.blob && !file?.tempRef) || !["ready", "saved"].includes(file.downloadState)) return;
-  if (!skipRiskConfirmation && ["warning", "unsafe"].includes(file.security?.level)) {
+  if (
+    (!file?.blob && !file?.tempRef) ||
+    !["ready", "saved"].includes(file.downloadState)
+  )
+    return;
+  if (
+    !skipRiskConfirmation &&
+    ["warning", "unsafe"].includes(file.security?.level)
+  ) {
     const unsafe = file.security.level === "unsafe";
     const confirmed = await showAppDialog({
       title: unsafe ? "Save an unsafe file type?" : "Save file with warnings?",
@@ -8357,7 +9185,8 @@ async function saveFileMessage(
   const configuredMode = appConfig.appSettings?.fileDownloadMode || "ask";
   const mode =
     configuredMode === "custom" &&
-    (!platformApi.supportsFileDirectoryChoice || !appConfig.appSettings?.fileDownloadDirectory)
+    (!platformApi.supportsFileDirectoryChoice ||
+      !appConfig.appSettings?.fileDownloadDirectory)
       ? "ask"
       : configuredMode;
   try {
@@ -8379,7 +9208,10 @@ async function saveFileMessage(
       delete file.tempRef;
       file.previewUrl = "";
       file.downloadState = "invalid";
-      file.security = { level: "blocked", reasons: [result.error || "Local antivirus blocked the file."] };
+      file.security = {
+        level: "blocked",
+        reasons: [result.error || "Local antivirus blocked the file."],
+      };
       file.transferStatus = result.error || "Blocked by local antivirus";
     } else if (!result?.ok) {
       file.downloadState = previousState;
@@ -8399,9 +9231,10 @@ async function saveFileMessage(
         : result.scanStatus === "unavailable"
           ? "Saved · no desktop antivirus detected"
           : "Saved through platform protection";
-      file.security.scanLabel = file.security.level === "unsafe"
-        ? `Unsafe file type · ${scanLabel}`
-        : scanLabel;
+      file.security.scanLabel =
+        file.security.level === "unsafe"
+          ? `Unsafe file type · ${scanLabel}`
+          : scanLabel;
       if (releaseAfterSave && !file.previewUrl) {
         if (file.tempRef) {
           await platformApi.releaseReceivedFile(file.tempRef).catch(() => {});
@@ -8620,8 +9453,14 @@ function drawCallPlaceholderFrame(canvas, context) {
       .trim()
       .slice(0, 1)
       .toUpperCase() || "A";
-  const darkMode = ["dark", "ultra-dark"].includes(document.body?.dataset?.theme);
-  const background = darkMode ? (document.body.dataset.theme === "ultra-dark" ? "#000000" : "#313338") : "#eef4f7";
+  const darkMode = ["dark", "ultra-dark"].includes(
+    document.body?.dataset?.theme,
+  );
+  const background = darkMode
+    ? document.body.dataset.theme === "ultra-dark"
+      ? "#000000"
+      : "#313338"
+    : "#eef4f7";
   const plateBackground = darkMode ? "#383a40" : "#ffffff";
   const plateBorder = darkMode ? "#4e5058" : "#cfdee6";
   const textColor = darkMode ? "#edf4f7" : "#122b3a";
@@ -9100,7 +9939,9 @@ const callHealthHistory = [];
 const CALL_HEALTH_HISTORY_LIMIT = 30;
 
 function formatCallHealthPercent(value) {
-  return Number.isFinite(value) ? `${(value * 100).toFixed(value >= 0.1 ? 0 : 1)}%` : "—";
+  return Number.isFinite(value)
+    ? `${(value * 100).toFixed(value >= 0.1 ? 0 : 1)}%`
+    : "—";
 }
 
 function drawCallHealthGraph(canvas, values, { color, ceiling = 1 } = {}) {
@@ -9138,7 +9979,10 @@ function drawCallHealthGraph(canvas, values, { color, ceiling = 1 } = {}) {
   context.beginPath();
   points.forEach((value, index) => {
     const x = index * gap;
-    const y = bounds.height - 3 - (Math.min(value, maxValue) / maxValue) * (bounds.height - 8);
+    const y =
+      bounds.height -
+      3 -
+      (Math.min(value, maxValue) / maxValue) * (bounds.height - 8);
     if (index === 0) context.moveTo(x, y);
     else context.lineTo(x, y);
   });
@@ -9146,10 +9990,14 @@ function drawCallHealthGraph(canvas, values, { color, ceiling = 1 } = {}) {
 }
 
 function renderCallHealthDetails() {
-  if (!callHealthPopover || callHealthPopover.classList.contains("hidden")) return;
+  if (!callHealthPopover || callHealthPopover.classList.contains("hidden"))
+    return;
   const stats = callState.healthLastStats || {};
   const quality = stats.quality || "unknown";
-  callHealthDetailQuality.textContent = formatCallHealthLabel(quality, stats.latencyMs);
+  callHealthDetailQuality.textContent = formatCallHealthLabel(
+    quality,
+    stats.latencyMs,
+  );
   callHealthDetailQuality.className = `call-health-detail-quality ${quality}`;
   callHealthDetailState.textContent = getCallHealthStateText(stats);
   callHealthDetailLatency.textContent =
@@ -9175,9 +10023,14 @@ function renderCallHealthDetails() {
 }
 
 function getCallHealthStateText(stats = {}) {
-  const staleFor = Math.max(0, Date.now() - (stats.lastMediaProgressAt || Date.now()));
+  const staleFor = Math.max(
+    0,
+    Date.now() - (stats.lastMediaProgressAt || Date.now()),
+  );
   if (stats.quality === "bad") return "Media connection needs attention";
-  return staleFor >= CALL_HEALTH_POLL_MS * 2 ? "Waiting for media" : "Live connection";
+  return staleFor >= CALL_HEALTH_POLL_MS * 2
+    ? "Waiting for media"
+    : "Live connection";
 }
 
 function getCallHealthWindowPayload() {
@@ -9207,9 +10060,15 @@ function getCallHealthWindowPayload() {
     history: callHealthHistory.slice(-CALL_HEALTH_HISTORY_LIMIT),
     theme: document.documentElement.dataset.theme || "dark",
     colors: {
-      accent: color("--accent"), text: color("--text"), muted: color("--muted"),
-      surface: color("--surface"), raised: color("--surface-raised"), line: color("--line"),
-      success: color("--success"), warning: color("--warning"), danger: color("--danger"),
+      accent: color("--accent"),
+      text: color("--text"),
+      muted: color("--muted"),
+      surface: color("--surface"),
+      raised: color("--surface-raised"),
+      line: color("--line"),
+      success: color("--success"),
+      warning: color("--warning"),
+      danger: color("--danger"),
     },
   };
 }
@@ -9222,14 +10081,19 @@ function recordCallHealthSample(stats = {}) {
   callHealthHistory.push({
     latencyMs: Number.isFinite(stats.latencyMs) ? stats.latencyMs : null,
     lossRatio: Number.isFinite(stats.lossRatio) ? stats.lossRatio : 0,
-    incomingBitrateKbps: Number.isFinite(stats.bitrateKbps) ? stats.bitrateKbps : null,
+    incomingBitrateKbps: Number.isFinite(stats.bitrateKbps)
+      ? stats.bitrateKbps
+      : null,
     outgoingBitrateKbps: Number.isFinite(stats.outgoingBitrateKbps)
       ? stats.outgoingBitrateKbps
       : null,
     jitterMs: Number.isFinite(stats.jitterMs) ? stats.jitterMs : null,
   });
   if (callHealthHistory.length > CALL_HEALTH_HISTORY_LIMIT) {
-    callHealthHistory.splice(0, callHealthHistory.length - CALL_HEALTH_HISTORY_LIMIT);
+    callHealthHistory.splice(
+      0,
+      callHealthHistory.length - CALL_HEALTH_HISTORY_LIMIT,
+    );
   }
   renderCallHealthDetails();
   publishCallHealthWindowUpdate();
@@ -9322,8 +10186,8 @@ function refreshCallUi() {
   const activeConn = activePeerId ? connections.get(activePeerId) : null;
   const canStartCall = Boolean(
     activeConn?.open &&
-      (!isCallBusy() || callState.peerId !== activePeerId) &&
-      !isNetworkOffline(),
+    (!isCallBusy() || callState.peerId !== activePeerId) &&
+    !isNetworkOffline(),
   );
   callChat.disabled = !canStartCall;
 
@@ -9369,7 +10233,10 @@ function refreshCallUi() {
   callStream.setAttribute("aria-label", callStream.title);
   setCallHealthUi({ visible: false });
 
-  incomingCallScreen?.classList.toggle("hidden", callState.status !== "incoming");
+  incomingCallScreen?.classList.toggle(
+    "hidden",
+    callState.status !== "incoming",
+  );
   if (callState.status === "incoming" && incomingCallName) {
     const identityId = getPeerIdentityId(callState.peerId);
     const label = getActiveCallLabel() || "Peer";
@@ -9394,10 +10261,7 @@ function refreshCallUi() {
 
   callBanner.classList.remove("hidden");
   const label = getActiveCallLabel() || "Peer";
-  setAeroIdOrLabel(
-    callPeerName,
-    callState.status === "active" ? "" : label,
-  );
+  setAeroIdOrLabel(callPeerName, callState.status === "active" ? "" : label);
   applyNameAppearance(
     callPeerName,
     getPeerNameStyle(callState.peerId, getPeerIdentityId(callState.peerId)),
@@ -9474,8 +10338,8 @@ function scheduleOutgoingCallTimeout() {
 function isCurrentCallSession(peerId, callId, allowedStatuses = null) {
   return Boolean(
     callState.peerId === peerId &&
-      callState.callId === callId &&
-      (!allowedStatuses || allowedStatuses.includes(callState.status)),
+    callState.callId === callId &&
+    (!allowedStatuses || allowedStatuses.includes(callState.status)),
   );
 }
 
@@ -9838,9 +10702,11 @@ function createCameraVideoConstraints() {
 }
 
 function isUnavailableMediaDeviceError(error) {
-  return ["NotFoundError", "DevicesNotFoundError", "OverconstrainedError"].includes(
-    String(error?.name || ""),
-  );
+  return [
+    "NotFoundError",
+    "DevicesNotFoundError",
+    "OverconstrainedError",
+  ].includes(String(error?.name || ""));
 }
 
 async function getUserMediaWithDeviceFallback(
@@ -10255,8 +11121,10 @@ async function sampleCallHealth() {
 
   try {
     for (const peerConnection of peerConnections) {
-      disconnected = disconnected || isPeerConnectionDisconnected(peerConnection);
-      next.connectionState = peerConnection.connectionState || next.connectionState;
+      disconnected =
+        disconnected || isPeerConnectionDisconnected(peerConnection);
+      next.connectionState =
+        peerConnection.connectionState || next.connectionState;
       next.iceState = peerConnection.iceConnectionState || next.iceState;
       const stats = await peerConnection.getStats();
       for (const report of stats.values()) {
@@ -10283,14 +11151,23 @@ async function sampleCallHealth() {
           inboundPackets += Number(report.packetsReceived || 0);
           inboundPacketsLost += Number(report.packetsLost || 0);
           if (typeof report.jitter === "number") {
-            jitterMs = Math.max(jitterMs || 0, Math.round(report.jitter * 1000));
+            jitterMs = Math.max(
+              jitterMs || 0,
+              Math.round(report.jitter * 1000),
+            );
           }
           jitterBufferDelay += Number(report.jitterBufferDelay || 0);
           jitterBufferEmitted += Number(report.jitterBufferEmittedCount || 0);
           if (report.kind === "video") {
             videoWidth = Math.max(videoWidth, Number(report.frameWidth || 0));
-            videoHeight = Math.max(videoHeight, Number(report.frameHeight || 0));
-            videoFps = Math.max(videoFps, Math.round(Number(report.framesPerSecond || 0)));
+            videoHeight = Math.max(
+              videoHeight,
+              Number(report.frameHeight || 0),
+            );
+            videoFps = Math.max(
+              videoFps,
+              Math.round(Number(report.framesPerSecond || 0)),
+            );
           }
         }
         if (
@@ -10332,7 +11209,10 @@ async function sampleCallHealth() {
 
   const elapsedMs = Math.max(1, now - (previous.lastSampleAt || now));
   const bytesDelta = Math.max(0, inboundBytes - (previous.bytesReceived || 0));
-  const outgoingBytesDelta = Math.max(0, outboundBytes - (previous.bytesSent || 0));
+  const outgoingBytesDelta = Math.max(
+    0,
+    outboundBytes - (previous.bytesSent || 0),
+  );
   next.bytesReceived = Math.max(next.bytesReceived, inboundBytes);
   next.bytesSent = Math.max(next.bytesSent, outboundBytes);
   next.packetsReceived = Math.max(next.packetsReceived, inboundPackets);
@@ -10344,12 +11224,14 @@ async function sampleCallHealth() {
   next.incomingCodec = incomingCodec || next.incomingCodec;
   next.outgoingCodec = outgoingCodec || next.outgoingCodec;
   next.mediaKinds = Array.from(mediaKinds);
-  next.playoutDelayMs = jitterBufferEmitted > 0
-    ? Math.round((jitterBufferDelay / jitterBufferEmitted) * 1000)
-    : null;
-  next.videoInfo = videoWidth && videoHeight
-    ? `${videoWidth} × ${videoHeight}${videoFps ? ` · ${videoFps} fps` : ""}`
-    : "—";
+  next.playoutDelayMs =
+    jitterBufferEmitted > 0
+      ? Math.round((jitterBufferDelay / jitterBufferEmitted) * 1000)
+      : null;
+  next.videoInfo =
+    videoWidth && videoHeight
+      ? `${videoWidth} × ${videoHeight}${videoFps ? ` · ${videoFps} fps` : ""}`
+      : "—";
 
   if (disconnected) {
     next.mediaDisconnectedSince = previous.mediaDisconnectedSince || now;
@@ -10385,7 +11267,11 @@ async function sampleCallHealth() {
     return;
   }
 
-  if (sawInboundRtp && disconnected && staleFor >= CALL_MEDIA_STALE_TIMEOUT_MS) {
+  if (
+    sawInboundRtp &&
+    disconnected &&
+    staleFor >= CALL_MEDIA_STALE_TIMEOUT_MS
+  ) {
     endCallFromHealthMonitor();
   }
 }
@@ -10417,7 +11303,10 @@ function startCallHealthMonitor() {
     videoInfo: "—",
   };
   callHealthHistory.length = 0;
-  setCallHealthUi({ quality: "unknown", visible: callState.status === "active" });
+  setCallHealthUi({
+    quality: "unknown",
+    visible: callState.status === "active",
+  });
   publishCallHealthWindowUpdate();
   callState.healthMonitor = setInterval(() => {
     sampleCallHealth().catch(() => {});
@@ -11522,10 +12411,7 @@ async function handleCallAccepted(peerId, data) {
   try {
     const { stream, audioAvailable, audioErrorMessage } =
       await createCallLocalStream();
-    if (
-      !isCurrentCallSession(peerId, callId, ["outgoing"]) ||
-      !peer?.open
-    ) {
+    if (!isCurrentCallSession(peerId, callId, ["outgoing"]) || !peer?.open) {
       stopCallStreamCandidate(stream);
       return;
     }
@@ -11914,7 +12800,10 @@ function openAppMenu(event) {
   const viewportPadding = 10;
   const left = Math.max(
     viewportPadding,
-    Math.min(rect.left, window.innerWidth - appMenu.offsetWidth - viewportPadding),
+    Math.min(
+      rect.left,
+      window.innerWidth - appMenu.offsetWidth - viewportPadding,
+    ),
   );
   const top = Math.max(
     viewportPadding,
@@ -11937,7 +12826,11 @@ function closeDetailsModal() {
   detailsModal.classList.add("hidden");
 }
 
-function showDetailsModal({ kicker = "Details", title = "Information", rows = [] } = {}) {
+function showDetailsModal({
+  kicker = "Details",
+  title = "Information",
+  rows = [],
+} = {}) {
   detailsModalKicker.textContent = kicker;
   detailsModalTitle.textContent = title;
   detailsModalContent.replaceChildren();
@@ -11962,19 +12855,43 @@ function showDetailsModal({ kicker = "Details", title = "Information", rows = []
 
 function showMessageInfo(item) {
   const stats = connectionStats.get(item.peerId) || {};
-  const status = item.sender === "me" ? formatDeliveryStatus(item.deliveryStatus || "sent") : "Received";
+  const status =
+    item.sender === "me"
+      ? formatDeliveryStatus(item.deliveryStatus || "sent")
+      : "Received";
   showDetailsModal({
     kicker: "Message diagnostics",
     title: "Message info",
     rows: [
-      ["Status", status, appConfig.appSettings?.readReceipts ? "Receipts are enabled" : "Read receipts are disabled"],
+      [
+        "Status",
+        status,
+        appConfig.appSettings?.readReceipts
+          ? "Receipts are enabled"
+          : "Read receipts are disabled",
+      ],
       ["Created", formatExactTime(item.createdAt)],
-      [item.sender === "me" ? "Sent" : "Received", formatExactTime(item.sender === "me" ? item.sentAt : item.receivedAt)],
+      [
+        item.sender === "me" ? "Sent" : "Received",
+        formatExactTime(item.sender === "me" ? item.sentAt : item.receivedAt),
+      ],
       ["Delivered", formatExactTime(item.deliveredAt)],
       ["Seen", formatExactTime(item.readAt)],
-      ["Message round trip", item.roundTripMs == null ? "—" : `${item.roundTripMs} ms`, "Measured until the first receipt"],
-      ["Current peer ping", stats.latencyMs == null ? "—" : `${stats.latencyMs} ms`, "Data-channel heartbeat round trip"],
-      ["Payload", formatByteCount(item.payloadBytes), "Approximate protocol payload, not total network overhead"],
+      [
+        "Message round trip",
+        item.roundTripMs == null ? "—" : `${item.roundTripMs} ms`,
+        "Measured until the first receipt",
+      ],
+      [
+        "Current peer ping",
+        stats.latencyMs == null ? "—" : `${stats.latencyMs} ms`,
+        "Data-channel heartbeat round trip",
+      ],
+      [
+        "Payload",
+        formatByteCount(item.payloadBytes),
+        "Approximate protocol payload, not total network overhead",
+      ],
       ["Type", item.voice ? "Voice" : item.file ? "File" : "Text"],
       ["Protocol", `Aero P2P v${PROTOCOL_VERSION}`],
       ["Message ID", item.id, "Identifier only; contains no message content"],
@@ -11988,20 +12905,38 @@ function showContactInfo(peerId) {
   const contact = findContact(identityId);
   const stats = connectionStats.get(peerId) || {};
   const history = ensureChatHistory(peerId);
-  const traffic = history.reduce((total, item) => total + (item.payloadBytes || 0) + (item.file?.size || 0) + (item.voice?.size || 0), 0);
+  const traffic = history.reduce(
+    (total, item) =>
+      total +
+      (item.payloadBytes || 0) +
+      (item.file?.size || 0) +
+      (item.voice?.size || 0),
+    0,
+  );
   showDetailsModal({
     kicker: "Contact & connection",
     title: getPeerLabel(peerId, conn),
     rows: [
       ["Aero ID", identityId],
       ["Connection", conn?.open ? "Direct data channel connected" : "Offline"],
-      ["Ping", stats.latencyMs == null ? "Measuring…" : `${stats.latencyMs} ms`],
+      [
+        "Ping",
+        stats.latencyMs == null ? "Measuring…" : `${stats.latencyMs} ms`,
+      ],
       ["Protocol", `Aero P2P v${PROTOCOL_VERSION}`],
       ["Messages in this session", String(history.length)],
-      ["Visible chat traffic", formatByteCount(traffic), "Approximate payload represented in this chat only"],
+      [
+        "Visible chat traffic",
+        formatByteCount(traffic),
+        "Approximate payload represented in this chat only",
+      ],
       ["Trust", contact?.trusted ? "Trusted" : "Not trusted"],
       ["Notifications", contact?.muted ? "Muted" : "Enabled"],
-      ["Encryption path", "WebRTC / DTLS", "Transport security is handled by the peer connection"],
+      [
+        "Encryption path",
+        "WebRTC / DTLS",
+        "Transport security is handled by the peer connection",
+      ],
     ],
   });
 }
@@ -12018,11 +12953,20 @@ function openChatMoreMenu(event) {
   closeMessageMenu();
   closeContactMenu();
   closeAppMenu();
-  const identityId = getPeerIdentityId(activePeerId, connections.get(activePeerId));
+  const identityId = getPeerIdentityId(
+    activePeerId,
+    connections.get(activePeerId),
+  );
   const contact = findContact(identityId);
-  chatMenuMute.querySelector("span").textContent = contact?.muted ? "Unmute notifications" : "Mute notifications";
-  chatMenuTrust.querySelector("span").textContent = contact?.trusted ? "Remove trust" : "Trust";
-  chatMenuBlock.querySelector("span").textContent = contact?.blocked ? "Unblock" : "Block";
+  chatMenuMute.querySelector("span").textContent = contact?.muted
+    ? "Unmute notifications"
+    : "Mute notifications";
+  chatMenuTrust.querySelector("span").textContent = contact?.trusted
+    ? "Remove trust"
+    : "Trust";
+  chatMenuBlock.querySelector("span").textContent = contact?.blocked
+    ? "Unblock"
+    : "Block";
   syncChatActionAvailability();
   const rect = chatMoreButton.getBoundingClientRect();
   chatMoreMenu.classList.remove("hidden");
@@ -12051,9 +12995,9 @@ function openMessageMenu(event, messageItem) {
   );
   const canScanFile = Boolean(
     platformApi.supportsReceivedFileScan &&
-      messageItem.sender === "them" &&
-      messageItem.file?.tempRef &&
-      ["ready", "saved"].includes(messageItem.file.downloadState),
+    messageItem.sender === "them" &&
+    messageItem.file?.tempRef &&
+    ["ready", "saved"].includes(messageItem.file.downloadState),
   );
   menuScanFile.classList.toggle("hidden", !canScanFile);
   menuScanFile.querySelector("span").textContent =
@@ -12112,13 +13056,16 @@ function updateChatSearch() {
   let matches = 0;
   for (const item of activePeerId ? ensureChatHistory(activePeerId) : []) {
     const row = findRenderedMessageRow(item.id);
-    const haystack = `${item.text || ""} ${item.file?.name || ""}`.toLocaleLowerCase();
+    const haystack =
+      `${item.text || ""} ${item.file?.name || ""}`.toLocaleLowerCase();
     const match = !query || haystack.includes(query);
     row?.classList.toggle("search-hidden", Boolean(query) && !match);
     row?.classList.toggle("search-match", Boolean(query) && match);
     if (query && match) matches += 1;
   }
-  chatSearchCount.textContent = query ? `${matches} result${matches === 1 ? "" : "s"}` : "";
+  chatSearchCount.textContent = query
+    ? `${matches} result${matches === 1 ? "" : "s"}`
+    : "";
 }
 
 function setChatSearchOpen(open) {
@@ -12142,16 +13089,30 @@ function exportActiveChat() {
     "",
     ...ensureChatHistory(activePeerId).map((item) => {
       const author = item.sender === "me" ? identity.nickname || "You" : label;
-      const content = item.text || (item.voice ? `[Voice message · ${formatVoiceDuration(item.voice.duration)}]` : item.file ? `[File: ${item.file.name}]` : "[Message]");
-      const reactions = item.reactions?.length ? ` ${item.reactions.map((reaction) => reaction.emoji).join(" ")}` : "";
+      const content =
+        item.text ||
+        (item.voice
+          ? `[Voice message · ${formatVoiceDuration(item.voice.duration)}]`
+          : item.file
+            ? `[File: ${item.file.name}]`
+            : "[Message]");
+      const reactions = item.reactions?.length
+        ? ` ${item.reactions.map((reaction) => reaction.emoji).join(" ")}`
+        : "";
       return `[${item.time || "--:--"}] ${author}: ${content}${reactions}`;
     }),
   ];
-  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+  const blob = new Blob([lines.join("\n")], {
+    type: "text/plain;charset=utf-8",
+  });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `aero-chat-${String(label).replace(/[^a-z0-9_-]+/gi, "-").slice(0, 48) || "contact"}-${new Date().toISOString().slice(0, 10)}.txt`;
+  anchor.download = `aero-chat-${
+    String(label)
+      .replace(/[^a-z0-9_-]+/gi, "-")
+      .slice(0, 48) || "contact"
+  }-${new Date().toISOString().slice(0, 10)}.txt`;
   anchor.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
@@ -12482,9 +13443,11 @@ function closeStreamSetup() {
 }
 
 function findRenderedMessageRow(messageId) {
-  return Array.from(messages.children).find(
-    (element) => element.dataset?.messageId === messageId,
-  ) || null;
+  return (
+    Array.from(messages.children).find(
+      (element) => element.dataset?.messageId === messageId,
+    ) || null
+  );
 }
 
 function waitForMessageExit(peerId, messageId) {
@@ -12511,7 +13474,8 @@ function waitForMessageExit(peerId, messageId) {
       resolve();
     };
     const handleAnimationEnd = (event) => {
-      if (event.target === row && event.animationName === "message-row-out") finish();
+      if (event.target === row && event.animationName === "message-row-out")
+        finish();
     };
     const fallbackTimer = setTimeout(finish, MESSAGE_TRANSITION_MS + 100);
     row.addEventListener("animationend", handleAnimationEnd);
@@ -12526,7 +13490,8 @@ async function deleteMessageLocally(peerId, messageId) {
 
   deletingMessageKeys.add(deletionKey);
   try {
-    const scrollState = activePeerId === peerId ? captureChatScrollState() : null;
+    const scrollState =
+      activePeerId === peerId ? captureChatScrollState() : null;
     await waitForMessageExit(peerId, messageId);
     const index = history.findIndex((msg) => msg.id === messageId);
     if (index === -1) return;
@@ -12554,11 +13519,14 @@ function clearChatLocally(peerId) {
 function applyMessageReaction(peerId, messageId, emoji, byMe) {
   const allowed = new Set(["👍", "❤️", "😂", "😮", "😢", "🙏"]);
   if (!allowed.has(emoji)) return false;
-  const item = ensureChatHistory(peerId).find((entry) => entry.id === messageId);
+  const item = ensureChatHistory(peerId).find(
+    (entry) => entry.id === messageId,
+  );
   if (!item) return false;
   item.reactions ||= [];
   const existing = item.reactions.find((reaction) => reaction.byMe === byMe);
-  if (existing?.emoji === emoji) item.reactions = item.reactions.filter((reaction) => reaction !== existing);
+  if (existing?.emoji === emoji)
+    item.reactions = item.reactions.filter((reaction) => reaction !== existing);
   else if (existing) existing.emoji = emoji;
   else item.reactions.push({ emoji, byMe });
   if (activePeerId === peerId) renderChatHistory();
@@ -12743,7 +13711,8 @@ function removePeer(peerId, { silent = false } = {}) {
       const item = findVoiceMessage(peerId, transfer.voice.id);
       if (item?.voice?.downloadState === "requested") {
         item.voice.downloadState = "failed";
-        item.voice.transferStatus = "Connection lost - retry after reconnecting";
+        item.voice.transferStatus =
+          "Connection lost - retry after reconnecting";
       }
     }
   }
@@ -12753,7 +13722,8 @@ function removePeer(peerId, { silent = false } = {}) {
       clearTimeout(transfer.idleTimer);
       const item = findFileMessage(peerId, transfer.file.id);
       if (item?.file?.downloadState === "requested") {
-        if (item.file.tempRef) void platformApi.releaseReceivedFile(item.file.tempRef);
+        if (item.file.tempRef)
+          void platformApi.releaseReceivedFile(item.file.tempRef);
         delete item.file.tempRef;
         item.file.downloadState = "failed";
         item.file.transferStatus = "Connection lost – retry after reconnecting";
@@ -12830,7 +13800,7 @@ function refreshPeers() {
     name.className = "contact-name";
     name.append(createAvatar(contact.label, contact.id));
     name.append(createContactBadges(contact));
-    
+
     name.append(
       createContactIdentityLabel(
         contact.label,
@@ -12878,16 +13848,14 @@ function refreshPeers() {
       const name = document.createElement("span");
       const identityId = getPeerIdentityId(peerId, entry.conn);
       const contact = findContact(identityId);
+      name.append(createAvatar(peerLabel, identityId));
       name.append(
-        createAvatar(peerLabel, identityId),
+        createContactBadges({
+          pinned: Boolean(contact?.pinned),
+          trusted: isTrusted(identityId),
+          waiting: true,
+        }),
       );
-        name.append(
-          createContactBadges({
-            pinned: Boolean(contact?.pinned),
-            trusted: isTrusted(identityId),
-            waiting: true,
-          }),
-        );
       name.append(
         createContactIdentityLabel(
           peerLabel,
@@ -12933,16 +13901,14 @@ function refreshPeers() {
     waiting.className = "peer-chip pending";
     const identityId = getPeerIdentityId(peerId, entry.conn);
     const contact = findContact(identityId);
+    waiting.append(createAvatar(peerLabel, identityId));
     waiting.append(
-      createAvatar(peerLabel, identityId),
+      createContactBadges({
+        pinned: Boolean(contact?.pinned),
+        trusted: isTrusted(identityId),
+        waiting: true,
+      }),
     );
-      waiting.append(
-        createContactBadges({
-          pinned: Boolean(contact?.pinned),
-          trusted: isTrusted(identityId),
-          waiting: true,
-        }),
-      );
     waiting.append(
       createContactIdentityLabel(
         peerLabel,
@@ -12963,20 +13929,20 @@ function refreshPeers() {
   for (const [peerId, conn] of connectionEntries) {
     const peerLabel = getPeerLabel(peerId, conn);
     const button = document.createElement("button");
-      button.type = "button";
-      button.className =
-        peerId === activePeerId ? "peer-chip active" : "peer-chip";
-      const identityId = getPeerIdentityId(peerId, conn);
-      const contact = findContact(identityId);
-      button.append(
-        createAvatar(
-          peerLabel,
-          identityId,
-          peerId === activePeerId ? "always" : "hover",
-        ),
-      );
-      button.append(
-        createContactBadges({
+    button.type = "button";
+    button.className =
+      peerId === activePeerId ? "peer-chip active" : "peer-chip";
+    const identityId = getPeerIdentityId(peerId, conn);
+    const contact = findContact(identityId);
+    button.append(
+      createAvatar(
+        peerLabel,
+        identityId,
+        peerId === activePeerId ? "always" : "hover",
+      ),
+    );
+    button.append(
+      createContactBadges({
         pinned: Boolean(contact?.pinned),
         trusted: isTrusted(identityId),
         online: conn.open,
@@ -13036,15 +14002,10 @@ function refreshPeers() {
   const activeIdentityId = activePeerId
     ? getPeerIdentityId(activePeerId, activeConn)
     : "";
-  setAeroIdOrLabel(
-    chatTitle,
-    activeLabel,
-  );
+  setAeroIdOrLabel(chatTitle, activeLabel);
   applyNameAppearance(
     chatTitle,
-    activePeerId
-      ? getPeerNameStyle(activePeerId, activeIdentityId)
-      : null,
+    activePeerId ? getPeerNameStyle(activePeerId, activeIdentityId) : null,
   );
   if (chatAvatar) {
     chatAvatar.classList.toggle("hidden", !activePeerId);
@@ -13166,7 +14127,7 @@ function promoteOutgoingConnection(peerId) {
 function isTrackedConnection(peerId, conn) {
   return Boolean(
     connections.get(peerId) === conn ||
-      pendingConnections.get(peerId)?.conn === conn,
+    pendingConnections.get(peerId)?.conn === conn,
   );
 }
 
@@ -13265,7 +14226,9 @@ function attachConnectionHandlers(conn, peerId, direction) {
         }
 
         setStatus("pending", `Connection request from ${peerLabel()}`);
-        addSystemMessage(`${peerLabel()} wants to chat. Accept the request to start.`);
+        addSystemMessage(
+          `${peerLabel()} wants to chat. Accept the request to start.`,
+        );
       }
       refreshPeers();
       return;
@@ -13380,12 +14343,14 @@ function attachConnectionHandlers(conn, peerId, direction) {
       sendProtocolMessage(conn, "clear-chat-ack", {
         clearId: typeof data.clearId === "string" ? data.clearId : "",
       });
-      if (activePeerId === peerId) addSystemMessage(`${peerLabel()} cleared the chat for everyone.`);
+      if (activePeerId === peerId)
+        addSystemMessage(`${peerLabel()} cleared the chat for everyone.`);
       return;
     }
 
     if (data?.type === "clear-chat-ack") {
-      if (activePeerId === peerId) addSystemMessage(`Chat cleared for you and ${peerLabel()}.`);
+      if (activePeerId === peerId)
+        addSystemMessage(`Chat cleared for you and ${peerLabel()}.`);
       return;
     }
 
@@ -13434,7 +14399,11 @@ function attachConnectionHandlers(conn, peerId, direction) {
     }
 
     if (data?.type === "voice-transfer-failed") {
-      failVoiceDownload(peerId, String(data.voiceId || ""), "Sender unavailable - retry");
+      failVoiceDownload(
+        peerId,
+        String(data.voiceId || ""),
+        "Sender unavailable - retry",
+      );
       return;
     }
 
@@ -13485,7 +14454,9 @@ function attachConnectionHandlers(conn, peerId, direction) {
         releaseFilePayload(
           item,
           "declined",
-          data.blocked ? "Blocked by recipient security checks" : "File declined",
+          data.blocked
+            ? "Blocked by recipient security checks"
+            : "File declined",
         );
         if (activePeerId === peerId) renderChatHistory();
       }
@@ -13523,7 +14494,10 @@ function attachConnectionHandlers(conn, peerId, direction) {
       replyTo: message.replyTo,
     });
     if (message.id && appConfig.appSettings?.readReceipts) {
-      sendProtocolMessage(conn, "message-delivered", { messageId: message.id, at: Date.now() });
+      sendProtocolMessage(conn, "message-delivered", {
+        messageId: message.id,
+        at: Date.now(),
+      });
     }
     if (
       message.id &&
@@ -13536,7 +14510,10 @@ function attachConnectionHandlers(conn, peerId, direction) {
       );
       if (
         item &&
-        sendProtocolMessage(conn, "message-read", { messageId: message.id, at: Date.now() })
+        sendProtocolMessage(conn, "message-read", {
+          messageId: message.id,
+          at: Date.now(),
+        })
       ) {
         item.readReceiptSent = true;
       }
@@ -13771,7 +14748,10 @@ function renderBlockedList() {
     const unblock = document.createElement("button");
     unblock.type = "button";
     unblock.className = "contact-unblock-button";
-    unblock.append(renderIcon("fa-solid fa-unlock"), document.createTextNode("Unblock"));
+    unblock.append(
+      renderIcon("fa-solid fa-unlock"),
+      document.createTextNode("Unblock"),
+    );
     unblock.addEventListener("click", () => {
       setBlocked(contact.id, false);
       addSystemMessage(`${contact.label} unblocked.`);
@@ -13880,10 +14860,7 @@ function selectSettingsPage(page = "appearance") {
   let selectedSection = null;
   for (const section of settingsPages) {
     const active = section.dataset.settingsPage === selectedPage;
-    section.classList.toggle(
-      "hidden",
-      !active,
-    );
+    section.classList.toggle("hidden", !active);
     if (active) {
       selectedSection = section;
     }
@@ -13912,7 +14889,6 @@ function selectSettingsPage(page = "appearance") {
   settingsContent?.scrollTo({ top: 0, behavior: "auto" });
 }
 
-
 function getSettingsSearchPageLabel(page) {
   const navigationItem = settingsNavItems.find(
     (item) => item.dataset.settingsNav === page,
@@ -13933,15 +14909,20 @@ function getSettingsSearchTitle(element) {
   if (element.matches("h3, h4, h5, summary")) {
     return element.textContent.trim();
   }
-  const label = element.closest("label")?.textContent.trim() ||
+  const label =
+    element.closest("label")?.textContent.trim() ||
     (element.id
-      ? document.querySelector(`label[for="${CSS.escape(element.id)}"]`)?.textContent.trim()
+      ? document
+          .querySelector(`label[for="${CSS.escape(element.id)}"]`)
+          ?.textContent.trim()
       : "");
-  return label ||
+  return (
+    label ||
     element.getAttribute("aria-label") ||
     element.textContent.trim() ||
     element.getAttribute("title") ||
-    element.id.replace(/[-_]+/g, " ");
+    element.id.replace(/[-_]+/g, " ")
+  );
 }
 
 function getSettingsSearchGroupTitle(section, element) {
@@ -13949,7 +14930,10 @@ function getSettingsSearchGroupTitle(section, element) {
   const preceding = headings.filter(
     (heading) =>
       heading !== element &&
-      Boolean(heading.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING),
+      Boolean(
+        heading.compareDocumentPosition(element) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+      ),
   );
   return preceding.at(-1)?.textContent.trim() || "";
 }
@@ -13995,14 +14979,16 @@ function buildSettingsSearchEntries() {
       ]
         .filter(Boolean)
         .join(" ");
-      const themeTab = element.closest("[data-theme-panel]")?.dataset.themePanel || "";
+      const themeTab =
+        element.closest("[data-theme-panel]")?.dataset.themePanel || "";
       entries.push({
         page,
         target: getSettingsSearchTarget(element, page, index),
         title,
-        description: groupTitle && groupTitle !== title
-          ? `${groupTitle} · ${pageLabel}`
-          : pageLabel,
+        description:
+          groupTitle && groupTitle !== title
+            ? `${groupTitle} · ${pageLabel}`
+            : pageLabel,
         terms: `${title} ${groupTitle} ${pageLabel} ${technicalText}`,
         themeTab,
       });
@@ -14069,7 +15055,9 @@ function renderSettingsSearchResults() {
   }
   const query = settingsSearchInput.value.trim();
   const isSearching = Boolean(query);
-  settingsSearchResultsCache = isSearching ? getSettingsSearchResults(query) : [];
+  settingsSearchResultsCache = isSearching
+    ? getSettingsSearchResults(query)
+    : [];
   settingsModal.classList.toggle("settings-searching", isSearching);
   settingsSearchResults.classList.toggle("hidden", !isSearching);
   settingsSearchClear?.classList.toggle("hidden", !isSearching);
@@ -14144,7 +15132,10 @@ function openSettingsSearchResult(result) {
     target.classList.remove("settings-search-focus");
     void target.offsetWidth;
     target.classList.add("settings-search-focus");
-    window.setTimeout(() => target.classList.remove("settings-search-focus"), 1500);
+    window.setTimeout(
+      () => target.classList.remove("settings-search-focus"),
+      1500,
+    );
   });
 }
 
@@ -14160,7 +15151,8 @@ function switchPrimaryModal(targetModal) {
   if (targetModal !== changelogModal) closeChangelog();
   if (targetModal !== settingsModal) settingsModal.classList.add("hidden");
   if (targetModal !== profileModal) profileModal.classList.add("hidden");
-  if (targetModal !== startupUpdateModal) startupUpdateModal.classList.add("hidden");
+  if (targetModal !== startupUpdateModal)
+    startupUpdateModal.classList.add("hidden");
   if (targetModal !== updateModal) updateModal.classList.add("hidden");
   if (!customSoundModal.classList.contains("hidden")) closeCustomSoundEditor();
   closeChangelogImageViewer();
@@ -14179,7 +15171,9 @@ function openSettings(focusContactId = "") {
   renderContactNicknameList(focusContactId);
   renderBlockedList();
   clearSettingsSearch();
-  selectSettingsPage(focusContactId ? "contacts" : activeSettingsPage || "appearance");
+  selectSettingsPage(
+    focusContactId ? "contacts" : activeSettingsPage || "appearance",
+  );
   settingsModal.classList.remove("hidden");
   if (focusContactId) {
     requestAnimationFrame(() => {
@@ -14417,7 +15411,11 @@ fileAttachInput.addEventListener("change", () => {
 
 for (const eventName of ["dragenter", "dragover"]) {
   messages.addEventListener(eventName, (event) => {
-    if (!event.dataTransfer?.types?.includes("Files") || fileAttachButton.disabled) return;
+    if (
+      !event.dataTransfer?.types?.includes("Files") ||
+      fileAttachButton.disabled
+    )
+      return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "copy";
     messages.classList.add("file-drag-active");
@@ -14426,7 +15424,11 @@ for (const eventName of ["dragenter", "dragover"]) {
 
 for (const eventName of ["dragleave", "drop"]) {
   messages.addEventListener(eventName, (event) => {
-    if (eventName === "drop" && event.dataTransfer?.files?.length && !fileAttachButton.disabled) {
+    if (
+      eventName === "drop" &&
+      event.dataTransfer?.files?.length &&
+      !fileAttachButton.disabled
+    ) {
       event.preventDefault();
       void sendSelectedFile(event.dataTransfer.files[0]);
     }
@@ -14457,7 +15459,10 @@ document.addEventListener("pointerdown", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && !emojiPickerPopover.classList.contains("hidden")) {
+  if (
+    event.key === "Escape" &&
+    !emojiPickerPopover.classList.contains("hidden")
+  ) {
     void setEmojiPickerOpen(false);
     emojiPickerButton.focus();
   }
@@ -14496,7 +15501,10 @@ clearChatEveryone.addEventListener("click", async () => {
   if (!confirmed) return;
   const clearId = createMessageId();
   if (!sendProtocolMessage(conn, "clear-chat", { clearId })) {
-    setStatus("offline", "The contact must be connected to clear the chat for everyone.");
+    setStatus(
+      "offline",
+      "The contact must be connected to clear the chat for everyone.",
+    );
     return;
   }
   clearChatLocally(peerId);
@@ -14521,19 +15529,26 @@ messageInput.addEventListener("input", () => {
 });
 
 messageInput.addEventListener("keydown", (event) => {
-  if (emojiShortcodePopover.classList.contains("hidden") || !emojiShortcodeSuggestions.length) {
+  if (
+    emojiShortcodePopover.classList.contains("hidden") ||
+    !emojiShortcodeSuggestions.length
+  ) {
     return;
   }
   if (event.key === "ArrowDown" || event.key === "ArrowUp") {
     event.preventDefault();
     const offset = event.key === "ArrowDown" ? 1 : -1;
-    emojiShortcodeSelection = (emojiShortcodeSelection + offset + emojiShortcodeSuggestions.length) % emojiShortcodeSuggestions.length;
+    emojiShortcodeSelection =
+      (emojiShortcodeSelection + offset + emojiShortcodeSuggestions.length) %
+      emojiShortcodeSuggestions.length;
     renderEmojiShortcodeSuggestions(emojiShortcodeSuggestions);
     return;
   }
   if (event.key === "Tab" || event.key === "Enter") {
     event.preventDefault();
-    insertEmojiShortcodeSuggestion(emojiShortcodeSuggestions[emojiShortcodeSelection]);
+    insertEmojiShortcodeSuggestion(
+      emojiShortcodeSuggestions[emojiShortcodeSelection],
+    );
     return;
   }
   if (event.key === "Escape") {
@@ -15026,7 +16041,6 @@ closeToTrayToggle.addEventListener("change", () => {
   saveAppSettings({ closeToTray: closeToTrayToggle.checked });
 });
 
-
 checkUpdatesButton.addEventListener("click", async () => {
   renderUpdateSettingsStatus("Checking...");
   await checkForUpdates({ manual: true });
@@ -15105,7 +16119,9 @@ resetSidebarWidthButton.addEventListener("click", () => {
 });
 
 for (const button of themeTabButtons) {
-  button.addEventListener("click", () => selectThemeTab(button.dataset.themeTab));
+  button.addEventListener("click", () =>
+    selectThemeTab(button.dataset.themeTab),
+  );
 }
 
 applyOnlineThemesButton?.addEventListener("click", async () => {
@@ -15203,15 +16219,19 @@ fileDownloadModeSelect.addEventListener("change", async () => {
       fileDownloadModeSelect.value = mode;
       syncEnhancedSelect(fileDownloadModeSelect);
     } else {
-      appConfig.appSettings.fileDownloadDirectory = result.path || result.uri || "";
-      appConfig.appSettings.fileDownloadDirectoryLabel = result.label || result.path || "Selected folder";
-      fileDownloadFolderLabel.textContent = appConfig.appSettings.fileDownloadDirectoryLabel;
+      appConfig.appSettings.fileDownloadDirectory =
+        result.path || result.uri || "";
+      appConfig.appSettings.fileDownloadDirectoryLabel =
+        result.label || result.path || "Selected folder";
+      fileDownloadFolderLabel.textContent =
+        appConfig.appSettings.fileDownloadDirectoryLabel;
     }
   }
   await saveAppSettings({
     fileDownloadMode: mode,
     fileDownloadDirectory: appConfig.appSettings.fileDownloadDirectory || "",
-    fileDownloadDirectoryLabel: appConfig.appSettings.fileDownloadDirectoryLabel || "",
+    fileDownloadDirectoryLabel:
+      appConfig.appSettings.fileDownloadDirectoryLabel || "",
   });
 });
 
@@ -15221,9 +16241,11 @@ fileDownloadFolderButton.addEventListener("click", async () => {
   await saveAppSettings({
     fileDownloadMode: "custom",
     fileDownloadDirectory: result.path || result.uri || "",
-    fileDownloadDirectoryLabel: result.label || result.path || "Selected folder",
+    fileDownloadDirectoryLabel:
+      result.label || result.path || "Selected folder",
   });
-  fileDownloadFolderLabel.textContent = result.label || result.path || "Selected folder";
+  fileDownloadFolderLabel.textContent =
+    result.label || result.path || "Selected folder";
 });
 
 clearTrustedDomainsButton.addEventListener("click", async () => {
@@ -15286,7 +16308,8 @@ openCustomWallpapersFolderButton.addEventListener("click", () => {
 });
 
 wallpaperAccentTintToggle.addEventListener("change", () => {
-  appConfig.wallpaperSettings.tintWithAccent = wallpaperAccentTintToggle.checked;
+  appConfig.wallpaperSettings.tintWithAccent =
+    wallpaperAccentTintToggle.checked;
   applyCustomWallpaperStyle();
   void saveAppConfig();
 });
@@ -15318,10 +16341,14 @@ customSoundFileInput.addEventListener("change", () => {
 customSoundWaveform.addEventListener("pointerdown", (event) => {
   if (!customSoundEditor) return;
   const bounds = customSoundWaveform.getBoundingClientRect();
-  const ratio = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+  const ratio = Math.max(
+    0,
+    Math.min(1, (event.clientX - bounds.left) / bounds.width),
+  );
   const time = ratio * customSoundEditor.duration;
   const { start, end } = customSoundEditor;
-  customSoundWaveformDrag = Math.abs(time - start) <= Math.abs(time - end) ? "start" : "end";
+  customSoundWaveformDrag =
+    Math.abs(time - start) <= Math.abs(time - end) ? "start" : "end";
   customSoundWaveform.setPointerCapture(event.pointerId);
   setCustomSoundWaveformBoundary(event);
 });
@@ -15335,15 +16362,25 @@ customSoundWaveform.addEventListener("pointerup", (event) => {
   }
 });
 customSoundWaveform.addEventListener("keydown", (event) => {
-  if (!customSoundEditor || !["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+  if (!customSoundEditor || !["ArrowLeft", "ArrowRight"].includes(event.key))
+    return;
   event.preventDefault();
   const step = event.shiftKey ? 1 : 0.1;
   const { start, end } = customSoundEditor;
   const direction = event.key === "ArrowLeft" ? -1 : 1;
-  if (Math.abs(customSoundPreview.currentTime - start) <= Math.abs(customSoundPreview.currentTime - end)) {
-    customSoundEditor.start = Math.max(0, Math.min(end - 0.01, start + direction * step));
+  if (
+    Math.abs(customSoundPreview.currentTime - start) <=
+    Math.abs(customSoundPreview.currentTime - end)
+  ) {
+    customSoundEditor.start = Math.max(
+      0,
+      Math.min(end - 0.01, start + direction * step),
+    );
   } else {
-    customSoundEditor.end = Math.max(start + 0.01, Math.min(customSoundEditor.duration, end + direction * step));
+    customSoundEditor.end = Math.max(
+      start + 0.01,
+      Math.min(customSoundEditor.duration, end + direction * step),
+    );
   }
   updateCustomSoundTrimUi();
 });
@@ -15364,7 +16401,10 @@ customSoundPlay.addEventListener("click", () => {
 customSoundProgress.addEventListener("click", (event) => {
   if (!customSoundEditor) return;
   const bounds = customSoundProgress.getBoundingClientRect();
-  const ratio = Math.max(0, Math.min(1, (event.clientX - bounds.left) / bounds.width));
+  const ratio = Math.max(
+    0,
+    Math.min(1, (event.clientX - bounds.left) / bounds.width),
+  );
   const requestedTime = ratio * customSoundEditor.duration;
   customSoundPreview.currentTime = Math.max(
     customSoundEditor.start,
@@ -15384,7 +16424,10 @@ customSoundPreview.addEventListener("play", () => {
   syncCustomSoundPlayer();
 });
 customSoundPreview.addEventListener("timeupdate", () => {
-  if (customSoundEditor && customSoundPreview.currentTime >= customSoundEditor.end) {
+  if (
+    customSoundEditor &&
+    customSoundPreview.currentTime >= customSoundEditor.end
+  ) {
     customSoundPreview.pause();
     customSoundPreview.currentTime = customSoundEditor.start;
   }
@@ -15472,7 +16515,10 @@ function formatUpdateBytes(bytes) {
 }
 
 function setUpdateProgressStatus(text, percent = null) {
-  for (const id of ["update-progress-status", "startup-update-progress-status"]) {
+  for (const id of [
+    "update-progress-status",
+    "startup-update-progress-status",
+  ]) {
     const status = document.getElementById(id);
     if (status) status.textContent = text;
   }
@@ -15505,7 +16551,7 @@ function startUpdateProgressListener() {
         const percentText = percent > 0 ? `${percent}%` : "...";
         setUpdateButtonText(`Downloading ${percentText}`);
         startupUpdateButton.textContent = `Downloading ${percentText}`;
-        
+
         setUpdateProgressVisible(true);
 
         const received = formatUpdateBytes(progress.receivedBytes);
@@ -15515,15 +16561,21 @@ function startUpdateProgressListener() {
             ? `${received} of ${total}`
             : `${received} downloaded`
           : "Connecting to the update server...";
-        setUpdateProgressStatus(`Downloading update · ${transferText}`, percent);
-        
+        setUpdateProgressStatus(
+          `Downloading update · ${transferText}`,
+          percent,
+        );
+
         return;
       }
 
       if (progress?.phase === "launch") {
         setUpdateButtonText("Opening setup...");
         startupUpdateButton.textContent = "Opening setup...";
-        setUpdateProgressStatus("Download verified · opening Windows Setup...", 100);
+        setUpdateProgressStatus(
+          "Download verified · opening Windows Setup...",
+          100,
+        );
         return;
       }
 
@@ -15540,7 +16592,10 @@ function startUpdateProgressListener() {
       if (progress?.phase === "verify") {
         setUpdateButtonText("Verifying...");
         startupUpdateButton.textContent = "Verifying...";
-        setUpdateProgressStatus("Download complete · verifying file integrity...", 100);
+        setUpdateProgressStatus(
+          "Download complete · verifying file integrity...",
+          100,
+        );
       }
     }) || null;
 }
@@ -15548,7 +16603,7 @@ function startUpdateProgressListener() {
 function stopUpdateProgressListener() {
   removeUpdateProgressListener?.();
   removeUpdateProgressListener = null;
-  
+
   // Hide progress containers
   setUpdateProgressVisible(false);
 }
@@ -15584,10 +16639,16 @@ async function installAvailableUpdate() {
     try {
       const linuxUpdate = platform === "linux";
       await platformApi.installUpdate({
-        url: linuxUpdate ? availableUpdate.linuxUrl : availableUpdate.windowsUrl,
+        url: linuxUpdate
+          ? availableUpdate.linuxUrl
+          : availableUpdate.windowsUrl,
         version: availableUpdate.version,
-        sha256: linuxUpdate ? availableUpdate.linuxSha256 : availableUpdate.windowsSha256,
-        sha512: linuxUpdate ? availableUpdate.linuxSha512 : availableUpdate.windowsSha512,
+        sha256: linuxUpdate
+          ? availableUpdate.linuxSha256
+          : availableUpdate.windowsSha256,
+        sha512: linuxUpdate
+          ? availableUpdate.linuxSha512
+          : availableUpdate.windowsSha512,
       });
       setUpdateButtonText("Setup opened");
       startupUpdateButton.textContent = "Setup opened";
@@ -15610,7 +16671,11 @@ async function installAvailableUpdate() {
   }
 
   if (platform === "darwin") {
-    window.open(availableUpdate.macosUrl || latestReleaseUrl, "_blank", "noopener");
+    window.open(
+      availableUpdate.macosUrl || latestReleaseUrl,
+      "_blank",
+      "noopener",
+    );
     return;
   }
 
@@ -15632,27 +16697,27 @@ startupUpdateClose.addEventListener("click", () => {
   }
 });
 startupUpdateModal.addEventListener("click", (event) => {
-    if (
-      event.target === startupUpdateModal &&
-      !startupUpdateButton.disabled &&
-      !availableUpdate?.mandatory
-    ) {
-      startupUpdateModal.classList.add("hidden");
-    }
-  });
+  if (
+    event.target === startupUpdateModal &&
+    !startupUpdateButton.disabled &&
+    !availableUpdate?.mandatory
+  ) {
+    startupUpdateModal.classList.add("hidden");
+  }
+});
 startupUpdateButton.addEventListener("click", () => {
-    if (
-      platformApi.supportsNativeUpdateInstall &&
-      !availableUpdate?.directInstallUnavailable
-    ) {
-      startupUpdateButton.disabled = true;
-      startupUpdateIgnoreButton.classList.add("hidden");
-      startupUpdateClose.classList.add("hidden");
-    } else if (!availableUpdate?.mandatory) {
-      startupUpdateModal.classList.add("hidden");
-    }
-    installAvailableUpdate();
-  });
+  if (
+    platformApi.supportsNativeUpdateInstall &&
+    !availableUpdate?.directInstallUnavailable
+  ) {
+    startupUpdateButton.disabled = true;
+    startupUpdateIgnoreButton.classList.add("hidden");
+    startupUpdateClose.classList.add("hidden");
+  } else if (!availableUpdate?.mandatory) {
+    startupUpdateModal.classList.add("hidden");
+  }
+  installAvailableUpdate();
+});
 startupUpdateIgnoreButton.addEventListener("click", () => {
   if (availableUpdate?.mandatory) return;
   startupUpdateModal.classList.add("hidden");
@@ -15660,52 +16725,55 @@ startupUpdateIgnoreButton.addEventListener("click", () => {
 });
 
 appMenuUpdate.addEventListener("click", () => {
-    if (availableUpdate) {
-      if (!switchPrimaryModal(startupUpdateModal)) {
-        closeAppMenu();
-        return;
-      }
-      const directInstallUnavailable = Boolean(
-        availableUpdate.directInstallUnavailable,
-      );
-      const useLinuxCommand =
-        platform === "linux" &&
-        (!platformApi.supportsNativeUpdateInstall || directInstallUnavailable);
-      startupUpdateModalShownForVersion = availableUpdate.version;
-      startupUpdateModal.dataset.required = String(availableUpdate.mandatory);
-      startupUpdateTitle.textContent = useLinuxCommand
-        ? "Update available"
-        : directInstallUnavailable
+  if (availableUpdate) {
+    if (!switchPrimaryModal(startupUpdateModal)) {
+      closeAppMenu();
+      return;
+    }
+    const directInstallUnavailable = Boolean(
+      availableUpdate.directInstallUnavailable,
+    );
+    const useLinuxCommand =
+      platform === "linux" &&
+      (!platformApi.supportsNativeUpdateInstall || directInstallUnavailable);
+    startupUpdateModalShownForVersion = availableUpdate.version;
+    startupUpdateModal.dataset.required = String(availableUpdate.mandatory);
+    startupUpdateTitle.textContent = useLinuxCommand
+      ? "Update available"
+      : directInstallUnavailable
         ? "Direct update unavailable"
         : availableUpdate.mandatory
           ? "Update required"
           : "Update available";
-      startupUpdateText.textContent = useLinuxCommand
-        ? `Version ${availableUpdate.version} is ready. Copy the Linux update command to install it.`
-        : directInstallUnavailable
+    startupUpdateText.textContent = useLinuxCommand
+      ? `Version ${availableUpdate.version} is ready. Copy the Linux update command to install it.`
+      : directInstallUnavailable
         ? availableUpdate.unavailableReason ||
           "A verified direct download could not be found. Open the latest GitHub release instead."
         : availableUpdate.mandatory
           ? `Version ${availableUpdate.minimumVersion} or later is required to continue.`
           : `Version ${availableUpdate.version} is ready. You are using ${currentVersion}.`;
-      startupUpdateIgnoreButton.classList.toggle("hidden", availableUpdate.mandatory);
-      startupUpdateClose.classList.toggle("hidden", availableUpdate.mandatory);
-      startupUpdateButton.textContent = directInstallUnavailable
-        ? useLinuxCommand
+    startupUpdateIgnoreButton.classList.toggle(
+      "hidden",
+      availableUpdate.mandatory,
+    );
+    startupUpdateClose.classList.toggle("hidden", availableUpdate.mandatory);
+    startupUpdateButton.textContent = directInstallUnavailable
+      ? useLinuxCommand
+        ? "Show update command"
+        : "Direct update unavailable"
+      : platformApi.supportsNativeUpdateInstall
+        ? "Install update"
+        : platform === "linux"
           ? "Show update command"
-          : "Direct update unavailable"
-        : platformApi.supportsNativeUpdateInstall
-          ? "Install update"
-          : platform === "linux"
-            ? "Show update command"
-            : "Open release";
-      startupUpdateButton.disabled = directInstallUnavailable && !useLinuxCommand;
-      startupUpdateFallbackButton.classList.toggle(
-        "hidden",
-        !directInstallUnavailable,
-      );
-      startupUpdateModal.classList.remove("hidden");
-    } else if (!platformApi.supportsUpdateChecks) {
+          : "Open release";
+    startupUpdateButton.disabled = directInstallUnavailable && !useLinuxCommand;
+    startupUpdateFallbackButton.classList.toggle(
+      "hidden",
+      !directInstallUnavailable,
+    );
+    startupUpdateModal.classList.remove("hidden");
+  } else if (!platformApi.supportsUpdateChecks) {
     window.open(latestReleaseUrl, "_blank", "noopener");
   } else {
     checkForUpdates({ manual: true });
@@ -15814,7 +16882,12 @@ function closeConnectionPanel() {
 }
 
 function positionConnectionPanel() {
-  if (!ownIdModal || !openConnectionModalButton || ownIdModal.classList.contains("hidden")) return;
+  if (
+    !ownIdModal ||
+    !openConnectionModalButton ||
+    ownIdModal.classList.contains("hidden")
+  )
+    return;
   const anchor = openConnectionModalButton.getBoundingClientRect();
   const gap = 8;
   const edge = 12;
@@ -15839,7 +16912,10 @@ function selectConnectionTab(tab) {
     button.tabIndex = active ? 0 : -1;
   }
   for (const panel of connectionPanels) {
-    panel.classList.toggle("hidden", panel.dataset.connectionPanel !== selectedTab);
+    panel.classList.toggle(
+      "hidden",
+      panel.dataset.connectionPanel !== selectedTab,
+    );
   }
 }
 
@@ -15863,7 +16939,9 @@ openConnectionModalButton?.addEventListener("click", () => {
   requestAnimationFrame(positionConnectionPanel);
 });
 for (const button of connectionTabs) {
-  button.addEventListener("click", () => selectConnectionTab(button.dataset.connectionTab));
+  button.addEventListener("click", () =>
+    selectConnectionTab(button.dataset.connectionTab),
+  );
 }
 window.addEventListener("resize", positionConnectionPanel);
 document.addEventListener("pointerdown", (event) => {
@@ -15977,7 +17055,10 @@ function saveProfile() {
   refreshCallStage();
   broadcastProfileUpdate();
   profileModal.classList.add("hidden");
-  setStatus("pending", "Profile saved and shared with connected chat partners.");
+  setStatus(
+    "pending",
+    "Profile saved and shared with connected chat partners.",
+  );
 }
 
 function resetProfileToDefault() {
@@ -15990,7 +17071,10 @@ function resetProfileToDefault() {
   refreshCallStage();
   broadcastProfileUpdate();
   profileModal.classList.add("hidden");
-  setStatus("pending", "Profile reset to default and shared with connected chat partners.");
+  setStatus(
+    "pending",
+    "Profile reset to default and shared with connected chat partners.",
+  );
 }
 
 profileNickname.addEventListener("input", () => {
@@ -16040,8 +17124,9 @@ const changelogEmoji = new Map([
 ]);
 
 function expandChangelogEmoji(text) {
-  return String(text).replace(/:([a-z0-9_+-]+):/gi, (match, name) =>
-    changelogEmoji.get(name.toLowerCase()) || match,
+  return String(text).replace(
+    /:([a-z0-9_+-]+):/gi,
+    (match, name) => changelogEmoji.get(name.toLowerCase()) || match,
   );
 }
 
@@ -16056,7 +17141,9 @@ function getSafeChangelogUrl(value, { image = false, baseUrl = "" } = {}) {
       url.hostname === "gist.github.com" &&
       url.pathname.startsWith("/user-attachments/assets/")
     ) {
-      const assetId = /\/([a-f0-9-]{36})\/?$/i.exec(url.pathname)?.[1]?.toLowerCase();
+      const assetId = /\/([a-f0-9-]{36})\/?$/i
+        .exec(url.pathname)?.[1]
+        ?.toLowerCase();
       const resolvedAttachment = assetId && changelogAttachmentUrls[assetId];
       if (resolvedAttachment) return resolvedAttachment;
       url.hostname = "github.com";
@@ -16089,12 +17176,13 @@ function expandChangelogEmojiText(root) {
 function createChangelogHeadingIds(container) {
   const usedIds = new Set();
   for (const heading of container.querySelectorAll("h1, h2, h3, h4, h5, h6")) {
-    const baseId = String(heading.textContent || "section")
-      .trim()
-      .toLowerCase()
-      .replace(/[^\p{L}\p{N}\s-]/gu, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-") || "section";
+    const baseId =
+      String(heading.textContent || "section")
+        .trim()
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}\s-]/gu, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-") || "section";
     let id = baseId;
     let suffix = 1;
     while (usedIds.has(id)) id = `${baseId}-${suffix++}`;
@@ -16125,7 +17213,10 @@ function prepareChangelogAlerts(container) {
       /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*/i,
       "",
     );
-    quote.classList.add("changelog-alert", `changelog-alert-${type.toLowerCase()}`);
+    quote.classList.add(
+      "changelog-alert",
+      `changelog-alert-${type.toLowerCase()}`,
+    );
     quote.prepend(label);
   }
 }
@@ -16138,7 +17229,9 @@ function prepareChangelogMarkdown(container, { baseUrl = "" } = {}) {
     if (originalHref?.startsWith("#")) {
       link.addEventListener("click", (event) => {
         event.preventDefault();
-        container.querySelector(`#${CSS.escape(originalHref.slice(1))}`)?.scrollIntoView({ behavior: "smooth" });
+        container
+          .querySelector(`#${CSS.escape(originalHref.slice(1))}`)
+          ?.scrollIntoView({ behavior: "smooth" });
       });
       continue;
     }
@@ -16170,20 +17263,27 @@ function prepareChangelogMarkdown(container, { baseUrl = "" } = {}) {
     markdownImage.decoding = "async";
     markdownImage.referrerPolicy = "no-referrer";
     markdownImage.alt ||= "Changelog image";
-    markdownImage.addEventListener("error", () => {
-      const unavailable = document.createElement("span");
-      unavailable.className = "changelog-image-unavailable";
-      unavailable.textContent = `${markdownImage.alt} could not be loaded`;
-      unavailable.title = safeUrl;
-      markdownImage.replaceWith(unavailable);
-    }, { once: true });
+    markdownImage.addEventListener(
+      "error",
+      () => {
+        const unavailable = document.createElement("span");
+        unavailable.className = "changelog-image-unavailable";
+        unavailable.textContent = `${markdownImage.alt} could not be loaded`;
+        unavailable.title = safeUrl;
+        markdownImage.replaceWith(unavailable);
+      },
+      { once: true },
+    );
   }
 
   for (const checkbox of container.querySelectorAll('input[type="checkbox"]')) {
     checkbox.disabled = true;
     checkbox.tabIndex = -1;
   }
-  for (const input of container.querySelectorAll("input:not([type=\"checkbox\"])")) input.remove();
+  for (const input of container.querySelectorAll(
+    'input:not([type="checkbox"])',
+  ))
+    input.remove();
 
   for (const table of [...container.querySelectorAll("table")]) {
     const wrapper = document.createElement("div");
@@ -16195,28 +17295,39 @@ function prepareChangelogMarkdown(container, { baseUrl = "" } = {}) {
 }
 
 function normalizeChangelogImageMarkup(markdown) {
-  return String(markdown || "").replace(/\\?<img\b([^>]*)\/?\s*>/gi, (tag, attributes) => {
-    const srcMatch = /\bsrc\s*=\s*(["'])(.*?)\1/i.exec(attributes);
-    if (!srcMatch) return tag;
-    const wrappedUrl = /^\[[^\]]*\]\((https?:\/\/[^\s)]+)\)$/i.exec(srcMatch[2]);
-    const wasEscaped = tag.startsWith("\\<");
-    if (!wrappedUrl && !wasEscaped) return tag;
+  return String(markdown || "").replace(
+    /\\?<img\b([^>]*)\/?\s*>/gi,
+    (tag, attributes) => {
+      const srcMatch = /\bsrc\s*=\s*(["'])(.*?)\1/i.exec(attributes);
+      if (!srcMatch) return tag;
+      const wrappedUrl = /^\[[^\]]*\]\((https?:\/\/[^\s)]+)\)$/i.exec(
+        srcMatch[2],
+      );
+      const wasEscaped = tag.startsWith("\\<");
+      if (!wrappedUrl && !wasEscaped) return tag;
 
-    const directUrl = wrappedUrl?.[1] || srcMatch[2];
-    const alt = /\balt\s*=\s*(["'])(.*?)\1/i.exec(attributes)?.[2] || "Changelog image";
-    const width = /^\d{1,4}$/.test(/\bwidth\s*=\s*(["'])(.*?)\1/i.exec(attributes)?.[2] || "")
-      ? /\bwidth\s*=\s*(["'])(.*?)\1/i.exec(attributes)[2]
-      : "";
-    const height = /^\d{1,4}$/.test(/\bheight\s*=\s*(["'])(.*?)\1/i.exec(attributes)?.[2] || "")
-      ? /\bheight\s*=\s*(["'])(.*?)\1/i.exec(attributes)[2]
-      : "";
-    const escapeAttribute = (value) => String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;");
-    return `<img${width ? ` width="${width}"` : ""}${height ? ` height="${height}"` : ""} alt="${escapeAttribute(alt)}" src="${escapeAttribute(directUrl)}">`;
-  });
+      const directUrl = wrappedUrl?.[1] || srcMatch[2];
+      const alt =
+        /\balt\s*=\s*(["'])(.*?)\1/i.exec(attributes)?.[2] || "Changelog image";
+      const width = /^\d{1,4}$/.test(
+        /\bwidth\s*=\s*(["'])(.*?)\1/i.exec(attributes)?.[2] || "",
+      )
+        ? /\bwidth\s*=\s*(["'])(.*?)\1/i.exec(attributes)[2]
+        : "";
+      const height = /^\d{1,4}$/.test(
+        /\bheight\s*=\s*(["'])(.*?)\1/i.exec(attributes)?.[2] || "",
+      )
+        ? /\bheight\s*=\s*(["'])(.*?)\1/i.exec(attributes)[2]
+        : "";
+      const escapeAttribute = (value) =>
+        String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;");
+      return `<img${width ? ` width="${width}"` : ""}${height ? ` height="${height}"` : ""} alt="${escapeAttribute(alt)}" src="${escapeAttribute(directUrl)}">`;
+    },
+  );
 }
 
 function renderChangelogMarkdown(container, markdown, options = {}) {
@@ -16227,7 +17338,18 @@ function renderChangelogMarkdown(container, markdown, options = {}) {
   });
   container.innerHTML = DOMPurify.sanitize(rendered, {
     USE_PROFILES: { html: true },
-    FORBID_TAGS: ["audio", "button", "embed", "form", "iframe", "object", "select", "style", "textarea", "video"],
+    FORBID_TAGS: [
+      "audio",
+      "button",
+      "embed",
+      "form",
+      "iframe",
+      "object",
+      "select",
+      "style",
+      "textarea",
+      "video",
+    ],
     FORBID_ATTR: ["srcset", "style"],
   });
   prepareChangelogMarkdown(container, options);
@@ -16288,8 +17410,13 @@ async function selectChangelogVersion(version) {
   file.append(fileName, githubIcon);
   file.addEventListener("click", () => {
     if (!changelogSourceUrl) return;
-    const fileAnchor = `file-${entry.fileName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
-    void openExternalLinkWithConfirmation(`${changelogSourceUrl}#${fileAnchor}`);
+    const fileAnchor = `file-${entry.fileName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")}`;
+    void openExternalLinkWithConfirmation(
+      `${changelogSourceUrl}#${fileAnchor}`,
+    );
   });
   heading.append(title, file);
   const pending = document.createElement("div");
@@ -16300,7 +17427,11 @@ async function selectChangelogVersion(version) {
   changelogDocument.parentElement.scrollTop = 0;
 
   await yieldChangelogFrame();
-  if (renderId !== changelogRenderId || selectedChangelogVersion !== entry.version) return;
+  if (
+    renderId !== changelogRenderId ||
+    selectedChangelogVersion !== entry.version
+  )
+    return;
   const markdownContent = getChangelogMarkdownContent(entry);
   changelogDocument.replaceChildren(heading, markdownContent);
   changelogDocument.removeAttribute("aria-busy");
@@ -16352,7 +17483,9 @@ function updateChangelogReadIndicators() {
         : "Open changelog",
     );
   }
-  for (const button of changelogVersionList.querySelectorAll("button[data-version]")) {
+  for (const button of changelogVersionList.querySelectorAll(
+    "button[data-version]",
+  )) {
     const unread = !readVersions.has(button.dataset.version);
     button.classList.toggle("is-unread", unread);
     button.setAttribute(
@@ -16393,9 +17526,13 @@ function scheduleChangelogRead(version) {
 
 function normalizeLoadedChangelogEntries(result) {
   return Array.isArray(result?.entries)
-    ? result.entries.filter(
-        (entry) => /^\d+\.\d+\.0$/.test(entry?.version) && typeof entry.markdown === "string",
-      ).slice(0, 100)
+    ? result.entries
+        .filter(
+          (entry) =>
+            /^\d+\.\d+\.0$/.test(entry?.version) &&
+            typeof entry.markdown === "string",
+        )
+        .slice(0, 100)
     : [];
 }
 
@@ -16408,34 +17545,37 @@ async function renderChangelogVersions() {
   const batchSize = 16;
   for (let start = 0; start < changelogEntries.length; start += batchSize) {
     const fragment = document.createDocumentFragment();
-    changelogEntries.slice(start, start + batchSize).forEach((entry, offset) => {
-      const index = start + offset;
-      const button = document.createElement("button");
-      button.type = "button";
-      button.dataset.version = entry.version;
-      button.setAttribute("role", "option");
-      const version = document.createElement("strong");
-      version.textContent = entry.version;
-      const badges = document.createElement("span");
-      const comparedToInstalled = compareChangelogVersions(
-        entry.version,
-        currentVersion,
-      );
-      if (comparedToInstalled === 0) {
-        badges.append(createChangelogVersionBadge("Installed", "installed"));
-      } else if (index === 0 && comparedToInstalled > 0) {
-        badges.append(createChangelogVersionBadge("Update", "update"));
-      } else if (comparedToInstalled > 0) {
-        badges.append(createChangelogVersionBadge("Newer", "newer"));
-      } else if (index === 0) {
-        badges.append(createChangelogVersionBadge("Latest notes", "latest"));
-      }
-      button.append(version, badges);
-      button.tabIndex = -1;
-      fragment.append(button);
-    });
+    changelogEntries
+      .slice(start, start + batchSize)
+      .forEach((entry, offset) => {
+        const index = start + offset;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.dataset.version = entry.version;
+        button.setAttribute("role", "option");
+        const version = document.createElement("strong");
+        version.textContent = entry.version;
+        const badges = document.createElement("span");
+        const comparedToInstalled = compareChangelogVersions(
+          entry.version,
+          currentVersion,
+        );
+        if (comparedToInstalled === 0) {
+          badges.append(createChangelogVersionBadge("Installed", "installed"));
+        } else if (index === 0 && comparedToInstalled > 0) {
+          badges.append(createChangelogVersionBadge("Update", "update"));
+        } else if (comparedToInstalled > 0) {
+          badges.append(createChangelogVersionBadge("Newer", "newer"));
+        } else if (index === 0) {
+          badges.append(createChangelogVersionBadge("Latest notes", "latest"));
+        }
+        button.append(version, badges);
+        button.tabIndex = -1;
+        fragment.append(button);
+      });
     changelogVersionList.append(fragment);
-    if (start + batchSize < changelogEntries.length) await yieldChangelogFrame();
+    if (start + batchSize < changelogEntries.length)
+      await yieldChangelogFrame();
   }
   updateChangelogReadIndicators();
 }
@@ -16443,61 +17583,73 @@ async function renderChangelogVersions() {
 async function loadChangelog({ force = false } = {}) {
   if (changelogLoadRequest && !force) return changelogLoadRequest;
   const request = (async () => {
-  changelogError.classList.add("hidden");
-  changelogRefresh.disabled = true;
-  changelogRefresh.querySelector("i")?.classList.add("fa-spin");
-  if (!changelogEntries.length) {
-    changelogLoading.classList.remove("hidden");
-    changelogDocument.classList.add("hidden");
-  }
-  try {
-    const result = await platformApi.fetchChangelog(changelogGistApiUrl, { force });
-    changelogEntries = normalizeLoadedChangelogEntries(result);
-    changelogSourceUrl = result?.sourceUrl || "";
-    changelogAttachmentUrls = result?.attachmentUrls && typeof result.attachmentUrls === "object"
-      ? result.attachmentUrls
-      : {};
-    changelogAttachmentRevision = JSON.stringify(changelogAttachmentUrls);
-    changelogSource.disabled = !changelogSourceUrl;
-    changelogSubtitle.textContent = result?.updatedAt
-      ? `Updated ${new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.updatedAt))}`
-      : "What changed in Aero P2P Chat";
-    changelogDocumentCache.forEach((cached, version) => {
-      if (!changelogEntries.some(
-        (entry) =>
-          entry.version === version &&
-          entry.markdown === cached.markdown &&
-          entry.rawUrl === cached.rawUrl,
-      )) {
-        changelogDocumentCache.delete(version);
-      }
-    });
-    await renderChangelogVersions();
-    if (!changelogEntries.length) throw new Error("The Gist has no versioned Markdown files.");
-    const installedEntry = changelogEntries.find(
-      (entry) => compareChangelogVersions(entry.version, currentVersion) === 0,
-    );
-    const preferredVersion = changelogEntries.some((entry) => entry.version === selectedChangelogVersion)
-      ? selectedChangelogVersion
-      : installedEntry
-        ? installedEntry.version
-        : changelogEntries.find(
-            (entry) => compareChangelogVersions(entry.version, currentVersion) <= 0,
-          )?.version || changelogEntries[0].version;
-    await selectChangelogVersion(preferredVersion);
-    scheduleChangelogRead(preferredVersion);
-  } catch (error) {
+    changelogError.classList.add("hidden");
+    changelogRefresh.disabled = true;
+    changelogRefresh.querySelector("i")?.classList.add("fa-spin");
     if (!changelogEntries.length) {
-      changelogError.querySelector("span").textContent = error?.message || "Check your internet connection and try again.";
-      changelogError.classList.remove("hidden");
-    } else {
-      changelogSubtitle.textContent = "Refresh failed · showing the last loaded changelog";
+      changelogLoading.classList.remove("hidden");
+      changelogDocument.classList.add("hidden");
     }
-  } finally {
-    changelogLoading.classList.add("hidden");
-    changelogRefresh.disabled = false;
-    changelogRefresh.querySelector("i")?.classList.remove("fa-spin");
-  }
+    try {
+      const result = await platformApi.fetchChangelog(changelogGistApiUrl, {
+        force,
+      });
+      changelogEntries = normalizeLoadedChangelogEntries(result);
+      changelogSourceUrl = result?.sourceUrl || "";
+      changelogAttachmentUrls =
+        result?.attachmentUrls && typeof result.attachmentUrls === "object"
+          ? result.attachmentUrls
+          : {};
+      changelogAttachmentRevision = JSON.stringify(changelogAttachmentUrls);
+      changelogSource.disabled = !changelogSourceUrl;
+      changelogSubtitle.textContent = result?.updatedAt
+        ? `Updated ${new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.updatedAt))}`
+        : "What changed in Aero P2P Chat";
+      changelogDocumentCache.forEach((cached, version) => {
+        if (
+          !changelogEntries.some(
+            (entry) =>
+              entry.version === version &&
+              entry.markdown === cached.markdown &&
+              entry.rawUrl === cached.rawUrl,
+          )
+        ) {
+          changelogDocumentCache.delete(version);
+        }
+      });
+      await renderChangelogVersions();
+      if (!changelogEntries.length)
+        throw new Error("The Gist has no versioned Markdown files.");
+      const installedEntry = changelogEntries.find(
+        (entry) =>
+          compareChangelogVersions(entry.version, currentVersion) === 0,
+      );
+      const preferredVersion = changelogEntries.some(
+        (entry) => entry.version === selectedChangelogVersion,
+      )
+        ? selectedChangelogVersion
+        : installedEntry
+          ? installedEntry.version
+          : changelogEntries.find(
+              (entry) =>
+                compareChangelogVersions(entry.version, currentVersion) <= 0,
+            )?.version || changelogEntries[0].version;
+      await selectChangelogVersion(preferredVersion);
+      scheduleChangelogRead(preferredVersion);
+    } catch (error) {
+      if (!changelogEntries.length) {
+        changelogError.querySelector("span").textContent =
+          error?.message || "Check your internet connection and try again.";
+        changelogError.classList.remove("hidden");
+      } else {
+        changelogSubtitle.textContent =
+          "Refresh failed · showing the last loaded changelog";
+      }
+    } finally {
+      changelogLoading.classList.add("hidden");
+      changelogRefresh.disabled = false;
+      changelogRefresh.querySelector("i")?.classList.remove("fa-spin");
+    }
   })();
   changelogLoadRequest = request;
   try {
@@ -16525,9 +17677,10 @@ async function prefetchChangelogStatus() {
     const result = await platformApi.fetchChangelog(changelogGistApiUrl);
     changelogEntries = normalizeLoadedChangelogEntries(result);
     changelogSourceUrl = result?.sourceUrl || "";
-    changelogAttachmentUrls = result?.attachmentUrls && typeof result.attachmentUrls === "object"
-      ? result.attachmentUrls
-      : {};
+    changelogAttachmentUrls =
+      result?.attachmentUrls && typeof result.attachmentUrls === "object"
+        ? result.attachmentUrls
+        : {};
     changelogAttachmentRevision = JSON.stringify(changelogAttachmentUrls);
     updateChangelogReadIndicators();
   } catch {
@@ -16537,8 +17690,14 @@ async function prefetchChangelogStatus() {
 
 changelogButton?.addEventListener("click", openChangelog);
 changelogClose?.addEventListener("click", closeChangelog);
-changelogRefresh?.addEventListener("click", () => void loadChangelog({ force: true }));
-changelogRetry?.addEventListener("click", () => void loadChangelog({ force: true }));
+changelogRefresh?.addEventListener(
+  "click",
+  () => void loadChangelog({ force: true }),
+);
+changelogRetry?.addEventListener(
+  "click",
+  () => void loadChangelog({ force: true }),
+);
 changelogSource?.addEventListener("click", () => {
   if (changelogSourceUrl) void platformApi.openExternalLink(changelogSourceUrl);
 });
@@ -16551,14 +17710,30 @@ changelogVersionList?.addEventListener("click", (event) => {
   }
 });
 changelogVersionList?.addEventListener("keydown", (event) => {
-  if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
-  const buttons = [...changelogVersionList.querySelectorAll("button[data-version]")];
+  if (
+    ![
+      "ArrowUp",
+      "ArrowDown",
+      "ArrowLeft",
+      "ArrowRight",
+      "Home",
+      "End",
+    ].includes(event.key)
+  )
+    return;
+  const buttons = [
+    ...changelogVersionList.querySelectorAll("button[data-version]"),
+  ];
   const current = buttons.indexOf(document.activeElement);
-  const next = event.key === "Home"
-    ? 0
-    : event.key === "End"
-      ? buttons.length - 1
-      : (Math.max(0, current) + (["ArrowDown", "ArrowRight"].includes(event.key) ? 1 : -1) + buttons.length) % buttons.length;
+  const next =
+    event.key === "Home"
+      ? 0
+      : event.key === "End"
+        ? buttons.length - 1
+        : (Math.max(0, current) +
+            (["ArrowDown", "ArrowRight"].includes(event.key) ? 1 : -1) +
+            buttons.length) %
+          buttons.length;
   event.preventDefault();
   buttons[next]?.focus({ preventScroll: true });
   buttons[next]?.scrollIntoView({ block: "nearest", inline: "nearest" });
@@ -16578,9 +17753,16 @@ let changelogViewerZoom = 1;
 let changelogViewerDrag = null;
 
 function sizeChangelogViewerImage({ center = false } = {}) {
-  if (!changelogImagePreview.naturalWidth || !changelogImagePreview.naturalHeight) return;
+  if (
+    !changelogImagePreview.naturalWidth ||
+    !changelogImagePreview.naturalHeight
+  )
+    return;
   const availableWidth = Math.max(100, changelogImageViewport.clientWidth - 24);
-  const availableHeight = Math.max(100, changelogImageViewport.clientHeight - 24);
+  const availableHeight = Math.max(
+    100,
+    changelogImageViewport.clientHeight - 24,
+  );
   const fitScale = Math.min(
     1,
     availableWidth / changelogImagePreview.naturalWidth,
@@ -16591,8 +17773,18 @@ function sizeChangelogViewerImage({ center = false } = {}) {
   changelogImageZoomReset.textContent = `${Math.round(changelogViewerZoom * 100)}%`;
   if (center) {
     requestAnimationFrame(() => {
-      changelogImageViewport.scrollLeft = Math.max(0, (changelogImagePreview.offsetWidth - changelogImageViewport.clientWidth) / 2);
-      changelogImageViewport.scrollTop = Math.max(0, (changelogImagePreview.offsetHeight - changelogImageViewport.clientHeight) / 2);
+      changelogImageViewport.scrollLeft = Math.max(
+        0,
+        (changelogImagePreview.offsetWidth -
+          changelogImageViewport.clientWidth) /
+          2,
+      );
+      changelogImageViewport.scrollTop = Math.max(
+        0,
+        (changelogImagePreview.offsetHeight -
+          changelogImageViewport.clientHeight) /
+          2,
+      );
     });
   }
 }
@@ -16604,20 +17796,30 @@ function setChangelogViewerZoom(value, { center = true } = {}) {
 
 function showChangelogViewerImage(index) {
   if (!changelogViewerImages.length) return;
-  changelogViewerIndex = (index + changelogViewerImages.length) % changelogViewerImages.length;
+  changelogViewerIndex =
+    (index + changelogViewerImages.length) % changelogViewerImages.length;
   const image = changelogViewerImages[changelogViewerIndex];
   changelogViewerZoom = 1;
   changelogImagePreview.alt = image.alt || "Changelog image";
   changelogImageCaption.textContent = image.alt || "";
   changelogImageCounter.textContent = `${changelogViewerIndex + 1} / ${changelogViewerImages.length}`;
-  changelogImagePrevious.classList.toggle("hidden", changelogViewerImages.length < 2);
-  changelogImageNext.classList.toggle("hidden", changelogViewerImages.length < 2);
+  changelogImagePrevious.classList.toggle(
+    "hidden",
+    changelogViewerImages.length < 2,
+  );
+  changelogImageNext.classList.toggle(
+    "hidden",
+    changelogViewerImages.length < 2,
+  );
   changelogImagePreview.src = image.currentSrc || image.src;
-  if (changelogImagePreview.complete) sizeChangelogViewerImage({ center: true });
+  if (changelogImagePreview.complete)
+    sizeChangelogViewerImage({ center: true });
 }
 
 function openChangelogImageViewer(selectedImage) {
-  changelogViewerImages = [...changelogDocument.querySelectorAll(".changelog-markdown img[src]")];
+  changelogViewerImages = [
+    ...changelogDocument.querySelectorAll(".changelog-markdown img[src]"),
+  ];
   const selectedIndex = changelogViewerImages.indexOf(selectedImage);
   if (selectedIndex < 0) return;
   changelogImageViewer.classList.remove("hidden");
@@ -16637,17 +17839,35 @@ changelogDocument?.addEventListener("click", (event) => {
   const image = event.target.closest(".changelog-markdown img[src]");
   if (image) openChangelogImageViewer(image);
 });
-changelogImagePreview?.addEventListener("load", () => sizeChangelogViewerImage({ center: true }));
+changelogImagePreview?.addEventListener("load", () =>
+  sizeChangelogViewerImage({ center: true }),
+);
 changelogImageClose?.addEventListener("click", closeChangelogImageViewer);
-changelogImagePrevious?.addEventListener("click", () => showChangelogViewerImage(changelogViewerIndex - 1));
-changelogImageNext?.addEventListener("click", () => showChangelogViewerImage(changelogViewerIndex + 1));
-changelogImageZoomOut?.addEventListener("click", () => setChangelogViewerZoom(changelogViewerZoom - 0.25));
-changelogImageZoomReset?.addEventListener("click", () => setChangelogViewerZoom(1));
-changelogImageZoomIn?.addEventListener("click", () => setChangelogViewerZoom(changelogViewerZoom + 0.25));
-changelogImageViewport?.addEventListener("wheel", (event) => {
-  event.preventDefault();
-  setChangelogViewerZoom(changelogViewerZoom + (event.deltaY < 0 ? 0.25 : -0.25));
-}, { passive: false });
+changelogImagePrevious?.addEventListener("click", () =>
+  showChangelogViewerImage(changelogViewerIndex - 1),
+);
+changelogImageNext?.addEventListener("click", () =>
+  showChangelogViewerImage(changelogViewerIndex + 1),
+);
+changelogImageZoomOut?.addEventListener("click", () =>
+  setChangelogViewerZoom(changelogViewerZoom - 0.25),
+);
+changelogImageZoomReset?.addEventListener("click", () =>
+  setChangelogViewerZoom(1),
+);
+changelogImageZoomIn?.addEventListener("click", () =>
+  setChangelogViewerZoom(changelogViewerZoom + 0.25),
+);
+changelogImageViewport?.addEventListener(
+  "wheel",
+  (event) => {
+    event.preventDefault();
+    setChangelogViewerZoom(
+      changelogViewerZoom + (event.deltaY < 0 ? 0.25 : -0.25),
+    );
+  },
+  { passive: false },
+);
 changelogImageViewport?.addEventListener("pointerdown", (event) => {
   changelogViewerDrag = {
     x: event.clientX,
@@ -16660,28 +17880,39 @@ changelogImageViewport?.addEventListener("pointerdown", (event) => {
 });
 changelogImageViewport?.addEventListener("pointermove", (event) => {
   if (!changelogViewerDrag) return;
-  changelogImageViewport.scrollLeft = changelogViewerDrag.left - (event.clientX - changelogViewerDrag.x);
-  changelogImageViewport.scrollTop = changelogViewerDrag.top - (event.clientY - changelogViewerDrag.y);
+  changelogImageViewport.scrollLeft =
+    changelogViewerDrag.left - (event.clientX - changelogViewerDrag.x);
+  changelogImageViewport.scrollTop =
+    changelogViewerDrag.top - (event.clientY - changelogViewerDrag.y);
 });
 changelogImageViewport?.addEventListener("pointerup", () => {
   changelogViewerDrag = null;
   changelogImageViewport.classList.remove("is-dragging");
 });
 window.addEventListener("resize", () => {
-  if (!changelogImageViewer.classList.contains("hidden")) sizeChangelogViewerImage();
+  if (!changelogImageViewer.classList.contains("hidden"))
+    sizeChangelogViewerImage();
 });
-document.addEventListener("keydown", (event) => {
-  if (changelogImageViewer.classList.contains("hidden")) return;
-  if (event.key === "Escape") closeChangelogImageViewer();
-  else if (event.key === "ArrowLeft") showChangelogViewerImage(changelogViewerIndex - 1);
-  else if (event.key === "ArrowRight") showChangelogViewerImage(changelogViewerIndex + 1);
-  else if (["+", "="].includes(event.key)) setChangelogViewerZoom(changelogViewerZoom + 0.25);
-  else if (event.key === "-") setChangelogViewerZoom(changelogViewerZoom - 0.25);
-  else if (event.key === "0") setChangelogViewerZoom(1);
-  else return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-}, true);
+document.addEventListener(
+  "keydown",
+  (event) => {
+    if (changelogImageViewer.classList.contains("hidden")) return;
+    if (event.key === "Escape") closeChangelogImageViewer();
+    else if (event.key === "ArrowLeft")
+      showChangelogViewerImage(changelogViewerIndex - 1);
+    else if (event.key === "ArrowRight")
+      showChangelogViewerImage(changelogViewerIndex + 1);
+    else if (["+", "="].includes(event.key))
+      setChangelogViewerZoom(changelogViewerZoom + 0.25);
+    else if (event.key === "-")
+      setChangelogViewerZoom(changelogViewerZoom - 0.25);
+    else if (event.key === "0") setChangelogViewerZoom(1);
+    else return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  },
+  true,
+);
 
 for (const item of settingsNavItems) {
   item.addEventListener("click", () => {
@@ -16689,18 +17920,31 @@ for (const item of settingsNavItems) {
     selectSettingsPage(item.dataset.settingsNav);
   });
   item.addEventListener("keydown", (event) => {
-    if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+    if (
+      ![
+        "ArrowUp",
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "Home",
+        "End",
+      ].includes(event.key)
+    ) {
       return;
     }
     const visibleItems = settingsNavItems.filter(
       (candidate) => getComputedStyle(candidate).display !== "none",
     );
     const currentIndex = visibleItems.indexOf(item);
-    const nextIndex = event.key === "Home"
-      ? 0
-      : event.key === "End"
-        ? visibleItems.length - 1
-        : (currentIndex + (["ArrowDown", "ArrowRight"].includes(event.key) ? 1 : -1) + visibleItems.length) % visibleItems.length;
+    const nextIndex =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? visibleItems.length - 1
+          : (currentIndex +
+              (["ArrowDown", "ArrowRight"].includes(event.key) ? 1 : -1) +
+              visibleItems.length) %
+            visibleItems.length;
     const nextItem = visibleItems[nextIndex];
     if (!nextItem) return;
     event.preventDefault();
@@ -16711,7 +17955,9 @@ for (const item of settingsNavItems) {
 }
 
 settingsSearchInput?.addEventListener("input", renderSettingsSearchResults);
-settingsSearchClear?.addEventListener("click", () => clearSettingsSearch({ focus: true }));
+settingsSearchClear?.addEventListener("click", () =>
+  clearSettingsSearch({ focus: true }),
+);
 settingsSearchInput?.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && settingsSearchInput.value) {
     event.preventDefault();
@@ -16783,7 +18029,8 @@ appLockEnableButton?.addEventListener("click", async () => {
     });
     if (!result?.ok) {
       if (!result?.canceled) {
-        appLockStatusMessage.textContent = result?.error || "App Lock could not be updated.";
+        appLockStatusMessage.textContent =
+          result?.error || "App Lock could not be updated.";
       }
       return;
     }
@@ -16792,7 +18039,8 @@ appLockEnableButton?.addEventListener("click", async () => {
     clearAppLockPinFields();
     renderAppLockSettings();
     showAppLockRecoveryCodes(result.recoveryCodes);
-    appLockStatusMessage.textContent = "App Lock is active. Save the new recovery codes before leaving this page.";
+    appLockStatusMessage.textContent =
+      "App Lock is active. Save the new recovery codes before leaving this page.";
   } finally {
     setAppLockBusy(false);
   }
@@ -16800,7 +18048,8 @@ appLockEnableButton?.addEventListener("click", async () => {
 
 appLockChangePinButton?.addEventListener("click", () => {
   appLockPinChangeMode = true;
-  appLockStatusMessage.textContent = "Choose a new PIN. Your current PIN will be requested in the security window.";
+  appLockStatusMessage.textContent =
+    "Choose a new PIN. Your current PIN will be requested in the security window.";
   renderAppLockSettings();
   appLockPin.focus();
 });
@@ -16811,13 +18060,16 @@ appLockNewCodesButton?.addEventListener("click", async () => {
   try {
     const result = await platformApi.regenerateAppLockCodes();
     if (!result?.ok) {
-      if (!result?.canceled) appLockStatusMessage.textContent = result?.error || "Recovery codes could not be replaced.";
+      if (!result?.canceled)
+        appLockStatusMessage.textContent =
+          result?.error || "Recovery codes could not be replaced.";
       return;
     }
     currentAppLockStatus = result;
     renderAppLockSettings();
     showAppLockRecoveryCodes(result.recoveryCodes);
-    appLockStatusMessage.textContent = "Previous recovery codes are now invalid.";
+    appLockStatusMessage.textContent =
+      "Previous recovery codes are now invalid.";
   } finally {
     setAppLockBusy(false);
   }
@@ -16826,7 +18078,8 @@ appLockNewCodesButton?.addEventListener("click", async () => {
 appLockDisableButton?.addEventListener("click", async () => {
   const confirmed = await showAppDialog({
     title: "Turn off App Lock?",
-    message: "Aero will ask for your current PIN or a recovery code in a separate security window.",
+    message:
+      "Aero will ask for your current PIN or a recovery code in a separate security window.",
     confirmText: "Continue",
     cancelText: "Cancel",
     danger: true,
@@ -16836,7 +18089,9 @@ appLockDisableButton?.addEventListener("click", async () => {
   try {
     const result = await platformApi.disableAppLock();
     if (!result?.ok) {
-      if (!result?.canceled) appLockStatusMessage.textContent = result?.error || "App Lock could not be turned off.";
+      if (!result?.canceled)
+        appLockStatusMessage.textContent =
+          result?.error || "App Lock could not be turned off.";
       return;
     }
     currentAppLockStatus = result;
@@ -16851,7 +18106,8 @@ appLockDisableButton?.addEventListener("click", async () => {
 
 appLockCopyCodesButton?.addEventListener("click", async () => {
   await platformApi.writeClipboard(appLockRecoveryCodes.textContent);
-  appLockStatusMessage.textContent = "Recovery codes copied. Store them somewhere private.";
+  appLockStatusMessage.textContent =
+    "Recovery codes copied. Store them somewhere private.";
 });
 
 appLockSaveCodesButton?.addEventListener("click", async () => {
@@ -16917,7 +18173,8 @@ resetAllSettingsButton.addEventListener("click", async () => {
 fullAppResetButton?.addEventListener("click", async () => {
   const confirmed = await showAppDialog({
     title: "Erase all local Aero data?",
-    message: "This permanently removes your Aero ID, contacts, chats, settings, custom media and App Lock. This cannot be undone.",
+    message:
+      "This permanently removes your Aero ID, contacts, chats, settings, custom media and App Lock. This cannot be undone.",
     confirmText: "Erase all data",
     cancelText: "Cancel",
     danger: true,
@@ -16943,14 +18200,10 @@ reopenWelcomeScreenButton.addEventListener("click", () => {
   openWelcomeScreen({ force: true });
 });
 
-
-
-
 menuTrust.addEventListener("click", () => {
   if (!contextContactId) {
     return;
   }
-
 
   const nextValue = !isTrusted(contextContactId);
   setTrusted(contextContactId, nextValue);
@@ -17013,10 +18266,15 @@ chatMenuSelect.addEventListener("click", () => {
 
 chatMenuMute.addEventListener("click", () => {
   if (!activePeerId) return;
-  const identityId = getPeerIdentityId(activePeerId, connections.get(activePeerId));
+  const identityId = getPeerIdentityId(
+    activePeerId,
+    connections.get(activePeerId),
+  );
   const muted = !findContact(identityId)?.muted;
   upsertContact(identityId, { muted, pinned: true });
-  addSystemMessage(muted ? "Chat notifications muted." : "Chat notifications enabled.");
+  addSystemMessage(
+    muted ? "Chat notifications muted." : "Chat notifications enabled.",
+  );
   closeChatMoreMenu();
 });
 
@@ -17027,19 +18285,26 @@ chatMenuExport.addEventListener("click", () => {
 
 chatMenuTrust.addEventListener("click", () => {
   if (!activePeerId) return;
-  const identityId = getPeerIdentityId(activePeerId, connections.get(activePeerId));
+  const identityId = getPeerIdentityId(
+    activePeerId,
+    connections.get(activePeerId),
+  );
   setTrusted(identityId, !isTrusted(identityId));
   closeChatMoreMenu();
 });
 
 chatMenuBlock.addEventListener("click", async () => {
   if (!activePeerId) return;
-  const identityId = getPeerIdentityId(activePeerId, connections.get(activePeerId));
+  const identityId = getPeerIdentityId(
+    activePeerId,
+    connections.get(activePeerId),
+  );
   const blocked = isBlocked(identityId);
   if (!blocked) {
     const confirmed = await showAppDialog({
       title: "Block contact?",
-      message: "The current connection will close and this contact will no longer be able to connect.",
+      message:
+        "The current connection will close and this contact will no longer be able to connect.",
       confirmText: "Block",
       cancelText: "Cancel",
       danger: true,
@@ -17101,7 +18366,9 @@ messageReactionOptions.addEventListener("click", (event) => {
   if (!button || !item) return;
   const emoji = button.dataset.reaction;
   const conn = connections.get(item.peerId);
-  if (sendProtocolMessage(conn, "message-reaction", { messageId: item.id, emoji })) {
+  if (
+    sendProtocolMessage(conn, "message-reaction", { messageId: item.id, emoji })
+  ) {
     applyMessageReaction(item.peerId, item.id, emoji, true);
   }
   closeMessageMenu();
@@ -17144,7 +18411,10 @@ menuDeleteEveryone.addEventListener("click", async () => {
   if (!confirmed) return;
   const conn = connections.get(peerId);
   if (!sendProtocolMessage(conn, "delete-message", { messageId: id })) {
-    setStatus("offline", "The contact must be connected to delete for everyone.");
+    setStatus(
+      "offline",
+      "The contact must be connected to delete for everyone.",
+    );
     return;
   }
 
@@ -17161,7 +18431,10 @@ document.addEventListener("click", (event) => {
   if (!messageMenu.contains(event.target)) {
     closeMessageMenu();
   }
-  if (!chatMoreMenu.contains(event.target) && !chatMoreButton.contains(event.target)) {
+  if (
+    !chatMoreMenu.contains(event.target) &&
+    !chatMoreButton.contains(event.target)
+  ) {
     closeChatMoreMenu();
   }
   if (!participantMenu.contains(event.target)) {
@@ -17263,7 +18536,10 @@ function cleanupRealtimeConnections({ deferClose = false } = {}) {
     }
     for (const history of chatHistory.values()) {
       for (const item of history) {
-        for (const objectUrl of [item?.voice?.objectUrl, item?.file?.previewUrl]) {
+        for (const objectUrl of [
+          item?.voice?.objectUrl,
+          item?.file?.previewUrl,
+        ]) {
           if (objectUrl?.startsWith("blob:")) URL.revokeObjectURL(objectUrl);
         }
         if (item?.file) item.file.previewUrl = "";
@@ -17315,8 +18591,8 @@ window.addEventListener("online", restoreNetworkConnection);
 function syncTrayState() {
   platformApi.updateTrayState({
     peerId: callState.peerId || (peer && peer.id) || null,
-    hasActivePeerConnection: [...connections.values()].some(
-      (connection) => Boolean(connection?.open),
+    hasActivePeerConnection: [...connections.values()].some((connection) =>
+      Boolean(connection?.open),
     ),
     isMuted: Boolean(callState.muted),
     isDeafened: Boolean(callState.deafened),
@@ -17346,10 +18622,14 @@ platformApi.onTrayAction(({ action, value }) => {
     setDebugOfflineMode(value);
   } else if (action === "set-debug-boot-simulation") {
     setBootSimulation(value);
-  } else if (action === "set-theme" && ["system", "light", "dark", "ultra-dark"].includes(value)) {
+  } else if (
+    action === "set-theme" &&
+    ["system", "light", "dark", "ultra-dark"].includes(value)
+  ) {
     saveAppSettings({ theme: value });
   } else if (action === "toggle-theme") {
-    appConfig.appSettings.theme = appConfig.appSettings.theme === "light" ? "dark" : "light";
+    appConfig.appSettings.theme =
+      appConfig.appSettings.theme === "light" ? "dark" : "light";
     renderAppSettings();
     saveAppConfig();
   } else if (action === "toggle-autostart") {
@@ -17488,7 +18768,11 @@ function getTooltipTarget(element) {
 
 function prepareTooltipTarget(target) {
   if (!target) return "";
-  const label = target.dataset.tooltip || target.getAttribute("aria-label") || target.title || "";
+  const label =
+    target.dataset.tooltip ||
+    target.getAttribute("aria-label") ||
+    target.title ||
+    "";
   if (!label) return "";
   target.dataset.tooltip = label;
   target.removeAttribute("title");
@@ -17573,7 +18857,10 @@ document.addEventListener("mousemove", (event) => {
   if (!tooltipTarget) return;
 
   lastTooltipPointer = { x: event.clientX, y: event.clientY };
-  if (activeTooltipTarget === tooltipTarget && !tooltipEl.classList.contains("hidden")) {
+  if (
+    activeTooltipTarget === tooltipTarget &&
+    !tooltipEl.classList.contains("hidden")
+  ) {
     positionTooltipAtPointer(lastTooltipPointer);
   }
 });

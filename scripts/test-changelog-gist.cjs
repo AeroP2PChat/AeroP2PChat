@@ -8,10 +8,22 @@ function assert(value, message) {
   if (!value) throw new Error(message);
 }
 
-assert(parseChangelogFileName("26.65.md")?.version === "26.65.0", "Version mapping failed.");
-assert(parseChangelogFileName("1.2.MD")?.version === "1.2.0", "Case-insensitive Markdown mapping failed.");
-assert(parseChangelogFileName("26.65.1.md") === null, "Invalid patch filename was accepted.");
-assert(parseChangelogFileName("notes.md") === null, "Unversioned filename was accepted.");
+assert(
+  parseChangelogFileName("26.65.md")?.version === "26.65.0",
+  "Version mapping failed.",
+);
+assert(
+  parseChangelogFileName("1.2.MD")?.version === "1.2.0",
+  "Case-insensitive Markdown mapping failed.",
+);
+assert(
+  parseChangelogFileName("26.65.1.md") === null,
+  "Invalid patch filename was accepted.",
+);
+assert(
+  parseChangelogFileName("notes.md") === null,
+  "Unversioned filename was accepted.",
+);
 
 const normalized = normalizeChangelogGist({
   updated_at: "2026-10-16T00:00:00Z",
@@ -20,21 +32,37 @@ const normalized = normalizeChangelogGist({
     "26.9.md": { content: "Older" },
     "26.66.md": {
       content: "Newest",
-      raw_url: "https://gist.githubusercontent.com/Tenkayro/example/raw/26.66.md",
+      raw_url:
+        "https://gist.githubusercontent.com/Tenkayro/example/raw/26.66.md",
     },
     "README.md": { content: "Ignored" },
     "26.70.md": { content: "Too large", truncated: true },
   },
 });
-assert(normalized.entries.length === 2, "Unexpected changelog files were included.");
-assert(normalized.entries[0].version === "26.66.0", "Changelog versions were not sorted newest first.");
-assert(normalized.entries[0].rawUrl.includes("gist.githubusercontent.com"), "Safe raw URL was not retained.");
-assert(normalized.entries[1].fileName === "26.9.md", "Filename normalization failed.");
+assert(
+  normalized.entries.length === 2,
+  "Unexpected changelog files were included.",
+);
+assert(
+  normalized.entries[0].version === "26.66.0",
+  "Changelog versions were not sorted newest first.",
+);
+assert(
+  normalized.entries[0].rawUrl.includes("gist.githubusercontent.com"),
+  "Safe raw URL was not retained.",
+);
+assert(
+  normalized.entries[1].fileName === "26.9.md",
+  "Filename normalization failed.",
+);
 
 const attachmentId = "7309d23d-e7ac-4046-b203-d94363a0f04f";
 const attachments = extractChangelogAttachmentUrls(
   `<img src="https://private-user-images.githubusercontent.com/92232204/123-${attachmentId}.png?jwt=test&amp;key=value">`,
 );
-assert(attachments[attachmentId]?.includes("jwt=test&key=value"), "Signed Gist attachment URL extraction failed.");
+assert(
+  attachments[attachmentId]?.includes("jwt=test&key=value"),
+  "Signed Gist attachment URL extraction failed.",
+);
 
 console.log("GitHub Gist changelog normalization checks passed.");

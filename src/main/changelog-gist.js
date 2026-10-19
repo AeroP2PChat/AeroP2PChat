@@ -31,7 +31,10 @@ function normalizeChangelogGist(payload) {
       const parsed = parseChangelogFileName(fileName);
       if (!parsed || !file || file.truncated === true) return null;
       const content = typeof file.content === "string" ? file.content : "";
-      if (!content.trim() || Buffer.byteLength(content, "utf8") > MAX_CHANGELOG_FILE_BYTES) {
+      if (
+        !content.trim() ||
+        Buffer.byteLength(content, "utf8") > MAX_CHANGELOG_FILE_BYTES
+      ) {
         return null;
       }
       return {
@@ -47,14 +50,17 @@ function normalizeChangelogGist(payload) {
       };
     })
     .filter(Boolean)
-    .sort((left, right) => compareVersionParts(left.versionParts, right.versionParts))
+    .sort((left, right) =>
+      compareVersionParts(left.versionParts, right.versionParts),
+    )
     .map(({ versionParts, ...entry }) => entry);
 
   return {
     entries,
     updatedAt: typeof payload.updated_at === "string" ? payload.updated_at : "",
     sourceUrl:
-      typeof payload.html_url === "string" && payload.html_url.startsWith("https://gist.github.com/")
+      typeof payload.html_url === "string" &&
+      payload.html_url.startsWith("https://gist.github.com/")
         ? payload.html_url
         : "",
   };
@@ -67,10 +73,16 @@ function extractChangelogAttachmentUrls(html) {
   );
   for (const match of matches) {
     const candidate = match[0].replaceAll("&amp;", "&");
-    const assetId = /([a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12})/i.exec(candidate)?.[1];
+    const assetId = /([a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12})/i.exec(
+      candidate,
+    )?.[1];
     try {
       const url = new URL(candidate);
-      if (assetId && url.protocol === "https:" && url.hostname === "private-user-images.githubusercontent.com") {
+      if (
+        assetId &&
+        url.protocol === "https:" &&
+        url.hostname === "private-user-images.githubusercontent.com"
+      ) {
         attachmentUrls[assetId.toLowerCase()] = url.toString();
       }
     } catch {

@@ -8,8 +8,7 @@ import {
 
 const repo = "AeroP2PChat/AeroP2PChat";
 const asset = "Aero-P2P-Chat-Windows-x64-Setup.msi";
-const validUrl =
-  `https://github.com/${repo}/releases/download/v26.52.2/${asset}`;
+const validUrl = `https://github.com/${repo}/releases/download/v26.52.2/${asset}`;
 
 assert.equal(isValidReleaseAssetUrl(validUrl, repo, asset), true);
 assert.equal(isValidReleaseAssetUrl("", repo, asset), false);
@@ -39,8 +38,14 @@ assert.equal(
   false,
 );
 
-assert.equal(hasValidUpdateChecksums("a".repeat(64), "A".repeat(86) + "=="), true);
-assert.equal(hasValidUpdateChecksums("a".repeat(63), "A".repeat(86) + "=="), false);
+assert.equal(
+  hasValidUpdateChecksums("a".repeat(64), "A".repeat(86) + "=="),
+  true,
+);
+assert.equal(
+  hasValidUpdateChecksums("a".repeat(63), "A".repeat(86) + "=="),
+  false,
+);
 assert.equal(hasValidUpdateChecksums("a".repeat(64), "invalid"), false);
 
 const mainSource = readFileSync(

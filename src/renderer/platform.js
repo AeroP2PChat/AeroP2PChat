@@ -98,8 +98,7 @@ export function createPlatformApi() {
   const electron = getElectronApi();
   const isChromeExtension = Boolean(getChromeStorage());
   const platform =
-    electron?.platform ||
-    (isChromeExtension ? "chrome-extension" : "web");
+    electron?.platform || (isChromeExtension ? "chrome-extension" : "web");
   const isElectron = Boolean(electron);
   const isWindowsStore = Boolean(electron?.isWindowsStore);
   const isAppImage = Boolean(electron?.isAppImage);
@@ -108,14 +107,20 @@ export function createPlatformApi() {
 
   async function getBrowserTempDirectory() {
     if (!navigator.storage?.getDirectory) {
-      throw new Error("Private temporary storage is unavailable in this browser.");
+      throw new Error(
+        "Private temporary storage is unavailable in this browser.",
+      );
     }
     if (!browserTempDirectoryPromise) {
       browserTempDirectoryPromise = (async () => {
         const root = await navigator.storage.getDirectory();
-        const directory = await root.getDirectoryHandle("aero-received", { create: true });
+        const directory = await root.getDirectoryHandle("aero-received", {
+          create: true,
+        });
         for await (const name of directory.keys()) {
-          await directory.removeEntry(name, { recursive: true }).catch(() => {});
+          await directory
+            .removeEntry(name, { recursive: true })
+            .catch(() => {});
         }
         return directory;
       })();
@@ -125,7 +130,8 @@ export function createPlatformApi() {
 
   async function getBrowserTempFile(tempRef) {
     const entry = browserTempFiles.get(tempRef);
-    if (!entry?.handle) throw new Error("The temporary file is no longer available.");
+    if (!entry?.handle)
+      throw new Error("The temporary file is no longer available.");
     return entry.handle.getFile();
   }
 
@@ -135,9 +141,7 @@ export function createPlatformApi() {
     isPackaged: Boolean(electron?.isPackaged),
     isWindowsStore,
     isAppImage,
-    usesLinuxSystemScreenPicker: Boolean(
-      electron?.usesLinuxSystemScreenPicker,
-    ),
+    usesLinuxSystemScreenPicker: Boolean(electron?.usesLinuxSystemScreenPicker),
     isChromeExtension,
     hasNativeWindowControls: isElectron,
     hasDesktopIntegration: isElectron,
@@ -161,31 +165,69 @@ export function createPlatformApi() {
 
     async prepareIncomingFile({ id, name, size, mimeType, sha256 }) {
       if (electron?.prepareIncomingFile) {
-        return electron.prepareIncomingFile({ id, name, size, mimeType, sha256 });
+        return electron.prepareIncomingFile({
+          id,
+          name,
+          size,
+          mimeType,
+          sha256,
+        });
       }
       try {
         const estimate = await navigator.storage?.estimate?.();
         const available = Number(estimate?.quota) - Number(estimate?.usage);
-        const reserve = Math.max(64 * 1024 * 1024, Math.floor(Number(estimate?.quota || 0) * 0.02));
-        if (Number.isFinite(available) && available > 0 && available < size + reserve) {
-          return { ok: false, noSpace: true, error: "Not enough private browser storage is available." };
+        const reserve = Math.max(
+          64 * 1024 * 1024,
+          Math.floor(Number(estimate?.quota || 0) * 0.02),
+        );
+        if (
+          Number.isFinite(available) &&
+          available > 0 &&
+          available < size + reserve
+        ) {
+          return {
+            ok: false,
+            noSpace: true,
+            error: "Not enough private browser storage is available.",
+          };
         }
         const persistenceRequest = navigator.storage?.persist?.();
         if (persistenceRequest) await persistenceRequest.catch(() => false);
         const directory = await getBrowserTempDirectory();
-        const handle = await directory.getFileHandle(`${id}.part`, { create: true });
-        const writable = await handle.createWritable({ keepExistingData: false });
-        browserTempFiles.set(id, { handle, writable, received: 0, size, mimeType, name });
+        const handle = await directory.getFileHandle(`${id}.part`, {
+          create: true,
+        });
+        const writable = await handle.createWritable({
+          keepExistingData: false,
+        });
+        browserTempFiles.set(id, {
+          handle,
+          writable,
+          received: 0,
+          size,
+          mimeType,
+          name,
+        });
         return { ok: true, tempRef: id };
       } catch (error) {
-        return { ok: false, error: error?.message || "Private temporary storage could not be created." };
+        return {
+          ok: false,
+          error:
+            error?.message || "Private temporary storage could not be created.",
+        };
       }
     },
 
     async appendIncomingFile(tempRef, value) {
       const bytes = value instanceof Uint8Array ? value : new Uint8Array(value);
       if (electron?.appendIncomingFile) {
-        return electron.appendIncomingFile(tempRef, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
+        return electron.appendIncomingFile(
+          tempRef,
+          bytes.buffer.slice(
+            bytes.byteOffset,
+            bytes.byteOffset + bytes.byteLength,
+          ),
+        );
       }
       const entry = browserTempFiles.get(tempRef);
       if (!entry?.writable || entry.received + bytes.byteLength > entry.size) {
@@ -202,7 +244,8 @@ export function createPlatformApi() {
       }
       try {
         const entry = browserTempFiles.get(tempRef);
-        if (!entry?.writable || entry.received !== entry.size) throw new Error("The temporary file is incomplete.");
+        if (!entry?.writable || entry.received !== entry.size)
+          throw new Error("The temporary file is incomplete.");
         await entry.writable.close();
         entry.writable = null;
         const file = await entry.handle.getFile();
@@ -212,19 +255,26 @@ export function createPlatformApi() {
           header: await file.slice(0, 64 * 1024).arrayBuffer(),
         };
       } catch (error) {
-        return { ok: false, error: error?.message || "The temporary file could not be finalized." };
+        return {
+          ok: false,
+          error: error?.message || "The temporary file could not be finalized.",
+        };
       }
     },
 
     async createReceivedFilePreview(tempRef, mimeType) {
-      if (electron?.getIncomingFileUrl) return electron.getIncomingFileUrl(tempRef);
+      if (electron?.getIncomingFileUrl)
+        return electron.getIncomingFileUrl(tempRef);
       const file = await getBrowserTempFile(tempRef);
-      return URL.createObjectURL(new File([file], file.name, { type: mimeType || file.type }));
+      return URL.createObjectURL(
+        new File([file], file.name, { type: mimeType || file.type }),
+      );
     },
 
     async releaseReceivedFile(tempRef) {
       if (!tempRef) return;
-      if (electron?.releaseIncomingFile) return electron.releaseIncomingFile(tempRef);
+      if (electron?.releaseIncomingFile)
+        return electron.releaseIncomingFile(tempRef);
       const entry = browserTempFiles.get(tempRef);
       browserTempFiles.delete(tempRef);
       await entry?.writable?.abort?.().catch(() => {});
@@ -233,14 +283,19 @@ export function createPlatformApi() {
     },
 
     async cleanupReceivedFiles() {
-      if (electron?.cleanupIncomingFiles) return electron.cleanupIncomingFiles();
+      if (electron?.cleanupIncomingFiles)
+        return electron.cleanupIncomingFiles();
       const entries = Array.from(browserTempFiles.values());
       browserTempFiles.clear();
-      await Promise.all(entries.map((entry) => entry.writable?.abort?.().catch(() => {})));
+      await Promise.all(
+        entries.map((entry) => entry.writable?.abort?.().catch(() => {})),
+      );
       const directory = await getBrowserTempDirectory().catch(() => null);
       if (directory) {
         for await (const name of directory.keys()) {
-          await directory.removeEntry(name, { recursive: true }).catch(() => {});
+          await directory
+            .removeEntry(name, { recursive: true })
+            .catch(() => {});
         }
       }
       return { ok: true };
@@ -253,7 +308,15 @@ export function createPlatformApi() {
       return { ok: false, unsupported: true };
     },
 
-    async saveReceivedFile({ blob, tempRef, name, mimeType, sha256, mode, directory }) {
+    async saveReceivedFile({
+      blob,
+      tempRef,
+      name,
+      mimeType,
+      sha256,
+      mode,
+      directory,
+    }) {
       if (!(blob instanceof Blob) && !tempRef) {
         return { ok: false, error: "The received file is unavailable." };
       }
@@ -268,7 +331,8 @@ export function createPlatformApi() {
         });
       }
 
-      const sourceBlob = blob instanceof Blob ? blob : await getBrowserTempFile(tempRef);
+      const sourceBlob =
+        blob instanceof Blob ? blob : await getBrowserTempFile(tempRef);
 
       const chromeApi = globalThis.chrome;
       if (isChromeExtension && chromeApi?.downloads?.download) {
@@ -283,20 +347,29 @@ export function createPlatformApi() {
           return { ok: Boolean(downloadId), scanStatus: "browser" };
         } catch (error) {
           URL.revokeObjectURL(objectUrl);
-          return { ok: false, error: error?.message || "The file could not be saved." };
+          return {
+            ok: false,
+            error: error?.message || "The file could not be saved.",
+          };
         }
       }
 
       if (mode === "ask" && typeof window.showSaveFilePicker === "function") {
         try {
-          const handle = await window.showSaveFilePicker({ suggestedName: name });
+          const handle = await window.showSaveFilePicker({
+            suggestedName: name,
+          });
           const writable = await handle.createWritable();
           await writable.write(sourceBlob);
           await writable.close();
           return { ok: true, scanStatus: "browser" };
         } catch (error) {
-          if (error?.name === "AbortError") return { ok: false, canceled: true };
-          return { ok: false, error: error?.message || "The file could not be saved." };
+          if (error?.name === "AbortError")
+            return { ok: false, canceled: true };
+          return {
+            ok: false,
+            error: error?.message || "The file could not be saved.",
+          };
         }
       }
       return triggerBrowserDownload(sourceBlob, name);
@@ -346,7 +419,9 @@ export function createPlatformApi() {
     },
 
     async getAppLockStatus() {
-      return electron?.getAppLockStatus?.() || { enabled: false, unsupported: true };
+      return (
+        electron?.getAppLockStatus?.() || { enabled: false, unsupported: true }
+      );
     },
 
     onAppLockCountdown(callback) {
@@ -354,22 +429,33 @@ export function createPlatformApi() {
     },
 
     async enableAppLock(details) {
-      return electron?.enableAppLock?.(details) || { ok: false, unsupported: true };
+      return (
+        electron?.enableAppLock?.(details) || { ok: false, unsupported: true }
+      );
     },
 
     async changeAppLockPin(details) {
-      return electron?.changeAppLockPin?.(details) || { ok: false, unsupported: true };
+      return (
+        electron?.changeAppLockPin?.(details) || {
+          ok: false,
+          unsupported: true,
+        }
+      );
     },
 
     async regenerateAppLockCodes() {
-      return electron?.regenerateAppLockCodes?.() || { ok: false, unsupported: true };
+      return (
+        electron?.regenerateAppLockCodes?.() || { ok: false, unsupported: true }
+      );
     },
 
     async saveAppLockRecoveryCodes(codes) {
-      return electron?.saveAppLockRecoveryCodes?.(codes) || {
-        ok: false,
-        unsupported: true,
-      };
+      return (
+        electron?.saveAppLockRecoveryCodes?.(codes) || {
+          ok: false,
+          unsupported: true,
+        }
+      );
     },
 
     async disableAppLock() {
@@ -409,7 +495,10 @@ export function createPlatformApi() {
       if (electron?.loadTheme) {
         return electron.loadTheme(fileName);
       }
-      return { ok: false, error: "Custom themes are available in the desktop app." };
+      return {
+        ok: false,
+        error: "Custom themes are available in the desktop app.",
+      };
     },
 
     async saveCustomSound(soundId, data) {
@@ -472,22 +561,29 @@ export function createPlatformApi() {
       const parsedUrl = assertRemoteThemeUrl(url);
       if (electron?.fetchOnlineTheme) {
         const result = await electron.fetchOnlineTheme(parsedUrl.toString());
-        if (!result?.ok) throw new Error(result?.error || "Theme could not be loaded.");
+        if (!result?.ok)
+          throw new Error(result?.error || "Theme could not be loaded.");
         return assertRemoteThemeSize(result.css);
       }
 
       const chromeApi = globalThis.chrome;
       if (isChromeExtension && chromeApi?.permissions) {
         const origin = `${parsedUrl.origin}/*`;
-        const hasPermission = await chromeApi.permissions.contains({ origins: [origin] });
+        const hasPermission = await chromeApi.permissions.contains({
+          origins: [origin],
+        });
         if (!hasPermission) {
-          const granted = await chromeApi.permissions.request({ origins: [origin] });
-          if (!granted) throw new Error("Permission for this theme host was not granted.");
+          const granted = await chromeApi.permissions.request({
+            origins: [origin],
+          });
+          if (!granted)
+            throw new Error("Permission for this theme host was not granted.");
         }
       }
 
       const response = await fetch(parsedUrl.toString(), { cache: "no-store" });
-      if (!response.ok) throw new Error(`Theme request failed (${response.status}).`);
+      if (!response.ok)
+        throw new Error(`Theme request failed (${response.status}).`);
       return assertRemoteThemeSize(await response.text());
     },
 
@@ -546,14 +642,18 @@ export function createPlatformApi() {
                 markdown: file.content,
                 rawUrl:
                   typeof file.raw_url === "string" &&
-                  /^https:\/\/gist\.githubusercontent\.com\//i.test(file.raw_url)
+                  /^https:\/\/gist\.githubusercontent\.com\//i.test(
+                    file.raw_url,
+                  )
                     ? file.raw_url
                     : "",
               }
             : null;
         })
         .filter(Boolean)
-        .sort((left, right) => compareVersionStrings(right.version, left.version));
+        .sort((left, right) =>
+          compareVersionStrings(right.version, left.version),
+        );
       return {
         ok: true,
         entries,

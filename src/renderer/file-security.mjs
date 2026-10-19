@@ -3,22 +3,99 @@ import { fileTypeFromBuffer } from "file-type";
 export const FILE_NAME_MAX_LENGTH = 180;
 
 const BLOCKED_EXTENSIONS = new Set([
-  "apk", "app", "appimage", "bat", "bin", "cmd", "com", "command",
-  "cpl", "deb", "desktop", "dll", "dmg", "dylib", "elf", "exe", "gadget", "hta",
-  "img", "iso", "jar", "jse", "js", "lnk", "msi", "msp", "mst",
-  "php", "pkg", "pl", "ps1", "psd1", "psm1", "py", "pyw", "rb",
-  "reg", "rpm", "scr", "sh", "so", "sys", "url", "vb", "vbe", "vbs",
-  "wsf", "wsh",
+  "apk",
+  "app",
+  "appimage",
+  "bat",
+  "bin",
+  "cmd",
+  "com",
+  "command",
+  "cpl",
+  "deb",
+  "desktop",
+  "dll",
+  "dmg",
+  "dylib",
+  "elf",
+  "exe",
+  "gadget",
+  "hta",
+  "img",
+  "iso",
+  "jar",
+  "jse",
+  "js",
+  "lnk",
+  "msi",
+  "msp",
+  "mst",
+  "php",
+  "pkg",
+  "pl",
+  "ps1",
+  "psd1",
+  "psm1",
+  "py",
+  "pyw",
+  "rb",
+  "reg",
+  "rpm",
+  "scr",
+  "sh",
+  "so",
+  "sys",
+  "url",
+  "vb",
+  "vbe",
+  "vbs",
+  "wsf",
+  "wsh",
 ]);
 
 const WARNING_EXTENSIONS = new Set([
-  "7z", "ace", "cab", "doc", "docm", "docx", "dotm", "gz", "html", "htm",
-  "mht", "mhtml", "odp", "ods", "odt", "pdf", "ppt", "pptm", "pptx", "rar",
-  "rtf", "svg", "svgz", "tar", "tgz", "xls", "xlsm", "xlsx", "xltm", "zip",
+  "7z",
+  "ace",
+  "cab",
+  "doc",
+  "docm",
+  "docx",
+  "dotm",
+  "gz",
+  "html",
+  "htm",
+  "mht",
+  "mhtml",
+  "odp",
+  "ods",
+  "odt",
+  "pdf",
+  "ppt",
+  "pptm",
+  "pptx",
+  "rar",
+  "rtf",
+  "svg",
+  "svgz",
+  "tar",
+  "tgz",
+  "xls",
+  "xlsm",
+  "xlsx",
+  "xltm",
+  "zip",
 ]);
 
 const SAFE_TEXT_EXTENSIONS = new Set([
-  "csv", "json", "log", "md", "text", "txt", "xml", "yaml", "yml",
+  "csv",
+  "json",
+  "log",
+  "md",
+  "text",
+  "txt",
+  "xml",
+  "yaml",
+  "yml",
 ]);
 
 const IMAGE_TYPES = new Map([
@@ -32,9 +109,15 @@ const IMAGE_TYPES = new Map([
 
 const DOCUMENT_TYPES = new Map([
   ["pdf", "application/pdf"],
-  ["docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+  [
+    "docx",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ],
   ["xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
-  ["pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"],
+  [
+    "pptx",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ],
 ]);
 
 const MEDIA_TYPES = new Map([
@@ -84,7 +167,8 @@ const ARCHIVE_MIME_TYPES = new Set([
   "application/zip",
 ]);
 
-const BIDI_OR_CONTROL_PATTERN = /[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]/u;
+const BIDI_OR_CONTROL_PATTERN =
+  /[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]/u;
 const PATH_SEPARATOR_PATTERN = /[\\/]/u;
 const RISK_LEVELS = { safe: 0, warning: 1, unsafe: 2, blocked: 3 };
 
@@ -93,7 +177,9 @@ function raiseRiskLevel(current, next) {
 }
 
 export function getFileExtension(name) {
-  const normalized = String(name || "").trim().toLowerCase();
+  const normalized = String(name || "")
+    .trim()
+    .toLowerCase();
   const index = normalized.lastIndexOf(".");
   return index > 0 && index < normalized.length - 1
     ? normalized.slice(index + 1)
@@ -107,7 +193,8 @@ export function sanitizeTransferFileName(value) {
     .replace(/[\u0000-\u001f\u007f<>:"|?*]/gu, "_")
     .replace(/[. ]+$/u, "")
     .trim();
-  const safe = cleaned && cleaned !== "." && cleaned !== ".." ? cleaned : "file";
+  const safe =
+    cleaned && cleaned !== "." && cleaned !== ".." ? cleaned : "file";
   if (safe.length <= FILE_NAME_MAX_LENGTH) return safe;
   const extension = getFileExtension(safe);
   const suffix = extension ? `.${extension.slice(0, 20)}` : "";
@@ -124,7 +211,11 @@ function getNameAssessment(name) {
   const reasons = [];
   let level = "safe";
 
-  if (!raw || raw.length > FILE_NAME_MAX_LENGTH || PATH_SEPARATOR_PATTERN.test(raw)) {
+  if (
+    !raw ||
+    raw.length > FILE_NAME_MAX_LENGTH ||
+    PATH_SEPARATOR_PATTERN.test(raw)
+  ) {
     level = "blocked";
     addUnique(reasons, "The file name is invalid.");
   }
@@ -137,7 +228,10 @@ function getNameAssessment(name) {
     addUnique(reasons, `.${extension} files can execute code.`);
   } else if (WARNING_EXTENSIONS.has(extension)) {
     level = raiseRiskLevel(level, "warning");
-    addUnique(reasons, `.${extension} files may contain active or hidden content.`);
+    addUnique(
+      reasons,
+      `.${extension} files may contain active or hidden content.`,
+    );
   } else if (!extension) {
     level = raiseRiskLevel(level, "warning");
     addUnique(reasons, "The file has no extension.");
@@ -224,7 +318,9 @@ function inspectActiveContent(bytes, extension) {
   }
   if (
     !["html", "htm", "svg", "svgz", "xml"].includes(extension) &&
-    (text.startsWith("<script") || text.startsWith("<!doctype html") || text.startsWith("<html"))
+    (text.startsWith("<script") ||
+      text.startsWith("<!doctype html") ||
+      text.startsWith("<html"))
   ) {
     blocked = true;
     addUnique(reasons, "Active web content is disguised as another file type.");
@@ -249,7 +345,12 @@ function getImageDimensions(bytes, extension) {
         continue;
       }
       const marker = bytes[offset + 1];
-      if ([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf].includes(marker)) {
+      if (
+        [
+          0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd,
+          0xce, 0xcf,
+        ].includes(marker)
+      ) {
         return {
           height: (bytes[offset + 5] << 8) | bytes[offset + 6],
           width: (bytes[offset + 7] << 8) | bytes[offset + 8],
@@ -274,7 +375,9 @@ function getImageDimensions(bytes, extension) {
     }
     if (
       chunk === "VP8 " &&
-      bytes[23] === 0x9d && bytes[24] === 0x01 && bytes[25] === 0x2a
+      bytes[23] === 0x9d &&
+      bytes[24] === 0x01 &&
+      bytes[25] === 0x2a
     ) {
       return {
         width: (bytes[26] | (bytes[27] << 8)) & 0x3fff,
@@ -284,18 +387,31 @@ function getImageDimensions(bytes, extension) {
     if (chunk === "VP8L" && bytes[20] === 0x2f) {
       return {
         width: 1 + bytes[21] + ((bytes[22] & 0x3f) << 8),
-        height: 1 + ((bytes[22] & 0xc0) >> 6) + (bytes[23] << 2) + ((bytes[24] & 0x0f) << 10),
+        height:
+          1 +
+          ((bytes[22] & 0xc0) >> 6) +
+          (bytes[23] << 2) +
+          ((bytes[24] & 0x0f) << 10),
       };
     }
   }
   if (extension === "avif" && bytes.length >= 32) {
     for (let index = 4; index + 16 <= bytes.length; index += 1) {
       if (
-        bytes[index] === 0x69 && bytes[index + 1] === 0x73 &&
-        bytes[index + 2] === 0x70 && bytes[index + 3] === 0x65
+        bytes[index] === 0x69 &&
+        bytes[index + 1] === 0x73 &&
+        bytes[index + 2] === 0x70 &&
+        bytes[index + 3] === 0x65
       ) {
-        const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-        return { width: view.getUint32(index + 8), height: view.getUint32(index + 12) };
+        const view = new DataView(
+          bytes.buffer,
+          bytes.byteOffset,
+          bytes.byteLength,
+        );
+        return {
+          width: view.getUint32(index + 8),
+          height: view.getUint32(index + 12),
+        };
       }
     }
   }
@@ -307,19 +423,29 @@ export async function inspectFileHeader(headerValue, metadata = {}) {
   const mimeType = String(metadata.mimeType || "application/octet-stream");
   const size = Number(metadata.size);
   const result = inspectFileMetadata({ name, size, mimeType });
-  const header = headerValue instanceof Uint8Array
-    ? headerValue
-    : headerValue instanceof ArrayBuffer
-      ? new Uint8Array(headerValue)
-      : null;
+  const header =
+    headerValue instanceof Uint8Array
+      ? headerValue
+      : headerValue instanceof ArrayBuffer
+        ? new Uint8Array(headerValue)
+        : null;
   if (result.level === "blocked" || !header?.byteLength) {
-    return { ...result, detectedExt: "", detectedMime: "", canPreview: false, previewKind: "" };
+    return {
+      ...result,
+      detectedExt: "",
+      detectedMime: "",
+      canPreview: false,
+      previewKind: "",
+    };
   }
   const active = inspectActiveContent(header, result.extension);
   if (active.blocked) result.level = "blocked";
   else if (active.unsafe && !BLOCKED_EXTENSIONS.has(result.extension)) {
     result.level = "blocked";
-    addUnique(result.reasons, "Executable content is disguised as a different file type.");
+    addUnique(
+      result.reasons,
+      "Executable content is disguised as a different file type.",
+    );
   } else if (active.unsafe) {
     result.level = raiseRiskLevel(result.level, "unsafe");
   }
@@ -330,26 +456,38 @@ export async function inspectFileHeader(headerValue, metadata = {}) {
     detected = await fileTypeFromBuffer(header);
   } catch {
     result.level = raiseRiskLevel(result.level, "warning");
-    addUnique(result.reasons, "The binary file type could not be identified reliably.");
+    addUnique(
+      result.reasons,
+      "The binary file type could not be identified reliably.",
+    );
   }
 
   const detectedExt = String(detected?.ext || "").toLowerCase();
   const detectedMime = String(detected?.mime || "").toLowerCase();
-  if (BLOCKED_EXTENSIONS.has(detectedExt) || BLOCKED_MIME_TYPES.has(detectedMime)) {
+  if (
+    BLOCKED_EXTENSIONS.has(detectedExt) ||
+    BLOCKED_MIME_TYPES.has(detectedMime)
+  ) {
     if (!BLOCKED_EXTENSIONS.has(result.extension)) {
       result.level = "blocked";
-      addUnique(result.reasons, "Executable content is disguised as a different file type.");
+      addUnique(
+        result.reasons,
+        "Executable content is disguised as a different file type.",
+      );
     } else {
       result.level = raiseRiskLevel(result.level, "unsafe");
       addUnique(result.reasons, "Executable content was detected in the file.");
     }
   }
 
-  const expectedMime = IMAGE_TYPES.get(result.extension) || DOCUMENT_TYPES.get(result.extension);
+  const expectedMime =
+    IMAGE_TYPES.get(result.extension) || DOCUMENT_TYPES.get(result.extension);
   const expectedMediaMimes = MEDIA_TYPES.get(result.extension);
   if (
     (expectedMime && detectedMime && detectedMime !== expectedMime) ||
-    (expectedMediaMimes && detectedMime && !expectedMediaMimes.has(detectedMime))
+    (expectedMediaMimes &&
+      detectedMime &&
+      !expectedMediaMimes.has(detectedMime))
   ) {
     result.level = "blocked";
     addUnique(result.reasons, "The file content does not match its extension.");
@@ -361,7 +499,10 @@ export async function inspectFileHeader(headerValue, metadata = {}) {
     result.level !== "blocked"
   ) {
     result.level = raiseRiskLevel(result.level, "warning");
-    addUnique(result.reasons, `Detected .${detectedExt} content does not match the .${result.extension} name.`);
+    addUnique(
+      result.reasons,
+      `Detected .${detectedExt} content does not match the .${result.extension} name.`,
+    );
   }
 
   if (
@@ -374,9 +515,16 @@ export async function inspectFileHeader(headerValue, metadata = {}) {
     addUnique(result.reasons, "Aero does not recognize this file type.");
   }
 
-  if ((ARCHIVE_MIME_TYPES.has(detectedMime) || ["zip", "rar", "7z", "gz", "tar"].includes(detectedExt)) && result.level !== "blocked") {
+  if (
+    (ARCHIVE_MIME_TYPES.has(detectedMime) ||
+      ["zip", "rar", "7z", "gz", "tar"].includes(detectedExt)) &&
+    result.level !== "blocked"
+  ) {
     result.level = raiseRiskLevel(result.level, "warning");
-    addUnique(result.reasons, "Archive contents are not extracted or scanned by Aero.");
+    addUnique(
+      result.reasons,
+      "Archive contents are not extracted or scanned by Aero.",
+    );
   }
 
   const imageDimensions = getImageDimensions(header, detectedExt);
@@ -393,7 +541,10 @@ export async function inspectFileHeader(headerValue, metadata = {}) {
     result.level !== "blocked"
   ) {
     result.level = raiseRiskLevel(result.level, "warning");
-    addUnique(result.reasons, "Image preview was disabled because its dimensions could not be validated safely.");
+    addUnique(
+      result.reasons,
+      "Image preview was disabled because its dimensions could not be validated safely.",
+    );
   }
 
   const mediaPreviewKind = getMediaPreviewKind(result.extension, detectedMime);
@@ -401,7 +552,7 @@ export async function inspectFileHeader(headerValue, metadata = {}) {
     result.level !== "blocked" &&
     size <= 12 * 1024 * 1024 &&
     IMAGE_TYPES.get(result.extension) === detectedMime &&
-    imageWithinPreviewLimits
+    imageWithinPreviewLimits,
   );
 
   return {

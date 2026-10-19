@@ -44,7 +44,15 @@ const {
 const { createHash, randomBytes } = require("node:crypto");
 const { get } = require("node:https");
 const { tmpdir } = require("node:os");
-const { basename, dirname, extname, isAbsolute, join, resolve, sep } = require("node:path");
+const {
+  basename,
+  dirname,
+  extname,
+  isAbsolute,
+  join,
+  resolve,
+  sep,
+} = require("node:path");
 const { execFileSync, spawn } = require("node:child_process");
 const { format } = require("node:util");
 const { pathToFileURL } = require("node:url");
@@ -123,13 +131,54 @@ const maxCustomSoundBytes = 25 * 1024 * 1024;
 const customWallpaperDirectoryName = "Wallpapers";
 const maxCustomWallpaperBytes = 8 * 1024 * 1024;
 const unsafeReceivedFileExtensions = new Set([
-  ".apk", ".app", ".appimage", ".bat", ".bin", ".cmd", ".com",
-  ".command", ".cpl", ".deb", ".desktop", ".dll", ".dmg", ".dylib",
-  ".elf", ".exe",
-  ".gadget", ".hta", ".img", ".iso", ".jar", ".jse", ".js", ".lnk",
-  ".msi", ".msp", ".mst", ".php", ".pkg", ".pl", ".ps1", ".psd1",
-  ".psm1", ".py", ".pyw", ".rb", ".reg", ".rpm", ".scr", ".sh",
-  ".so", ".sys", ".url", ".vb", ".vbe", ".vbs", ".wsf", ".wsh",
+  ".apk",
+  ".app",
+  ".appimage",
+  ".bat",
+  ".bin",
+  ".cmd",
+  ".com",
+  ".command",
+  ".cpl",
+  ".deb",
+  ".desktop",
+  ".dll",
+  ".dmg",
+  ".dylib",
+  ".elf",
+  ".exe",
+  ".gadget",
+  ".hta",
+  ".img",
+  ".iso",
+  ".jar",
+  ".jse",
+  ".js",
+  ".lnk",
+  ".msi",
+  ".msp",
+  ".mst",
+  ".php",
+  ".pkg",
+  ".pl",
+  ".ps1",
+  ".psd1",
+  ".psm1",
+  ".py",
+  ".pyw",
+  ".rb",
+  ".reg",
+  ".rpm",
+  ".scr",
+  ".sh",
+  ".so",
+  ".sys",
+  ".url",
+  ".vb",
+  ".vbe",
+  ".vbs",
+  ".wsf",
+  ".wsh",
 ]);
 const incomingTempFiles = new Map();
 let windowsDefenderScanQueue = Promise.resolve();
@@ -139,7 +188,12 @@ const incomingFileDiskReserveBytes = 64 * 1024 * 1024;
 protocol.registerSchemesAsPrivileged([
   {
     scheme: "aero-temp",
-    privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true },
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      stream: true,
+    },
   },
 ]);
 const customWallpaperIds = new Set(["light", "dark", "both"]);
@@ -222,7 +276,9 @@ let trayState = {
 };
 
 function normalizeAccentColor(value) {
-  const color = String(value || "").trim().replace(/^#/, "");
+  const color = String(value || "")
+    .trim()
+    .replace(/^#/, "");
   return /^[0-9a-f]{6,8}$/i.test(color)
     ? `#${color.slice(0, 6).toLowerCase()}`
     : "";
@@ -245,11 +301,7 @@ function writeRuntimeLog(level, args) {
       diagnosticLogLimitReached = true;
       return;
     }
-    appendFileSync(
-      diagnosticLogPath,
-      line,
-      "utf8",
-    );
+    appendFileSync(diagnosticLogPath, line, "utf8");
     diagnosticLogBytes += nextBytes;
   } catch {
     // Diagnostics must never interfere with the app itself.
@@ -264,7 +316,10 @@ function sanitizeDiagnosticText(value, maxLength = 4000) {
   } catch {
     // app paths may be unavailable during very early startup failures.
   }
-  text = text.replace(/aero-(?:[a-f0-9]{16}|[a-f0-9]{32})/gi, "aero-<redacted>");
+  text = text.replace(
+    /aero-(?:[a-f0-9]{16}|[a-f0-9]{32})/gi,
+    "aero-<redacted>",
+  );
   return text.slice(0, maxLength);
 }
 
@@ -274,12 +329,18 @@ function sanitizeDiagnosticData(value, depth = 0) {
   if (["boolean", "number"].includes(typeof value)) return value;
   if (typeof value === "string") return sanitizeDiagnosticText(value, 1000);
   if (Array.isArray(value)) {
-    return value.slice(0, 20).map((item) => sanitizeDiagnosticData(item, depth + 1));
+    return value
+      .slice(0, 20)
+      .map((item) => sanitizeDiagnosticData(item, depth + 1));
   }
   if (typeof value === "object") {
     const result = {};
     for (const [key, item] of Object.entries(value).slice(0, 30)) {
-      if (/(token|secret|password|private|identity.?id|peer.?id|device.?id|group.?id|message.?text)/i.test(key)) {
+      if (
+        /(token|secret|password|private|identity.?id|peer.?id|device.?id|group.?id|message.?text)/i.test(
+          key,
+        )
+      ) {
         result[key] = "[redacted]";
       } else {
         result[key] = sanitizeDiagnosticData(item, depth + 1);
@@ -317,11 +378,14 @@ function getDiagnosticSnapshot() {
     osVersion: process.getSystemVersion?.() || "unknown",
     linuxSession:
       process.platform === "linux"
-        ? process.env.XDG_SESSION_TYPE || (process.env.WAYLAND_DISPLAY ? "wayland" : "unknown")
+        ? process.env.XDG_SESSION_TYPE ||
+          (process.env.WAYLAND_DISPLAY ? "wayland" : "unknown")
         : undefined,
     desktop:
       process.platform === "linux"
-        ? process.env.XDG_CURRENT_DESKTOP || process.env.DESKTOP_SESSION || "unknown"
+        ? process.env.XDG_CURRENT_DESKTOP ||
+          process.env.DESKTOP_SESSION ||
+          "unknown"
         : undefined,
     versions: {
       electron: process.versions.electron,
@@ -374,10 +438,14 @@ function writeDiagnosticEvent(kind, error, details = {}) {
     `${kind}: ${normalized.name}: ${normalized.message}\n${normalized.stack}`,
   ]);
   if (Object.keys(details).length) {
-    writeRuntimeLog("DETAIL", [JSON.stringify(sanitizeDiagnosticData(details))]);
+    writeRuntimeLog("DETAIL", [
+      JSON.stringify(sanitizeDiagnosticData(details)),
+    ]);
   }
   writeRuntimeLog("SNAPSHOT", [JSON.stringify(getDiagnosticSnapshot())]);
-  writeRuntimeLog("BREADCRUMBS", [JSON.stringify(diagnosticBreadcrumbs.slice(-40))]);
+  writeRuntimeLog("BREADCRUMBS", [
+    JSON.stringify(diagnosticBreadcrumbs.slice(-40)),
+  ]);
   return normalized;
 }
 
@@ -414,7 +482,12 @@ async function saveDiagnosticLogCopy(parent = null) {
   }
 }
 
-async function showDiagnosticDialog({ kind, error, details = {}, canReload = false }) {
+async function showDiagnosticDialog({
+  kind,
+  error,
+  details = {},
+  canReload = false,
+}) {
   const normalized = writeDiagnosticEvent(kind, error, details);
   if (
     diagnosticDialogOpen ||
@@ -432,7 +505,12 @@ async function showDiagnosticDialog({ kind, error, details = {}, canReload = fal
       title: `${appDisplayName} encountered a problem`,
       message: `${appDisplayName} encountered an unexpected problem.`,
       detail: `${normalized.message}\n\nA diagnostic log was created at:\n${diagnosticLogPath}`,
-      buttons: [canReload ? "Reload Aero" : "Continue", "Open log", "Save log", "Close Aero"],
+      buttons: [
+        canReload ? "Reload Aero" : "Continue",
+        "Open log",
+        "Save log",
+        "Close Aero",
+      ],
       defaultId: 0,
       cancelId: 3,
       noLink: true,
@@ -492,7 +570,10 @@ function handleFatalMainError(error) {
   } else if (response === 2) {
     const destination = dialog.showSaveDialogSync({
       title: "Save Aero diagnostic log",
-      defaultPath: join(app.getPath("documents"), `Aero-diagnostic-${Date.now()}.log`),
+      defaultPath: join(
+        app.getPath("documents"),
+        `Aero-diagnostic-${Date.now()}.log`,
+      ),
       filters: [{ name: "Log file", extensions: ["log"] }],
     });
     if (destination) {
@@ -740,7 +821,8 @@ function sanitizeReceivedFileName(value) {
     .replace(/[\u0000-\u001f\u007f<>:"|?*]/gu, "_")
     .replace(/[. ]+$/u, "")
     .trim();
-  const safe = cleaned && cleaned !== "." && cleaned !== ".." ? cleaned : "file";
+  const safe =
+    cleaned && cleaned !== "." && cleaned !== ".." ? cleaned : "file";
   const extension = extname(safe).slice(0, 21);
   return safe.length <= 180
     ? safe
@@ -749,7 +831,8 @@ function sanitizeReceivedFileName(value) {
 
 function hasExecutableFileSignature(buffer) {
   if (!Buffer.isBuffer(buffer)) return true;
-  if (buffer.length >= 2 && buffer.subarray(0, 2).equals(Buffer.from("MZ"))) return true;
+  if (buffer.length >= 2 && buffer.subarray(0, 2).equals(Buffer.from("MZ")))
+    return true;
   if (buffer.length < 4) return false;
   const hex = buffer.subarray(0, 4).toString("hex");
   return (
@@ -793,7 +876,10 @@ function runSecurityScanner(command, args, timeoutMs = 120000) {
     child.stdout?.on("data", capture);
     child.stderr?.on("data", capture);
     child.once("error", (error) =>
-      finish({ unavailable: error?.code === "ENOENT", error: error?.message || "Scanner failed." }),
+      finish({
+        unavailable: error?.code === "ENOENT",
+        error: error?.message || "Scanner failed.",
+      }),
     );
     child.once("close", (code) => finish({ code }));
     const timer = setTimeout(() => {
@@ -814,16 +900,25 @@ async function findWindowsDefenderScanner() {
       "Platform",
     );
     try {
-      const versions = await readdir(platformDirectory, { withFileTypes: true });
+      const versions = await readdir(platformDirectory, {
+        withFileTypes: true,
+      });
       versions
         .filter((entry) => entry.isDirectory())
-        .sort((left, right) => right.name.localeCompare(left.name, undefined, { numeric: true }))
-        .forEach((entry) => candidates.push(join(platformDirectory, entry.name, "MpCmdRun.exe")));
+        .sort((left, right) =>
+          right.name.localeCompare(left.name, undefined, { numeric: true }),
+        )
+        .forEach((entry) =>
+          candidates.push(join(platformDirectory, entry.name, "MpCmdRun.exe")),
+        );
     } catch {
       // Defender may be disabled or managed by another security product.
     }
   }
-  for (const base of [process.env.ProgramFiles, process.env["ProgramFiles(x86)"]]) {
+  for (const base of [
+    process.env.ProgramFiles,
+    process.env["ProgramFiles(x86)"],
+  ]) {
     if (base) candidates.push(join(base, "Windows Defender", "MpCmdRun.exe"));
   }
   for (const candidate of candidates) {
@@ -861,7 +956,8 @@ async function scanReceivedFile(filePath) {
       return {
         status: "error",
         engine: "Microsoft Defender",
-        error: result.error || "Microsoft Defender could not complete the scan.",
+        error:
+          result.error || "Microsoft Defender could not complete the scan.",
       };
     };
     const queuedScan = windowsDefenderScanQueue.then(
@@ -884,7 +980,11 @@ async function scanReceivedFile(filePath) {
     if (result.unavailable) return { status: "unavailable", engine: "" };
     if (result.code === 0) return { status: "clean", engine: "ClamAV" };
     if (result.code === 1) return { status: "blocked", engine: "ClamAV" };
-    return { status: "error", engine: "ClamAV", error: result.error || "ClamAV could not complete the scan." };
+    return {
+      status: "error",
+      engine: "ClamAV",
+      error: result.error || "ClamAV could not complete the scan.",
+    };
   }
 
   return { status: "unavailable", engine: "" };
@@ -897,28 +997,40 @@ function getIncomingTempDirectory() {
 async function cleanupIncomingTempDirectory() {
   const activeEntries = Array.from(incomingTempFiles.values());
   incomingTempFiles.clear();
-  await Promise.all(activeEntries.map((entry) => entry.handle?.close().catch(() => {})));
+  await Promise.all(
+    activeEntries.map((entry) => entry.handle?.close().catch(() => {})),
+  );
   const directory = getIncomingTempDirectory();
   await mkdir(directory, { recursive: true, mode: 0o700 });
-  const entries = await readdir(directory, { withFileTypes: true }).catch(() => []);
-  await Promise.all(entries.map((entry) => rm(join(directory, entry.name), {
-    recursive: true,
-    force: true,
-    maxRetries: 3,
-    retryDelay: 100,
-  }).catch(() => {})));
+  const entries = await readdir(directory, { withFileTypes: true }).catch(
+    () => [],
+  );
+  await Promise.all(
+    entries.map((entry) =>
+      rm(join(directory, entry.name), {
+        recursive: true,
+        force: true,
+        maxRetries: 3,
+        retryDelay: 100,
+      }).catch(() => {}),
+    ),
+  );
 }
 
 async function prepareIncomingFile(event, details = {}) {
-  if (!isCustomSoundRequest(event)) return { ok: false, error: "Unauthorized temporary file request." };
+  if (!isCustomSoundRequest(event))
+    return { ok: false, error: "Unauthorized temporary file request." };
   const id = String(details.id || "");
   const providedName = String(details.name || "");
   const name = sanitizeReceivedFileName(providedName);
   const size = Number(details.size);
   const sha256 = String(details.sha256 || "").toLowerCase();
   if (
-    !/^file-[a-f0-9]{24}$/.test(id) || providedName !== name ||
-    !Number.isSafeInteger(size) || size < 1 || !/^[a-f0-9]{64}$/.test(sha256)
+    !/^file-[a-f0-9]{24}$/.test(id) ||
+    providedName !== name ||
+    !Number.isSafeInteger(size) ||
+    size < 1 ||
+    !/^[a-f0-9]{64}$/.test(sha256)
   ) {
     return { ok: false, blocked: true, error: "Invalid file metadata." };
   }
@@ -926,8 +1038,15 @@ async function prepareIncomingFile(event, details = {}) {
   await mkdir(directory, { recursive: true, mode: 0o700 });
   const disk = await statfs(directory);
   const available = Number(disk.bavail) * Number(disk.bsize);
-  if (Number.isFinite(available) && available < size + incomingFileDiskReserveBytes) {
-    return { ok: false, noSpace: true, error: "Not enough free disk space is available for this file." };
+  if (
+    Number.isFinite(available) &&
+    available < size + incomingFileDiskReserveBytes
+  ) {
+    return {
+      ok: false,
+      noSpace: true,
+      error: "Not enough free disk space is available for this file.",
+    };
   }
   const tempRef = randomBytes(18).toString("hex");
   const filePath = join(directory, `${tempRef}.part`);
@@ -937,7 +1056,10 @@ async function prepareIncomingFile(event, details = {}) {
       handle,
       path: filePath,
       name,
-      mimeType: String(details.mimeType || "application/octet-stream").slice(0, 160),
+      mimeType: String(details.mimeType || "application/octet-stream").slice(
+        0,
+        160,
+      ),
       size,
       sha256,
       hash: createHash("sha256"),
@@ -946,17 +1068,24 @@ async function prepareIncomingFile(event, details = {}) {
     });
     return { ok: true, tempRef };
   } catch (error) {
-    return { ok: false, error: error?.message || "The temporary file could not be created." };
+    return {
+      ok: false,
+      error: error?.message || "The temporary file could not be created.",
+    };
   }
 }
 
 async function appendIncomingFile(event, tempRefValue, data) {
-  if (!isCustomSoundRequest(event)) return { ok: false, error: "Unauthorized temporary file request." };
+  if (!isCustomSoundRequest(event))
+    return { ok: false, error: "Unauthorized temporary file request." };
   const tempRef = String(tempRefValue || "");
   const entry = incomingTempFiles.get(tempRef);
   const buffer = toCustomSoundBuffer(data);
   if (
-    !entry || entry.finalized || !buffer?.length || buffer.length > incomingFileChunkMaxBytes ||
+    !entry ||
+    entry.finalized ||
+    !buffer?.length ||
+    buffer.length > incomingFileChunkMaxBytes ||
     entry.received + buffer.length > entry.size
   ) {
     return { ok: false, blocked: true, error: "Invalid temporary file data." };
@@ -967,12 +1096,16 @@ async function appendIncomingFile(event, tempRefValue, data) {
     entry.received += buffer.length;
     return { ok: true };
   } catch (error) {
-    return { ok: false, error: error?.message || "The temporary file could not be written." };
+    return {
+      ok: false,
+      error: error?.message || "The temporary file could not be written.",
+    };
   }
 }
 
 async function finalizeIncomingFile(event, tempRefValue) {
-  if (!isCustomSoundRequest(event)) return { ok: false, error: "Unauthorized temporary file request." };
+  if (!isCustomSoundRequest(event))
+    return { ok: false, error: "Unauthorized temporary file request." };
   const tempRef = String(tempRefValue || "");
   const entry = incomingTempFiles.get(tempRef);
   if (!entry || entry.finalized || entry.received !== entry.size) {
@@ -1009,10 +1142,16 @@ async function finalizeIncomingFile(event, tempRefValue) {
     return {
       ok: true,
       size: entry.size,
-      header: header.buffer.slice(header.byteOffset, header.byteOffset + header.byteLength),
+      header: header.buffer.slice(
+        header.byteOffset,
+        header.byteOffset + header.byteLength,
+      ),
     };
   } catch (error) {
-    return { ok: false, error: error?.message || "The temporary file could not be finalized." };
+    return {
+      ok: false,
+      error: error?.message || "The temporary file could not be finalized.",
+    };
   }
 }
 
@@ -1063,7 +1202,8 @@ async function chooseReceivedFileDirectory(event) {
     defaultPath: app.getPath("downloads"),
     properties: ["openDirectory", "createDirectory"],
   });
-  if (result.canceled || !result.filePaths[0]) return { ok: false, canceled: true };
+  if (result.canceled || !result.filePaths[0])
+    return { ok: false, canceled: true };
   return { ok: true, path: resolve(result.filePaths[0]) };
 }
 
@@ -1080,15 +1220,27 @@ async function saveReceivedFile(event, details = {}) {
   const expectedSha256 = String(details.sha256 || "").toLowerCase();
   if (
     (!tempEntry && (!buffer || buffer.length < 1)) ||
-    (tempEntry && (!tempEntry.finalized || tempEntry.name !== fileName || tempEntry.size < 1)) ||
+    (tempEntry &&
+      (!tempEntry.finalized ||
+        tempEntry.name !== fileName ||
+        tempEntry.size < 1)) ||
     providedFileName !== fileName ||
     /[\u202a-\u202e\u2066-\u2069]/u.test(fileName) ||
-    (nameParts.length >= 3 && unsafeReceivedFileExtensions.has(`.${nameParts.at(-2)}`)) ||
-    (!tempEntry && hasExecutableFileSignature(buffer) && !unsafeReceivedFileExtensions.has(extension)) ||
+    (nameParts.length >= 3 &&
+      unsafeReceivedFileExtensions.has(`.${nameParts.at(-2)}`)) ||
+    (!tempEntry &&
+      hasExecutableFileSignature(buffer) &&
+      !unsafeReceivedFileExtensions.has(extension)) ||
     !/^[a-f0-9]{64}$/.test(expectedSha256) ||
-    (tempEntry ? tempEntry.sha256 : createHash("sha256").update(buffer).digest("hex")) !== expectedSha256
+    (tempEntry
+      ? tempEntry.sha256
+      : createHash("sha256").update(buffer).digest("hex")) !== expectedSha256
   ) {
-    return { ok: false, blocked: true, error: "The file failed Aero's security checks." };
+    return {
+      ok: false,
+      blocked: true,
+      error: "The file failed Aero's security checks.",
+    };
   }
 
   const mode = ["ask", "downloads", "custom"].includes(details.mode)
@@ -1103,7 +1255,8 @@ async function saveReceivedFile(event, details = {}) {
       buttonLabel: "Save",
       properties: ["showOverwriteConfirmation", "dontAddToRecent"],
     });
-    if (result.canceled || !result.filePath) return { ok: false, canceled: true };
+    if (result.canceled || !result.filePath)
+      return { ok: false, canceled: true };
     targetPath = resolve(result.filePath);
     allowOverwrite = true;
   } else {
@@ -1119,16 +1272,30 @@ async function saveReceivedFile(event, details = {}) {
     targetPath = await getUniqueReceivedFilePath(directory, fileName);
   }
 
-  const quarantineDirectory = tempEntry ? "" : await mkdtemp(join(tmpdir(), "aero-p2p-received-"));
-  const quarantinePath = tempEntry?.path || join(quarantineDirectory, "quarantine.bin");
+  const quarantineDirectory = tempEntry
+    ? ""
+    : await mkdtemp(join(tmpdir(), "aero-p2p-received-"));
+  const quarantinePath =
+    tempEntry?.path || join(quarantineDirectory, "quarantine.bin");
   try {
-    if (!tempEntry) await writeFile(quarantinePath, buffer, { flag: "wx", mode: 0o600 });
+    if (!tempEntry)
+      await writeFile(quarantinePath, buffer, { flag: "wx", mode: 0o600 });
     const scan = await scanReceivedFile(quarantinePath);
     if (scan.status === "blocked") {
-      return { ok: false, blocked: true, scanner: scan.engine, error: `${scan.engine} blocked this file.` };
+      return {
+        ok: false,
+        blocked: true,
+        scanner: scan.engine,
+        error: `${scan.engine} blocked this file.`,
+      };
     }
     if (scan.status === "error") {
-      return { ok: false, scanError: true, scanner: scan.engine, error: scan.error };
+      return {
+        ok: false,
+        scanError: true,
+        scanner: scan.engine,
+        error: scan.error,
+      };
     }
     await mkdir(dirname(targetPath), { recursive: true });
     let savedPath = targetPath;
@@ -1140,8 +1307,15 @@ async function saveReceivedFile(event, details = {}) {
         allowOverwrite ? 0 : fsConstants.COPYFILE_EXCL,
       );
     } catch (error) {
-      if (!allowOverwrite || !["EBUSY", "EACCES", "EPERM"].includes(error?.code)) throw error;
-      savedPath = await getUniqueReceivedFilePath(dirname(targetPath), basename(targetPath));
+      if (
+        !allowOverwrite ||
+        !["EBUSY", "EACCES", "EPERM"].includes(error?.code)
+      )
+        throw error;
+      savedPath = await getUniqueReceivedFilePath(
+        dirname(targetPath),
+        basename(targetPath),
+      );
       await copyFile(quarantinePath, savedPath, fsConstants.COPYFILE_EXCL);
       renamedDueToLock = true;
     }
@@ -1153,9 +1327,15 @@ async function saveReceivedFile(event, details = {}) {
       scanStatus: scan.status,
     };
   } catch (error) {
-    return { ok: false, error: error?.message || "The file could not be saved." };
+    return {
+      ok: false,
+      error: error?.message || "The file could not be saved.",
+    };
   } finally {
-    if (quarantineDirectory) await rm(quarantineDirectory, { recursive: true, force: true }).catch(() => {});
+    if (quarantineDirectory)
+      await rm(quarantineDirectory, { recursive: true, force: true }).catch(
+        () => {},
+      );
   }
 }
 
@@ -1208,44 +1388,64 @@ function normalizeOnlineThemeUrls(value) {
 function fetchOnlineThemeCss(rawUrl, redirects = 0) {
   const url = normalizeOnlineThemeUrl(rawUrl);
   if (!url) {
-    return Promise.reject(new Error("Only valid HTTPS theme URLs are allowed."));
+    return Promise.reject(
+      new Error("Only valid HTTPS theme URLs are allowed."),
+    );
   }
   return new Promise((resolve, reject) => {
-    const request = get(url, { headers: { Accept: "text/css,*/*;q=0.1" } }, (response) => {
-      if ([301, 302, 303, 307, 308].includes(response.statusCode) && response.headers.location) {
-        response.resume();
-        if (redirects >= 4) {
-          reject(new Error("Too many theme URL redirects."));
+    const request = get(
+      url,
+      { headers: { Accept: "text/css,*/*;q=0.1" } },
+      (response) => {
+        if (
+          [301, 302, 303, 307, 308].includes(response.statusCode) &&
+          response.headers.location
+        ) {
+          response.resume();
+          if (redirects >= 4) {
+            reject(new Error("Too many theme URL redirects."));
+            return;
+          }
+          fetchOnlineThemeCss(
+            new URL(response.headers.location, url).toString(),
+            redirects + 1,
+          ).then(resolve, reject);
           return;
         }
-        fetchOnlineThemeCss(new URL(response.headers.location, url).toString(), redirects + 1).then(resolve, reject);
-        return;
-      }
-      if (response.statusCode !== 200) {
-        response.resume();
-        reject(new Error(`Theme request failed (${response.statusCode || "unknown"}).`));
-        return;
-      }
-      const length = Number(response.headers["content-length"] || 0);
-      if (length > maxOnlineThemeSize) {
-        response.resume();
-        reject(new Error("Theme file is too large."));
-        return;
-      }
-      let size = 0;
-      const chunks = [];
-      response.on("data", (chunk) => {
-        size += chunk.length;
-        if (size > maxOnlineThemeSize) {
-          request.destroy(new Error("Theme file is too large."));
+        if (response.statusCode !== 200) {
+          response.resume();
+          reject(
+            new Error(
+              `Theme request failed (${response.statusCode || "unknown"}).`,
+            ),
+          );
           return;
         }
-        chunks.push(chunk);
-      });
-      response.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
-      response.on("error", reject);
-    });
-    request.setTimeout(12000, () => request.destroy(new Error("Theme request timed out.")));
+        const length = Number(response.headers["content-length"] || 0);
+        if (length > maxOnlineThemeSize) {
+          response.resume();
+          reject(new Error("Theme file is too large."));
+          return;
+        }
+        let size = 0;
+        const chunks = [];
+        response.on("data", (chunk) => {
+          size += chunk.length;
+          if (size > maxOnlineThemeSize) {
+            request.destroy(new Error("Theme file is too large."));
+            return;
+          }
+          chunks.push(chunk);
+        });
+        response.on("end", () =>
+          resolve(Buffer.concat(chunks).toString("utf8")),
+        );
+        response.on("error", reject);
+      },
+    );
+    request.setTimeout(12000, () =>
+      request.destroy(new Error("Theme request timed out.")),
+    );
     request.on("error", reject);
   });
 }
@@ -1423,13 +1623,13 @@ function normalizeConfig(config = {}) {
     sidebarWidth:
       settings.sidebarWidthDefaultVersion === sidebarWidthDefaultVersion &&
       Number.isFinite(settings.sidebarWidth)
-      ? Math.round(
-          Math.max(
-            minSidebarWidth,
-            Math.min(maxSidebarWidth, settings.sidebarWidth),
-          ),
-        )
-      : defaultSidebarWidth,
+        ? Math.round(
+            Math.max(
+              minSidebarWidth,
+              Math.min(maxSidebarWidth, settings.sidebarWidth),
+            ),
+          )
+        : defaultSidebarWidth,
     sidebarWidthDefaultVersion,
   };
 
@@ -1744,7 +1944,8 @@ async function saveConfig(config, { allowAppLockMarkerChange = false } = {}) {
     (appLockRecord?.enabled || appConfig?.security?.appLockRequired === true)
   ) {
     normalizedConfig.security = {
-      ...(normalizedConfig.security && typeof normalizedConfig.security === "object"
+      ...(normalizedConfig.security &&
+      typeof normalizedConfig.security === "object"
         ? normalizedConfig.security
         : {}),
       appLockRequired: true,
@@ -1791,7 +1992,11 @@ async function setConfigAppLockRequired(required) {
 
 async function saveAppLockRecoveryCodes(codesValue) {
   const codes = Array.isArray(codesValue)
-    ? codesValue.map((code) => String(code || "").trim().toUpperCase())
+    ? codesValue.map((code) =>
+        String(code || "")
+          .trim()
+          .toUpperCase(),
+      )
     : [];
   if (
     codes.length === 0 ||
@@ -1948,17 +2153,19 @@ function requestAppLockAuthentication({
       resolveAuthentication(authenticated);
     };
     activeAppLockRequest = { finish, startup };
-    const parent = !startup && mainWindow && !mainWindow.isDestroyed()
-      ? mainWindow
-      : undefined;
+    const parent =
+      !startup && mainWindow && !mainWindow.isDestroyed()
+        ? mainWindow
+        : undefined;
     const configuredTheme = appConfig?.appSettings?.theme || "system";
-    const securityTheme = configuredTheme === "system"
-      ? nativeTheme.shouldUseDarkColors
-        ? "dark"
-        : "light"
-      : ["dark", "ultra-dark"].includes(configuredTheme)
-        ? configuredTheme
-        : "light";
+    const securityTheme =
+      configuredTheme === "system"
+        ? nativeTheme.shouldUseDarkColors
+          ? "dark"
+          : "light"
+        : ["dark", "ultra-dark"].includes(configuredTheme)
+          ? configuredTheme
+          : "light";
     const securityWindow = new BrowserWindow({
       width: 420,
       height: 350,
@@ -2003,13 +2210,18 @@ function requestAppLockAuthentication({
       theme: securityTheme,
     };
     if (process.env.ELECTRON_RENDERER_URL) {
-      const securityUrl = new URL("security.html", process.env.ELECTRON_RENDERER_URL);
+      const securityUrl = new URL(
+        "security.html",
+        process.env.ELECTRON_RENDERER_URL,
+      );
       for (const [key, value] of Object.entries(query)) {
         securityUrl.searchParams.set(key, value);
       }
       securityWindow.loadURL(securityUrl.toString());
     } else {
-      securityWindow.loadFile(join(__dirname, "../renderer/security.html"), { query });
+      securityWindow.loadFile(join(__dirname, "../renderer/security.html"), {
+        query,
+      });
     }
   });
 }
@@ -2091,7 +2303,8 @@ async function lockRunningApp(reason = "system-lock") {
 
   const authenticated = await requestAppLockAuthentication({
     title: "Unlock Aero",
-    description: "Enter your App Lock PIN or a one-time recovery code to continue.",
+    description:
+      "Enter your App Lock PIN or a one-time recovery code to continue.",
     cancelable: false,
     startup: true,
   });
@@ -2113,7 +2326,8 @@ async function performFullAppReset() {
   if (appLockRecord?.enabled) {
     const authenticated = await requestAppLockAuthentication({
       title: "Authorize full reset",
-      description: "Enter your PIN or a recovery code. This reset permanently removes local Aero data and App Lock.",
+      description:
+        "Enter your PIN or a recovery code. This reset permanently removes local Aero data and App Lock.",
     });
     if (!authenticated) return { ok: false, canceled: true };
   }
@@ -2144,7 +2358,9 @@ async function performFullAppReset() {
     }
   }
   await Promise.all(
-    resetTargets.map((targetPath) => rm(targetPath, { recursive: true, force: true })),
+    resetTargets.map((targetPath) =>
+      rm(targetPath, { recursive: true, force: true }),
+    ),
   );
   appLockRecord = null;
   cachedConfigKey = null;
@@ -2176,13 +2392,27 @@ function paintConnectionBadge(bitmap, width, height, { corner = false } = {}) {
     return false;
   }
 
-  const outerRadius = Math.max(2, Math.round(Math.min(width, height) * (corner ? 0.2 : 0.39)));
-  const innerRadius = Math.max(1, outerRadius - Math.max(1, Math.round(outerRadius * 0.22)));
+  const outerRadius = Math.max(
+    2,
+    Math.round(Math.min(width, height) * (corner ? 0.2 : 0.39)),
+  );
+  const innerRadius = Math.max(
+    1,
+    outerRadius - Math.max(1, Math.round(outerRadius * 0.22)),
+  );
   const centerX = corner ? width - outerRadius - 1 : Math.floor(width / 2);
   const centerY = corner ? height - outerRadius - 1 : Math.floor(height / 2);
 
-  for (let y = Math.max(0, centerY - outerRadius); y <= Math.min(height - 1, centerY + outerRadius); y += 1) {
-    for (let x = Math.max(0, centerX - outerRadius); x <= Math.min(width - 1, centerX + outerRadius); x += 1) {
+  for (
+    let y = Math.max(0, centerY - outerRadius);
+    y <= Math.min(height - 1, centerY + outerRadius);
+    y += 1
+  ) {
+    for (
+      let x = Math.max(0, centerX - outerRadius);
+      x <= Math.min(width - 1, centerX + outerRadius);
+      x += 1
+    ) {
       const distance = Math.hypot(x - centerX, y - centerY);
       if (distance > outerRadius) continue;
 
@@ -2233,7 +2463,10 @@ function getConnectedTrayIcon() {
         }
       }
     }
-    if (canOverlayBadge || paintConnectionBadge(bitmap, width, height, { corner: true })) {
+    if (
+      canOverlayBadge ||
+      paintConnectionBadge(bitmap, width, height, { corner: true })
+    ) {
       connectedTrayIcon = nativeImage.createFromBitmap(bitmap, {
         width,
         height,
@@ -2398,8 +2631,10 @@ function updateTrayMenu() {
         {
           label: "Theme",
           submenu: [
-            ["system", "System"], ["light", "Light"],
-            ["dark", "Dark"], ["ultra-dark", "OLED"],
+            ["system", "System"],
+            ["light", "Light"],
+            ["dark", "Dark"],
+            ["ultra-dark", "OLED"],
           ].map(([value, label]) => ({
             label,
             type: "radio",
@@ -2596,7 +2831,8 @@ function runStatusCommand(command, args) {
 
 function findWindowsInstallations() {
   if (process.platform !== "win32") return [];
-  const registryPath = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+  const registryPath =
+    "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
   const queries = [
     ["HKCU", registryPath],
     ["HKLM", registryPath, "/reg:64"],
@@ -2637,7 +2873,8 @@ async function warnAboutMixedWindowsInstallers() {
   const result = await dialog.showMessageBox(mainWindow, {
     type: "warning",
     title: "Duplicate Aero installation detected",
-    message: "An old EXE installation and the new MSI installation are both registered.",
+    message:
+      "An old EXE installation and the new MSI installation are both registered.",
     detail:
       "Your chats and settings are safe. Open Windows Installed apps and remove the older Aero P2P Chat entry. If two identical entries are shown, remove the one whose uninstall confirmation does not mention Windows Installer. If Aero no longer starts afterward, run the MSI once more to repair it.",
     buttons: ["Open Installed apps", "Later"],
@@ -2711,8 +2948,8 @@ function isSystemDoNotDisturbEnabled() {
     process.platform === "win32"
       ? isWindowsNotificationDisabled()
       : process.platform === "linux"
-      ? isLinuxNotificationDisabled()
-      : false;
+        ? isLinuxNotificationDisabled()
+        : false;
   lastSystemDndCheck = { checkedAt: now, enabled };
   return enabled;
 }
@@ -2809,7 +3046,9 @@ function normalizeCallHealthPayload(details = {}) {
     incomingCodec: String(details.incomingCodec || "—").slice(0, 32),
     outgoingCodec: String(details.outgoingCodec || "—").slice(0, 32),
     mediaKinds: Array.isArray(details.mediaKinds)
-      ? details.mediaKinds.filter((kind) => ["audio", "video"].includes(kind)).slice(0, 2)
+      ? details.mediaKinds
+          .filter((kind) => ["audio", "video"].includes(kind))
+          .slice(0, 2)
       : [],
     playoutDelayMs: number(details.playoutDelayMs),
     videoInfo: String(details.videoInfo || "—").slice(0, 48),
@@ -2841,14 +3080,24 @@ function sendCallHealthPayload() {
 }
 
 function positionCallHealthWindow(win = callHealthWindow) {
-  if (!win || win.isDestroyed() || !mainWindow || mainWindow.isDestroyed()) return;
+  if (!win || win.isDestroyed() || !mainWindow || mainWindow.isDestroyed())
+    return;
   const parentBounds = mainWindow.getBounds();
   const display = screen.getDisplayMatching(parentBounds);
   const workArea = display.workArea;
   const [width, height] = win.getSize();
   win.setPosition(
-    Math.max(workArea.x + 8, Math.min(parentBounds.x + parentBounds.width - width - 20, workArea.x + workArea.width - width - 8)),
-    Math.max(workArea.y + 8, Math.min(parentBounds.y + 76, workArea.y + workArea.height - height - 8)),
+    Math.max(
+      workArea.x + 8,
+      Math.min(
+        parentBounds.x + parentBounds.width - width - 20,
+        workArea.x + workArea.width - width - 8,
+      ),
+    ),
+    Math.max(
+      workArea.y + 8,
+      Math.min(parentBounds.y + 76, workArea.y + workArea.height - height - 8),
+    ),
   );
 }
 
@@ -2875,7 +3124,8 @@ function openCallHealthWindow() {
     maximizable: false,
     skipTaskbar: true,
     show: false,
-    backgroundColor: callHealthPayload?.theme === "light" ? "#f7fafc" : "#111111",
+    backgroundColor:
+      callHealthPayload?.theme === "light" ? "#f7fafc" : "#111111",
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       contextIsolation: true,
@@ -2899,7 +3149,9 @@ function openCallHealthWindow() {
     win.focus();
   });
   if (process.env.ELECTRON_RENDERER_URL) {
-    win.loadURL(new URL("call-health.html", process.env.ELECTRON_RENDERER_URL).toString());
+    win.loadURL(
+      new URL("call-health.html", process.env.ELECTRON_RENDERER_URL).toString(),
+    );
   } else {
     win.loadFile(join(__dirname, "../renderer/call-health.html"));
   }
@@ -3008,7 +3260,9 @@ function showAppNotification(details = {}) {
   const callId = details.callId || "";
   const variant = ["chat", "voice", "call"].includes(details.variant)
     ? details.variant
-    : kind === "call" ? "call" : "chat";
+    : kind === "call"
+      ? "call"
+      : "chat";
   const accent = /^#[0-9a-f]{6}$/i.test(String(details.accent || ""))
     ? String(details.accent)
     : "";
@@ -3127,10 +3381,14 @@ async function stageWindowsUpdateInstaller(
   onProgress = () => {},
 ) {
   if (process.platform !== "win32" || process.windowsStore) {
-    throw new Error("Automatic update downloads are unavailable on this platform.");
+    throw new Error(
+      "Automatic update downloads are unavailable on this platform.",
+    );
   }
   if (!app.isPackaged) {
-    throw new Error("Automatic update downloads are only available in the packaged app.");
+    throw new Error(
+      "Automatic update downloads are only available in the packaged app.",
+    );
   }
 
   const cachedInstallerPath = getCachedWindowsSetupPath();
@@ -3161,11 +3419,7 @@ async function stageWindowsUpdateInstaller(
       receivedBytes: 0,
       totalBytes: null,
     });
-    await downloadFileWithRetry(
-      setupUrl,
-      downloadedInstallerPath,
-      onProgress,
-    );
+    await downloadFileWithRetry(setupUrl, downloadedInstallerPath, onProgress);
     onProgress({ phase: "verify", percent: 100 });
     verifyUpdateDownload(
       downloadedInstallerPath,
@@ -3176,7 +3430,9 @@ async function stageWindowsUpdateInstaller(
     await copyFile(downloadedInstallerPath, cachedInstallerPath);
     return { path: cachedInstallerPath, cached: false };
   } finally {
-    await rm(temporaryUpdateDir, { recursive: true, force: true }).catch(() => {});
+    await rm(temporaryUpdateDir, { recursive: true, force: true }).catch(
+      () => {},
+    );
   }
 }
 
@@ -3228,10 +3484,11 @@ function fetchText(url, redirects = 0, options = {}) {
           reject(new Error("Too many update manifest redirects."));
           return;
         }
-        fetchText(new URL(response.headers.location, url), redirects + 1, options).then(
-          resolve,
-          reject,
-        );
+        fetchText(
+          new URL(response.headers.location, url),
+          redirects + 1,
+          options,
+        ).then(resolve, reject);
         return;
       }
 
@@ -3247,7 +3504,10 @@ function fetchText(url, redirects = 0, options = {}) {
       let text = "";
       response.on("data", (chunk) => {
         text += chunk;
-        if (Buffer.byteLength(text, "utf8") > (options.maxBytes || 4 * 1024 * 1024)) {
+        if (
+          Buffer.byteLength(text, "utf8") >
+          (options.maxBytes || 4 * 1024 * 1024)
+        ) {
           request.destroy(new Error("Response is too large."));
         }
       });
@@ -3337,13 +3597,17 @@ async function fetchChangelogGist({ force = false } = {}) {
     const data = normalizeChangelogGist(JSON.parse(responseText));
     if (data.sourceUrl) {
       try {
-        const renderedGist = await fetchTextWithRetry(new URL(data.sourceUrl), 2, {
-          maxBytes: 4 * 1024 * 1024,
-          headers: {
-            Accept: "text/html",
-            "User-Agent": `${projectConfig.app.packageName}/${app.getVersion()}`,
+        const renderedGist = await fetchTextWithRetry(
+          new URL(data.sourceUrl),
+          2,
+          {
+            maxBytes: 4 * 1024 * 1024,
+            headers: {
+              Accept: "text/html",
+              "User-Agent": `${projectConfig.app.packageName}/${app.getVersion()}`,
+            },
           },
-        });
+        );
         data.attachmentUrls = extractChangelogAttachmentUrls(renderedGist);
       } catch {
         data.attachmentUrls = {};
@@ -3527,18 +3791,14 @@ async function installWindowsUpdate(
     let spawnError;
     for (let attempt = 1; attempt <= 10; attempt += 1) {
       try {
-        updater = spawn(
-          "msiexec.exe",
-          ["/i", setupPath],
-          {
-            detached: true,
-            stdio: "ignore",
-            // The user explicitly requested the update. Keep the native MSI
-            // wizard visible so Windows security prompts and install progress
-            // cannot disappear behind a silent background update.
-            windowsHide: false,
-          },
-        );
+        updater = spawn("msiexec.exe", ["/i", setupPath], {
+          detached: true,
+          stdio: "ignore",
+          // The user explicitly requested the update. Keep the native MSI
+          // wizard visible so Windows security prompts and install progress
+          // cannot disappear behind a silent background update.
+          windowsHide: false,
+        });
         break;
       } catch (error) {
         spawnError = error;
@@ -3573,18 +3833,27 @@ async function installLinuxAppImageUpdate(
   onProgress = () => {},
 ) {
   if (process.platform !== "linux" || !app.isPackaged) {
-    throw new Error("AppImage updates are only available in the packaged Linux app.");
+    throw new Error(
+      "AppImage updates are only available in the packaged Linux app.",
+    );
   }
-  const appImagePath = process.env.APPIMAGE ? resolve(process.env.APPIMAGE) : "";
+  const appImagePath = process.env.APPIMAGE
+    ? resolve(process.env.APPIMAGE)
+    : "";
   if (!appImagePath || !(await hasUsableUpdateFile(appImagePath))) {
-    throw new Error("This installation is not running from an AppImage. Open the release page to update the RPM or DEB package.");
+    throw new Error(
+      "This installation is not running from an AppImage. Open the release page to update the RPM or DEB package.",
+    );
   }
   const appImageUrl = assertTrustedReleaseAssetUrl(
     rawAppImageUrl,
     projectConfig.release.linuxAppImageAsset,
   );
   const updateDir = await mkdtemp(join(dirname(appImagePath), ".aero-update-"));
-  const downloadedPath = join(updateDir, projectConfig.release.linuxAppImageAsset);
+  const downloadedPath = join(
+    updateDir,
+    projectConfig.release.linuxAppImageAsset,
+  );
   try {
     await downloadFileWithRetry(appImageUrl, downloadedPath, onProgress);
     onProgress({ phase: "verify", percent: 100 });
@@ -3642,7 +3911,8 @@ function createWindow({ hidden = false } = {}) {
     ? {
         x: workArea.x + (devLayout === "right" ? columnWidth : 0),
         y: workArea.y,
-        width: devLayout === "right" ? workArea.width - columnWidth : columnWidth,
+        width:
+          devLayout === "right" ? workArea.width - columnWidth : columnWidth,
         height: topHeight,
       }
     : null;
@@ -3653,8 +3923,8 @@ function createWindow({ hidden = false } = {}) {
         ? "dark"
         : "light"
       : ["dark", "ultra-dark"].includes(savedTheme)
-      ? savedTheme
-      : "light";
+        ? savedTheme
+        : "light";
   const savedAccent = appConfig?.appSettings?.accentColor || "system";
   let initialAccent = bootAccentPresets[savedAccent] || bootAccentPresets.aero;
   if (
@@ -3664,7 +3934,9 @@ function createWindow({ hidden = false } = {}) {
     initialAccent = appConfig.appSettings.customAccentColor;
   } else if (savedAccent === "system") {
     try {
-      const systemAccent = normalizeAccentColor(systemPreferences.getAccentColor());
+      const systemAccent = normalizeAccentColor(
+        systemPreferences.getAccentColor(),
+      );
       if (systemAccent) initialAccent = systemAccent;
     } catch {
       // Some Linux desktop environments do not expose an accent color.
@@ -3684,7 +3956,12 @@ function createWindow({ hidden = false } = {}) {
     backgroundMaterial: "none",
     transparent: false,
     titleBarStyle: "hidden",
-    backgroundColor: initialTheme === "ultra-dark" ? "#000000" : initialTheme === "dark" ? "#232428" : "#eef4f7",
+    backgroundColor:
+      initialTheme === "ultra-dark"
+        ? "#000000"
+        : initialTheme === "dark"
+          ? "#232428"
+          : "#eef4f7",
     autoHideMenuBar: true,
     show: !hidden,
     webPreferences: {
@@ -3719,10 +3996,7 @@ function createWindow({ hidden = false } = {}) {
 
   win.webContents.on("console-message", (details) => {
     const sourceId = String(details.sourceId || "");
-    if (
-      sourceId.includes("/@vite/") ||
-      sourceId.startsWith("node:electron/")
-    ) {
+    if (sourceId.includes("/@vite/") || sourceId.startsWith("node:electron/")) {
       return;
     }
     const method = details.level === "warning" ? "warn" : details.level;
@@ -3734,11 +4008,7 @@ function createWindow({ hidden = false } = {}) {
   });
 
   win.webContents.on("render-process-gone", (_event, details) => {
-    if (
-      forceQuit ||
-      systemShutdownStarted ||
-      details.reason === "clean-exit"
-    ) {
+    if (forceQuit || systemShutdownStarted || details.reason === "clean-exit") {
       return;
     }
     void showDiagnosticDialog({
@@ -3831,10 +4101,7 @@ app.whenReady().then(async () => {
     app.quit();
     return;
   }
-  if (
-    appLockRecord?.enabled &&
-    appConfig?.security?.appLockRequired !== true
-  ) {
+  if (appLockRecord?.enabled && appConfig?.security?.appLockRequired !== true) {
     await setConfigAppLockRequired(true);
   }
   recordDiagnosticEvent("app", "ready", {
@@ -3856,7 +4123,10 @@ app.whenReady().then(async () => {
       !activeAppLockRequest ||
       !appLockRecord
     ) {
-      return { ok: false, error: "Authentication request is no longer active." };
+      return {
+        ok: false,
+        error: "Authentication request is no longer active.",
+      };
     }
     const result = verifyAppLockCredential(appLockRecord, credential);
     await writeAppLockRecord(result.record);
@@ -3894,8 +4164,10 @@ app.whenReady().then(async () => {
     isCustomSoundRequest(event) ? getAppLockStatus() : { enabled: false },
   );
   ipcMain.handle("app-lock-enable", async (event, details = {}) => {
-    if (!isCustomSoundRequest(event)) return { ok: false, error: "Unauthorized request." };
-    if (appLockRecord?.enabled) return { ok: false, error: "App Lock is already enabled." };
+    if (!isCustomSoundRequest(event))
+      return { ok: false, error: "Unauthorized request." };
+    if (appLockRecord?.enabled)
+      return { ok: false, error: "App Lock is already enabled." };
     if (String(details.pin || "") !== String(details.confirmPin || "")) {
       return { ok: false, error: "The PIN entries do not match." };
     }
@@ -3903,7 +4175,11 @@ app.whenReady().then(async () => {
       const created = createAppLockRecord(details.pin);
       await writeAppLockRecord(created.record);
       await setConfigAppLockRequired(true);
-      return { ok: true, recoveryCodes: created.recoveryCodes, ...getAppLockStatus() };
+      return {
+        ok: true,
+        recoveryCodes: created.recoveryCodes,
+        ...getAppLockStatus(),
+      };
     } catch (error) {
       return { ok: false, error: error.message };
     }
@@ -3923,11 +4199,16 @@ app.whenReady().then(async () => {
     }
     const authenticated = await requestAppLockAuthentication({
       title: "Authorize PIN change",
-      description: "Enter your current PIN or a recovery code before replacing the App Lock PIN.",
+      description:
+        "Enter your current PIN or a recovery code before replacing the App Lock PIN.",
     });
     if (!authenticated) return { ok: false, canceled: true };
     await writeAppLockRecord(replacement.record);
-    return { ok: true, recoveryCodes: replacement.recoveryCodes, ...getAppLockStatus() };
+    return {
+      ok: true,
+      recoveryCodes: replacement.recoveryCodes,
+      ...getAppLockStatus(),
+    };
   });
   ipcMain.handle("app-lock-regenerate-codes", async (event) => {
     if (!isCustomSoundRequest(event) || !appLockRecord) {
@@ -3935,12 +4216,17 @@ app.whenReady().then(async () => {
     }
     const authenticated = await requestAppLockAuthentication({
       title: "Replace recovery codes",
-      description: "Enter your PIN or a current recovery code. All previous recovery codes will stop working.",
+      description:
+        "Enter your PIN or a current recovery code. All previous recovery codes will stop working.",
     });
     if (!authenticated) return { ok: false, canceled: true };
     const replacement = regenerateRecoveryCodes(appLockRecord);
     await writeAppLockRecord(replacement.record);
-    return { ok: true, recoveryCodes: replacement.recoveryCodes, ...getAppLockStatus() };
+    return {
+      ok: true,
+      recoveryCodes: replacement.recoveryCodes,
+      ...getAppLockStatus(),
+    };
   });
   ipcMain.handle("app-lock-save-recovery-codes", async (event, codes) => {
     if (!isCustomSoundRequest(event) || !appLockRecord?.enabled) {
@@ -3949,7 +4235,10 @@ app.whenReady().then(async () => {
     try {
       return await saveAppLockRecoveryCodes(codes);
     } catch (error) {
-      return { ok: false, error: error?.message || "Recovery codes could not be saved." };
+      return {
+        ok: false,
+        error: error?.message || "Recovery codes could not be saved.",
+      };
     }
   });
   ipcMain.handle("app-lock-disable", async (event) => {
@@ -3958,7 +4247,8 @@ app.whenReady().then(async () => {
     }
     const authenticated = await requestAppLockAuthentication({
       title: "Turn off App Lock",
-      description: "Enter your PIN or a recovery code. Aero will no longer ask for it at startup.",
+      description:
+        "Enter your PIN or a recovery code. Aero will no longer ask for it at startup.",
     });
     if (!authenticated) return { ok: false, canceled: true };
     await setConfigAppLockRequired(false);
@@ -3966,7 +4256,8 @@ app.whenReady().then(async () => {
     return { ok: true, ...getAppLockStatus() };
   });
   ipcMain.handle("full-app-reset", async (event) => {
-    if (!isCustomSoundRequest(event)) return { ok: false, error: "Unauthorized request." };
+    if (!isCustomSoundRequest(event))
+      return { ok: false, error: "Unauthorized request." };
     try {
       return await performFullAppReset();
     } catch (error) {
@@ -3977,26 +4268,28 @@ app.whenReady().then(async () => {
     if (!isCustomSoundRequest(event)) {
       return { ok: false, error: "Unauthorized update request." };
     }
-    const onProgress = (progress) => event.sender.send("update-progress", progress);
+    const onProgress = (progress) =>
+      event.sender.send("update-progress", progress);
     recordDiagnosticEvent("update", "install-started", {
       platform: process.platform,
       version: details.version,
     });
     try {
-      const result = process.platform === "linux"
-        ? await installLinuxAppImageUpdate(
-            details.url,
-            details.sha256,
-            details.sha512,
-            details.version,
-            onProgress,
-          )
-        : await installWindowsUpdate(
-            details.url,
-            details.sha256,
-            details.sha512,
-            onProgress,
-          );
+      const result =
+        process.platform === "linux"
+          ? await installLinuxAppImageUpdate(
+              details.url,
+              details.sha256,
+              details.sha512,
+              details.version,
+              onProgress,
+            )
+          : await installWindowsUpdate(
+              details.url,
+              details.sha256,
+              details.sha512,
+              onProgress,
+            );
       recordDiagnosticEvent("update", "installer-launched", {
         platform: process.platform,
         version: details.version,
@@ -4125,7 +4418,9 @@ app.whenReady().then(async () => {
   });
   ipcMain.handle("get-system-accent-color", () => {
     try {
-      return { color: normalizeAccentColor(systemPreferences.getAccentColor()) };
+      return {
+        color: normalizeAccentColor(systemPreferences.getAccentColor()),
+      };
     } catch {
       return { color: "" };
     }
@@ -4160,12 +4455,24 @@ app.whenReady().then(async () => {
   ipcMain.handle("save-received-file", (event, details) =>
     saveReceivedFile(event, details),
   );
-  ipcMain.handle("prepare-incoming-file", (event, details) => prepareIncomingFile(event, details));
-  ipcMain.handle("append-incoming-file", (event, tempRef, data) => appendIncomingFile(event, tempRef, data));
-  ipcMain.handle("finalize-incoming-file", (event, tempRef) => finalizeIncomingFile(event, tempRef));
-  ipcMain.handle("release-incoming-file", (event, tempRef) => releaseIncomingFile(event, tempRef));
-  ipcMain.handle("scan-incoming-file", (event, tempRef) => scanIncomingFile(event, tempRef));
-  ipcMain.handle("get-incoming-file-url", (event, tempRef) => getIncomingFileUrl(event, tempRef));
+  ipcMain.handle("prepare-incoming-file", (event, details) =>
+    prepareIncomingFile(event, details),
+  );
+  ipcMain.handle("append-incoming-file", (event, tempRef, data) =>
+    appendIncomingFile(event, tempRef, data),
+  );
+  ipcMain.handle("finalize-incoming-file", (event, tempRef) =>
+    finalizeIncomingFile(event, tempRef),
+  );
+  ipcMain.handle("release-incoming-file", (event, tempRef) =>
+    releaseIncomingFile(event, tempRef),
+  );
+  ipcMain.handle("scan-incoming-file", (event, tempRef) =>
+    scanIncomingFile(event, tempRef),
+  );
+  ipcMain.handle("get-incoming-file-url", (event, tempRef) =>
+    getIncomingFileUrl(event, tempRef),
+  );
   ipcMain.handle("cleanup-incoming-files", async (event) => {
     if (!isCustomSoundRequest(event)) return { ok: false };
     await cleanupIncomingTempDirectory();
@@ -4177,7 +4484,12 @@ app.whenReady().then(async () => {
     }
     const targetPath = getCustomSoundPath(String(soundId || ""));
     const buffer = toCustomSoundBuffer(data);
-    if (!targetPath || !buffer || buffer.length < 4 || buffer.length > maxCustomSoundBytes) {
+    if (
+      !targetPath ||
+      !buffer ||
+      buffer.length < 4 ||
+      buffer.length > maxCustomSoundBytes
+    ) {
       return { ok: false, error: "Invalid custom sound file." };
     }
     if (!isOggOpus(buffer)) {
@@ -4191,7 +4503,10 @@ app.whenReady().then(async () => {
       await rename(temporaryPath, targetPath);
       return { ok: true };
     } catch (error) {
-      return { ok: false, error: error?.message || "Sound could not be saved." };
+      return {
+        ok: false,
+        error: error?.message || "Sound could not be saved.",
+      };
     }
   });
   ipcMain.handle("load-custom-sound", async (event, soundId) => {
@@ -4224,7 +4539,10 @@ app.whenReady().then(async () => {
       await rm(targetPath, { force: true });
       return { ok: true };
     } catch (error) {
-      return { ok: false, error: error?.message || "Sound could not be removed." };
+      return {
+        ok: false,
+        error: error?.message || "Sound could not be removed.",
+      };
     }
   });
   ipcMain.handle("open-custom-sounds-folder", async (event) => {
@@ -4237,7 +4555,10 @@ app.whenReady().then(async () => {
       const error = await shell.openPath(directory);
       return error ? { ok: false, error } : { ok: true };
     } catch (error) {
-      return { ok: false, error: error?.message || "Folder could not be opened." };
+      return {
+        ok: false,
+        error: error?.message || "Folder could not be opened.",
+      };
     }
   });
   ipcMain.handle("save-custom-wallpaper", async (event, wallpaperId, data) => {
@@ -4262,7 +4583,10 @@ app.whenReady().then(async () => {
       await rename(temporaryPath, targetPath);
       return { ok: true };
     } catch (error) {
-      return { ok: false, error: error?.message || "Wallpaper could not be saved." };
+      return {
+        ok: false,
+        error: error?.message || "Wallpaper could not be saved.",
+      };
     }
   });
   ipcMain.handle("load-custom-wallpaper", async (event, wallpaperId) => {
@@ -4295,7 +4619,10 @@ app.whenReady().then(async () => {
       await rm(targetPath, { force: true });
       return { ok: true };
     } catch (error) {
-      return { ok: false, error: error?.message || "Wallpaper could not be removed." };
+      return {
+        ok: false,
+        error: error?.message || "Wallpaper could not be removed.",
+      };
     }
   });
   ipcMain.handle("open-custom-wallpapers-folder", async (event) => {
@@ -4308,7 +4635,10 @@ app.whenReady().then(async () => {
       const error = await shell.openPath(directory);
       return error ? { ok: false, error } : { ok: true };
     } catch (error) {
-      return { ok: false, error: error?.message || "Wallpaper folder could not be opened." };
+      return {
+        ok: false,
+        error: error?.message || "Wallpaper folder could not be opened.",
+      };
     }
   });
   ipcMain.handle("fetch-online-theme", async (event, url) => {
@@ -4316,7 +4646,10 @@ app.whenReady().then(async () => {
     try {
       return { ok: true, css: await fetchOnlineThemeCss(url) };
     } catch (error) {
-      return { ok: false, error: error?.message || "Theme could not be loaded." };
+      return {
+        ok: false,
+        error: error?.message || "Theme could not be loaded.",
+      };
     }
   });
   ipcMain.on("update-tray-state", (event, state) => {
@@ -4449,7 +4782,8 @@ app.whenReady().then(async () => {
   if (appLockRecord?.enabled) {
     const authenticated = await requestAppLockAuthentication({
       title: "Unlock Aero",
-      description: "Enter your App Lock PIN or a one-time recovery code before Aero opens.",
+      description:
+        "Enter your App Lock PIN or a one-time recovery code before Aero opens.",
       cancelable: false,
       startup: true,
     });
@@ -4469,7 +4803,10 @@ app.whenReady().then(async () => {
     ]);
   }, 1200);
   void warnAboutMixedWindowsInstallers().catch((error) => {
-    console.warn("Could not check Windows installer registrations.", error.message);
+    console.warn(
+      "Could not check Windows installer registrations.",
+      error.message,
+    );
   });
   startAutoLockMonitor();
 

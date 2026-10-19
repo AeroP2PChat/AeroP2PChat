@@ -44,9 +44,7 @@ function main() {
   if (!asset) throw new Error("No asset in Windows manifest.");
   const lines = [
     `version: ${yamlQuote(version)}`,
-    ...(minimumVersion
-      ? [`minimumVersion: ${yamlQuote(minimumVersion)}`]
-      : []),
+    ...(minimumVersion ? [`minimumVersion: ${yamlQuote(minimumVersion)}`] : []),
     `releaseDate: ${yamlQuote(new Date().toISOString())}`,
     `repo: ${yamlQuote(config.repo)}`,
     `path: ${yamlQuote(asset.name)}`,

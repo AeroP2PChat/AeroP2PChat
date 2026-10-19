@@ -52,8 +52,7 @@ function parseArgs() {
     else if (arg === "--allow-detections") options.allowDetections = true;
     else if (arg.startsWith("--file=")) {
       options.files.push(path.resolve(root, arg.slice("--file=".length)));
-    }
-    else if (arg.startsWith("--source=")) {
+    } else if (arg.startsWith("--source=")) {
       options.source = path.resolve(root, arg.slice("--source=".length));
     } else {
       throw new Error(`Unknown VirusTotal option: ${arg}`);
@@ -124,14 +123,18 @@ async function virusTotalRequest(url, options = {}) {
 
   if (response.status === 429) {
     const retryAfterSeconds = Number(response.headers.get("retry-after")) || 60;
-    console.log(`VirusTotal rate limit reached; waiting ${retryAfterSeconds}s...`);
+    console.log(
+      `VirusTotal rate limit reached; waiting ${retryAfterSeconds}s...`,
+    );
     await sleep(retryAfterSeconds * 1_000);
     return virusTotalRequest(url, options);
   }
 
   if (!response.ok) {
     const detail = await response.text();
-    throw new Error(`VirusTotal request failed (${response.status}): ${detail}`);
+    throw new Error(
+      `VirusTotal request failed (${response.status}): ${detail}`,
+    );
   }
 
   return response.json();
@@ -180,7 +183,9 @@ function summarizeAnalysis(attributes) {
   const results = Object.values(attributes?.results || {});
   const detections = results
     .filter((result) => ["malicious", "suspicious"].includes(result.category))
-    .map((result) => `${result.engine_name}: ${result.result || result.category}`);
+    .map(
+      (result) => `${result.engine_name}: ${result.result || result.category}`,
+    );
 
   return {
     malicious: Number(stats.malicious || 0),
@@ -192,7 +197,9 @@ function summarizeAnalysis(attributes) {
 }
 
 async function scanFile(filePath) {
-  console.log(`\nUploading ${path.basename(filePath)} (${formatSize(fs.statSync(filePath).size)})...`);
+  console.log(
+    `\nUploading ${path.basename(filePath)} (${formatSize(fs.statSync(filePath).size)})...`,
+  );
   const analysisId = await uploadFile(filePath);
   console.log("Waiting for VirusTotal analysis...");
   const summary = summarizeAnalysis(await waitForAnalysis(analysisId));
@@ -206,7 +213,9 @@ async function scanFile(filePath) {
 }
 
 async function submitFile(filePath) {
-  console.log(`\nUploading ${path.basename(filePath)} (${formatSize(fs.statSync(filePath).size)})...`);
+  console.log(
+    `\nUploading ${path.basename(filePath)} (${formatSize(fs.statSync(filePath).size)})...`,
+  );
   const [analysisId, sha256] = await Promise.all([
     uploadFile(filePath),
     sha256File(filePath),
@@ -224,7 +233,9 @@ async function main() {
     console.log("VirusTotal API key is configured.");
     return;
   }
-  const files = options.files.length ? options.files : artifactPaths(options.source);
+  const files = options.files.length
+    ? options.files
+    : artifactPaths(options.source);
   const missing = files.filter((filePath) => !fs.existsSync(filePath));
   if (missing.length) {
     throw new Error(`Files not found: ${missing.join(", ")}`);
@@ -238,13 +249,17 @@ async function main() {
   console.log(
     "VirusTotal public scans share these released files with VirusTotal and its partners.",
   );
-  console.log(`Scanning ${files.length} release artifacts from ${path.relative(root, options.source)}...`);
+  console.log(
+    `Scanning ${files.length} release artifacts from ${path.relative(root, options.source)}...`,
+  );
 
   if (options.submitOnly) {
     for (const filePath of files) {
       await submitFile(filePath);
     }
-    console.log("\nAll VirusTotal uploads were submitted. Reports will populate as analysis completes.");
+    console.log(
+      "\nAll VirusTotal uploads were submitted. Reports will populate as analysis completes.",
+    );
     return;
   }
 
@@ -257,12 +272,16 @@ async function main() {
   }
 
   if (warnings.length) {
-    console.error("\nVirusTotal reported detections. Review them before publishing.");
+    console.error(
+      "\nVirusTotal reported detections. Review them before publishing.",
+    );
     if (!options.allowDetections) process.exitCode = 2;
     return;
   }
 
-  console.log("\nVirusTotal scan completed without malicious or suspicious detections.");
+  console.log(
+    "\nVirusTotal scan completed without malicious or suspicious detections.",
+  );
 }
 
 main().catch((error) => {
