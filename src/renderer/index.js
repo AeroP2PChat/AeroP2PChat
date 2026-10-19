@@ -1437,18 +1437,40 @@ function enhanceNativeSelects() {
 
 function renderEnhancedSelectOptionContent(container, option) {
   const author = option?.dataset.author || "";
+  const isAccentSelect = [accentColorSelect, welcomeAccentColorSelect].includes(
+    option?.parentElement,
+  );
   container.classList.toggle("has-author", Boolean(author));
-  if (!author) {
-    container.textContent = option?.textContent || "Select an option";
-    return;
-  }
+  container.classList.toggle("has-color-swatch", isAccentSelect);
   const title = document.createElement("span");
   title.className = "aero-select-option-title";
-  title.textContent = option.textContent;
+  title.textContent = option?.textContent || "Select an option";
+  const content = [];
+  if (isAccentSelect) {
+    const swatch = document.createElement("span");
+    swatch.className = "aero-select-color-swatch";
+    const color =
+      option.value === "system"
+        ? systemAccentColor
+        : option.value === "custom"
+          ? (option.parentElement === welcomeAccentColorSelect
+              ? welcomeCustomAccentColorInput?.value
+              : customAccentColorInput?.value) || accentColors.aero
+          : accentColors[option.value] || accentColors.aero;
+    swatch.style.setProperty("--swatch-color", color);
+    swatch.setAttribute("aria-hidden", "true");
+    content.push(swatch);
+  }
+  content.push(title);
+  if (!author) {
+    container.replaceChildren(...content);
+    return;
+  }
   const authorPill = document.createElement("span");
   authorPill.className = "aero-select-author-pill";
   authorPill.textContent = author;
-  container.replaceChildren(title, authorPill);
+  content.push(authorPill);
+  container.replaceChildren(...content);
 }
 
 function enhanceNativeSelect(select) {
@@ -2581,6 +2603,8 @@ async function refreshSystemAccentColor() {
   if (appConfig.appSettings?.accentColor === "system") {
     applyAccentColor("system");
   }
+  syncEnhancedSelect(accentColorSelect);
+  syncEnhancedSelect(welcomeAccentColorSelect);
 }
 
 function handleSystemThemeChange() {
@@ -2602,6 +2626,8 @@ platformApi.onSystemAccentColorChanged?.((color) => {
   if (appConfig.appSettings?.accentColor === "system") {
     applyAccentColor("system");
   }
+  syncEnhancedSelect(accentColorSelect);
+  syncEnhancedSelect(welcomeAccentColorSelect);
 });
 
 function renderCustomThemePicker() {
@@ -15047,6 +15073,8 @@ customAccentColorInput.addEventListener("input", () => {
   appConfig.appSettings.accentColor = "custom";
   appConfig.appSettings.customAccentColor = customAccentColorInput.value;
   applyAppearancePreferences();
+  syncEnhancedSelect(accentColorSelect);
+  syncEnhancedSelect(welcomeAccentColorSelect);
 });
 
 customAccentColorInput.addEventListener("change", () => {

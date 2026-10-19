@@ -1145,6 +1145,10 @@
               <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
               Profile
             </button>
+            <button type="button" class="settings-nav-item" data-settings-nav="general">
+              <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+              General
+            </button>
             <button type="button" class="settings-nav-item active" data-settings-nav="appearance">
               <i class="fa-solid fa-palette" aria-hidden="true"></i>
               Appearance
@@ -1161,18 +1165,6 @@
               <i class="fa-solid fa-volume-high" aria-hidden="true"></i>
               Sounds
             </button>
-            <button type="button" class="settings-nav-item" data-settings-nav="general">
-              <i class="fa-solid fa-sliders" aria-hidden="true"></i>
-              System
-            </button>
-            <button type="button" class="settings-nav-item" data-settings-nav="security">
-              <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
-              Security
-            </button>
-            <button type="button" class="settings-nav-item" data-settings-nav="updates">
-              <i class="fa-solid fa-rotate" aria-hidden="true"></i>
-              Updates
-            </button>
             <span class="settings-nav-divider"></span>
             <button type="button" class="settings-nav-item" data-settings-nav="chat">
               <i class="fa-solid fa-comment" aria-hidden="true"></i>
@@ -1185,6 +1177,15 @@
             <button type="button" class="settings-nav-item" data-settings-nav="voice">
               <i class="fa-solid fa-microphone" aria-hidden="true"></i>
               Voice & Video
+            </button>
+            <span class="settings-nav-divider"></span>
+            <button type="button" class="settings-nav-item" data-settings-nav="security">
+              <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+              Security
+            </button>
+            <button type="button" class="settings-nav-item" data-settings-nav="updates">
+              <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+              Updates
             </button>
             <button type="button" class="settings-nav-item" data-settings-nav="legal">
               <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
@@ -1200,14 +1201,14 @@
           <section id="settings-search-results" class="settings-search-results hidden" aria-live="polite" aria-label="Settings search results"></section>
           <div class="settings-column">
             <section class="settings-section" data-settings-page="profile">
-              <div class="settings-page-heading"><h3>Profile</h3></div>
+              <div class="settings-page-heading"><div><h3>Profile</h3><p>Manage how your name and avatar appear to your contacts.</p></div></div>
               <div id="profile-settings-mount"></div>
             </section>
             <section class="settings-section" data-settings-page="appearance">
-              <div class="settings-page-heading"><h3>Appearance</h3></div>
+              <div class="settings-page-heading"><div><h3>Appearance</h3><p>Personalize Aero's colors, layout, wallpapers and motion.</p></div></div>
               <div class="appearance-settings-stack">
                 <div class="appearance-settings-group">
-                  <div class="appearance-settings-heading"><h4>Theme</h4></div>
+                  <div class="appearance-settings-heading"><div><h4>Theme</h4><p>Choose the color mode and accent used across Aero.</p></div></div>
                   <div class="theme-switcher" role="radiogroup" aria-label="Theme">
                     <label><input id="theme-system" type="radio" name="theme" value="system" /><span><i class="fa-solid fa-desktop" aria-hidden="true"></i>System</span></label>
                     <label><input id="theme-light" type="radio" name="theme" value="light" /><span><i class="fa-solid fa-sun" aria-hidden="true"></i>Light</span></label>
@@ -1223,7 +1224,7 @@
                   </label>
                 </div>
                 <div class="appearance-settings-group">
-                  <div class="appearance-settings-heading"><h4>Chat layout</h4></div>
+                  <div class="appearance-settings-heading"><div><h4>Layout &amp; text</h4><p>Adjust spacing and readability without changing conversations.</p></div></div>
                   <div class="appearance-layout-options">
                     <label class="settings-field">
                       <span>Message density</span>
@@ -1234,25 +1235,25 @@
                       <select id="chat-font-size-select"><option value="small">Small</option><option value="normal">Normal</option><option value="large">Large</option></select>
                     </label>
                     <label class="settings-check"><input id="compact-layout-toggle" type="checkbox" /><span>Compact layout</span></label>
-                    <button id="reset-sidebar-width" class="ghost-button appearance-reset-button" type="button"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>Reset width</button>
+                    <button id="reset-sidebar-width" class="ghost-button appearance-reset-button" type="button"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i>Reset sidebar width</button>
                   </div>
                 </div>
                 <div class="appearance-settings-group">
-                  <div class="appearance-settings-heading"><h4>Wallpapers</h4><button id="open-custom-wallpapers-folder" class="ghost-button compact-settings-button" type="button"><i class="fa-regular fa-folder-open" aria-hidden="true"></i>Folder</button></div>
+                  <div class="appearance-settings-heading"><div><h4>Wallpapers</h4><p>Use the built-in background or custom images for each theme.</p></div><button id="open-custom-wallpapers-folder" class="ghost-button compact-settings-button" type="button"><i class="fa-regular fa-folder-open" aria-hidden="true"></i>Open folder</button></div>
                   <label class="settings-check"><input id="wallpaper-enabled-toggle" type="checkbox" /><span>Show wallpapers</span></label>
                   <div id="custom-wallpaper-list" class="custom-wallpaper-list"></div>
-                  <label class="settings-check"><input id="wallpaper-accent-tint-toggle" type="checkbox" /><span>Accent tint</span></label>
-                  <label class="settings-check"><input id="wallpaper-boot-toggle" type="checkbox" /><span>Show at startup</span></label>
+                  <label class="settings-check"><input id="wallpaper-accent-tint-toggle" type="checkbox" /><span>Tint wallpaper with the accent color</span></label>
+                  <label class="settings-check"><input id="wallpaper-boot-toggle" type="checkbox" /><span>Use custom wallpaper on the loading screen</span></label>
                 </div>
                 <div class="appearance-settings-group">
-                  <div class="appearance-settings-heading"><h4>Accessibility</h4></div>
+                  <div class="appearance-settings-heading"><div><h4>Accessibility</h4><p>Reduce interface movement and animated transitions.</p></div></div>
                   <label class="settings-check"><input id="reduce-motion-toggle" type="checkbox" /><span>Reduce animations</span></label>
                 </div>
               </div>
             </section>
 
             <section class="settings-section" data-settings-page="themes">
-              <div class="settings-page-heading"><h3>Themes</h3></div>
+              <div class="settings-page-heading"><div><h3>Custom themes</h3><p>Manage local CSS themes or load styles from sources you trust.</p></div></div>
               <div class="theme-tabs" role="tablist" aria-label="Theme source">
                 <button class="theme-tab active" type="button" role="tab" aria-selected="true" data-theme-tab="local">Installed</button>
                 <button class="theme-tab" type="button" role="tab" aria-selected="false" data-theme-tab="online">Online</button>
@@ -1285,15 +1286,15 @@
                   </button>
                   <span id="online-theme-status" class="settings-description" aria-live="polite"></span>
                 </div>
-                <p class="theme-inline-note">Trusted sources only.</p>
+                <p class="theme-inline-note">Theme CSS can change the entire interface. Only add URLs you trust.</p>
               </div>
             </section>
 
             <section class="settings-section" data-settings-page="general">
-              <div class="settings-page-heading"><h3>System</h3></div>
+              <div class="settings-page-heading"><div><h3>General</h3><p>Control how Aero starts, closes and stays available in the background.</p></div></div>
               <div class="general-settings-stack">
                 <div class="general-settings-group">
-                  <div class="general-settings-heading"><h4>Startup</h4></div>
+                  <div class="general-settings-heading"><div><h4>Startup</h4><p>Launch Aero automatically after signing in to your computer.</p></div></div>
                   <label class="settings-check general-autostart-toggle">
                     <input id="autostart-toggle" type="checkbox" />
                     <span data-app-template="Start {name} with the system">Start with system</span>
@@ -1305,15 +1306,15 @@
                     </label>
                     <label>
                       <input id="autostart-hidden" type="radio" name="autostart-mode" value="hidden" />
-                      <span>Minimized</span>
+                      <span>Start in system tray</span>
                     </label>
                   </div>
                 </div>
                 <div class="general-settings-group">
-                  <div class="general-settings-heading"><h4>System tray</h4></div>
+                  <div class="general-settings-heading"><div><h4>Closing Aero</h4><p>Keep receiving messages and calls after closing the window.</p></div></div>
                   <label class="settings-check">
                     <input id="close-to-tray-toggle" type="checkbox" />
-                    <span>Close to tray</span>
+                    <span>Keep Aero running in the system tray</span>
                   </label>
                 </div>
               </div>
@@ -1381,11 +1382,11 @@
             </section>
 
             <section class="settings-section" data-settings-page="updates">
-              <div class="settings-page-heading"><h3>Updates</h3></div>
+              <div class="settings-page-heading"><div><h3>Updates</h3><p>Check for new versions and choose how update downloads are handled.</p></div></div>
               <div class="update-settings-stack">
                 <p id="update-platform-note" class="settings-help update-platform-note"></p>
                 <div class="update-settings-group">
-                  <div class="update-settings-heading"><h4>Check</h4></div>
+                  <div class="update-settings-heading"><div><h4>Version check</h4><p>Ask the official Aero release service for the latest version.</p></div></div>
                   <div class="update-settings-check-row">
                     <button id="check-updates-button" class="ghost-button" type="button">
                       <i class="fa-solid fa-rotate" aria-hidden="true"></i>
@@ -1395,23 +1396,23 @@
                   </div>
                 </div>
                 <div class="update-settings-group">
-                  <div class="update-settings-heading"><h4>Download</h4></div>
+                  <div class="update-settings-heading"><div><h4>Downloads</h4><p>Download verified updates in the background when they become available.</p></div></div>
                   <label class="settings-check">
                     <input id="auto-download-updates-toggle" type="checkbox" />
-                    <span>Auto-download</span>
+                    <span>Automatically download updates</span>
                   </label>
                 </div>
               </div>
             </section>
 
             <section class="settings-section" data-settings-page="notifications">
-              <div class="settings-page-heading"><h3>Notifications</h3></div>
+              <div class="settings-page-heading"><div><h3>Notifications</h3><p>Choose which events can notify you and what information is shown.</p></div></div>
               <div class="notification-settings-stack">
                 <div class="notification-settings-group">
-                  <div class="notification-settings-heading"><h4>Desktop notifications</h4></div>
+                  <div class="notification-settings-heading"><div><h4>Desktop notifications</h4><p>Show native notifications outside the Aero window.</p></div></div>
                   <label class="settings-check notification-master-toggle">
                     <input id="notifications-toggle" type="checkbox" />
-                    <span>Enable</span>
+                    <span>Allow desktop notifications</span>
                   </label>
                   <div class="notification-event-options">
                     <label class="settings-check">
@@ -1420,7 +1421,7 @@
                     </label>
                     <label class="settings-check notification-suboption">
                       <input id="message-preview-toggle" type="checkbox" />
-                      <span>Preview</span>
+                      <span>Show message previews</span>
                     </label>
                     <label class="settings-check">
                       <input id="call-notifications-toggle" type="checkbox" />
@@ -1428,28 +1429,28 @@
                     </label>
                     <label class="settings-check notification-suboption">
                       <input id="focused-notifications-toggle" type="checkbox" />
-                      <span>When app is open</span>
+                      <span>Notify while Aero is focused</span>
                     </label>
                   </div>
                 </div>
                 <div class="notification-settings-group">
-                  <div class="notification-settings-heading"><h4>Privacy</h4></div>
+                  <div class="notification-settings-heading"><div><h4>Conversation privacy</h4><p>Control whether contacts can see when you have read a message.</p></div></div>
                   <label class="settings-check">
                     <input id="read-receipts-toggle" type="checkbox" />
-                    <span>Read receipts</span>
+                    <span>Send read receipts</span>
                   </label>
                 </div>
               </div>
             </section>
 
             <section class="settings-section" data-settings-page="sounds">
-              <div class="settings-page-heading"><h3>Sounds</h3></div>
+              <div class="settings-page-heading"><div><h3>Sounds</h3><p>Control audio feedback for messages, calls and connections.</p></div></div>
               <div class="sound-settings-stack">
                 <div class="sound-settings-group">
-                  <div class="sound-settings-heading"><h4>Playback</h4></div>
+                  <div class="sound-settings-heading"><div><h4>Sound events</h4><p>Choose which events play audio on this device.</p></div></div>
                   <label class="settings-check sound-master-toggle">
                     <input id="sounds-toggle" type="checkbox" />
-                    <span>Enable</span>
+                    <span>Enable Aero sounds</span>
                   </label>
                   <div class="sound-event-options">
                     <label class="settings-check">
@@ -1463,7 +1464,7 @@
                       </label>
                       <label class="settings-check sound-suboption">
                         <input id="ringtone-loop-toggle" type="checkbox" />
-                        <span>Loop</span>
+                         <span>Repeat ringtone until answered</span>
                       </label>
                       <div class="sound-ringtone-preset">
                         <label for="ringtone-preset-select">Ringtone</label>
@@ -1477,18 +1478,18 @@
                     </div>
                     <label class="settings-check">
                       <input id="call-event-sound-toggle" type="checkbox" />
-                      <span>Call events</span>
+                      <span>Call join and leave sounds</span>
                     </label>
                     <label class="settings-check">
                       <input id="connected-sound-toggle" type="checkbox" />
-                      <span>Connection sound</span>
+                      <span>Contact connection sound</span>
                     </label>
                   </div>
                 </div>
                 <div class="sound-settings-group">
                   <div class="custom-sounds-heading">
                     <div>
-                      <strong>Custom sounds</strong>
+                      <strong>Custom sounds</strong><span>Replace individual built-in sounds with your own audio.</span>
                     </div>
                     <button id="open-custom-sounds-folder" class="custom-sound-action-button" type="button">
                       <i class="fa-regular fa-folder-open" aria-hidden="true"></i>
@@ -1537,13 +1538,13 @@
             </section>
 
             <section class="settings-section" data-settings-page="chat">
-              <div class="settings-page-heading"><h3>Chat</h3></div>
+              <div class="settings-page-heading"><div><h3>Chat</h3><p>Configure voice messages, received files and trusted external links.</p></div></div>
               <div class="chat-settings-stack">
                 <div class="chat-settings-group">
-                  <div class="chat-settings-heading"><h4>Voice messages</h4></div>
+                  <div class="chat-settings-heading"><div><h4>Voice messages</h4><p>Control how recorded messages are downloaded and displayed.</p></div></div>
                   <label class="settings-check">
                     <input id="voice-auto-download-toggle" type="checkbox" />
-                    <span>Auto-download</span>
+                    <span>Download voice messages automatically</span>
                   </label>
                   <label class="settings-check">
                     <input id="voice-waveform-toggle" type="checkbox" />
@@ -1551,10 +1552,10 @@
                   </label>
                 </div>
                 <div class="chat-settings-group">
-                  <div class="chat-settings-heading"><h4>Files &amp; images</h4></div>
+                  <div class="chat-settings-heading"><div><h4>Files &amp; images</h4><p>Choose when trusted downloads are saved and where they go.</p></div></div>
                   <label class="settings-check">
                     <input id="file-auto-download-toggle" type="checkbox" />
-                    <span>Auto-download from trusted contacts</span>
+                    <span>Automatically download files from trusted contacts</span>
                   </label>
                   <label class="settings-field file-download-mode-field">
                     <span>Save location</span>
@@ -1574,12 +1575,12 @@
                 </div>
                 <div class="chat-settings-group">
                   <div class="chat-settings-heading chat-trusted-heading">
-                    <div><h4>External links</h4><p id="trusted-domains-status">Trusted domains</p></div>
+                    <div><h4>External links</h4><p id="trusted-domains-status">Manage domains Aero can open without asking again.</p></div>
                     <button id="clear-trusted-domains" class="ghost-button" type="button">Clear</button>
                   </div>
                   <details class="trusted-domains-details">
                     <summary>
-                      <span>Trusted domains</span>
+                       <span>View trusted domains</span>
                       <span class="trusted-domains-summary-meta">
                         <span id="trusted-default-domains-count"></span>
                         <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
@@ -1594,10 +1595,10 @@
 
           <div class="settings-column">
             <section class="settings-section" data-settings-page="voice">
-              <div class="settings-page-heading"><h3>Voice &amp; Video</h3></div>
+              <div class="settings-page-heading"><div><h3>Voice &amp; Video</h3><p>Select call devices and tune microphone processing for clear speech.</p></div></div>
               <div class="voice-settings-stack">
                 <div class="voice-settings-group">
-                  <div class="voice-settings-heading"><h4>Devices</h4></div>
+                  <div class="voice-settings-heading"><div><h4>Devices</h4><p>Choose the microphone, camera and speakers used during calls.</p></div></div>
                   <div class="device-settings voice-device-settings">
                     <label for="microphone-select">Microphone<select id="microphone-select"></select></label>
                     <label for="camera-select">Camera<select id="camera-select"></select></label>
@@ -1605,7 +1606,7 @@
                   </div>
                 </div>
                 <div class="voice-settings-group">
-                  <div class="voice-settings-heading"><h4>Microphone</h4></div>
+                  <div class="voice-settings-heading"><div><h4>Microphone processing</h4><p>Start with a profile, then fine-tune it only when needed.</p></div></div>
                   <label class="voice-profile-field" for="mic-profile-select">Voice profile
                     <select id="mic-profile-select">
                       <option value="voice-isolation">Voice isolation</option>
@@ -1619,7 +1620,7 @@
                       <div class="settings-range-body"><select id="mic-mode-select"><option value="auto">Auto</option><option value="manual">Manual</option></select></div>
                     </label>
                     <label class="settings-range" for="mic-sensitivity-slider">
-                      <div class="settings-range-header"><span>Mic sensitivity</span><strong id="mic-sensitivity-label">55%</strong></div>
+                      <div class="settings-range-header"><span>Microphone sensitivity</span><strong id="mic-sensitivity-label">55%</strong></div>
                       <div class="settings-range-body"><input id="mic-sensitivity-slider" type="range" min="0" max="100" step="1" /></div>
                     </label>
                     <label class="settings-range" for="mic-noise-reduction-slider">
@@ -1628,7 +1629,7 @@
                     </label>
                   </div>
                   <label class="settings-range" for="mic-boost-slider">
-                    <div class="settings-range-header"><span>Mic boost</span><strong id="mic-boost-label">100%</strong></div>
+                      <div class="settings-range-header"><span>Microphone gain</span><strong id="mic-boost-label">100%</strong></div>
                     <div class="settings-range-body"><input id="mic-boost-slider" type="range" min="0" max="200" step="1" /></div>
                   </label>
                   <details class="voice-eq-details">
@@ -1641,7 +1642,7 @@
                   </details>
                 </div>
                 <div class="voice-settings-group">
-                  <div class="voice-settings-heading"><h4>Call audio</h4></div>
+                  <div class="voice-settings-heading"><div><h4>Call playback</h4><p>Adjust how loudly other participants are played.</p></div></div>
                   <label class="settings-range" for="remote-volume-slider">
                     <div class="settings-range-header"><span>Call volume</span><strong id="remote-volume-label">100%</strong></div>
                     <div class="settings-range-body"><input id="remote-volume-slider" type="range" min="0" max="100" step="1" /></div>
@@ -1652,11 +1653,11 @@
           </div>
 
           <section class="settings-section" data-settings-page="contacts">
-            <div class="settings-page-heading"><h3>Contacts</h3></div>
+              <div class="settings-page-heading"><div><h3>Contacts</h3><p>Organize saved people and review users you have blocked.</p></div></div>
             <div class="contacts-settings-group">
               <div class="contacts-settings-heading">
                 <div>
-                  <h4>Nicknames</h4>
+                  <h4>Contact nicknames</h4><p>Set private names that are only stored on this device.</p>
                 </div>
               </div>
               <div id="contact-nickname-list" class="contact-nickname-list"></div>
@@ -1664,7 +1665,7 @@
             <div class="contacts-settings-group">
               <div class="contacts-settings-heading">
                 <div>
-                  <h4>Blocked users</h4>
+                  <h4>Blocked users</h4><p>Blocked users cannot connect or send new messages.</p>
                 </div>
               </div>
               <div id="blocked-list" class="blocked-list"></div>

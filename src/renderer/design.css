@@ -840,6 +840,22 @@ select.native-select {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.aero-select-toggle > span.has-color-swatch,
+.aero-select-options button.has-color-swatch {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+}
+.aero-select-color-swatch {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  border: 1px solid color-mix(in srgb, var(--swatch-color) 62%, var(--line-strong));
+  border-radius: 50%;
+  background: var(--swatch-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--swatch-color) 13%, transparent) !important;
+}
 .aero-select-author-pill {
   display: inline-flex;
   min-width: 0;
@@ -8508,4 +8524,65 @@ textarea:focus,
   .changelog-content {
     padding-inline: 18px;
   }
+}
+
+/* Clearer settings hierarchy */
+.appearance-settings-group,
+.general-settings-group,
+.update-settings-group,
+.notification-settings-group,
+.sound-settings-group,
+.chat-settings-group,
+.voice-settings-group,
+.contacts-settings-group {
+  gap: 12px;
+  padding: 15px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, var(--surface-raised), var(--surface-subtle));
+}
+.appearance-settings-heading > div,
+.general-settings-heading > div,
+.update-settings-heading > div,
+.notification-settings-heading > div,
+.sound-settings-heading > div,
+.chat-settings-heading > div,
+.voice-settings-heading > div,
+.custom-sounds-heading > div,
+.contacts-settings-heading > div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+.appearance-settings-heading p,
+.general-settings-heading p,
+.update-settings-heading p,
+.notification-settings-heading p,
+.sound-settings-heading p,
+.chat-settings-heading p,
+.voice-settings-heading p,
+.custom-sounds-heading span,
+.contacts-settings-heading p {
+  max-width: 680px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+.appearance-settings-heading h4,
+.general-settings-heading h4,
+.update-settings-heading h4,
+.notification-settings-heading h4,
+.sound-settings-heading h4,
+.chat-settings-heading h4,
+.voice-settings-heading h4,
+.contacts-settings-heading h4 {
+  font-size: 12px;
+  font-weight: 720;
+}
+.settings-check {
+  min-height: 34px;
+}
+.settings-nav-divider {
+  margin-block: 6px;
 }
