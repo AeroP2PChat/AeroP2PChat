@@ -7428,49 +7428,41 @@ input[type="range"]:active::-webkit-slider-thumb {
 /* Incoming call */
 .incoming-call-screen {
   z-index: 1000;
+  background: color-mix(in srgb, var(--canvas) 54%, transparent);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
 .incoming-call-content {
-  width: min(420px, calc(100vw - 36px));
-  padding: 26px 26px 18px;
-  border-color: color-mix(in srgb, var(--accent) 24%, var(--line-strong));
-  background:
-    radial-gradient(
-      circle at 50% -15%,
-      color-mix(in srgb, var(--accent) 15%, transparent),
-      transparent 55%
-    ),
-    var(--surface-raised);
+  width: min(340px, calc(100vw - 36px));
+  padding: 21px 20px 15px;
+  border-color: var(--line);
+  background: var(--surface-raised);
   text-align: center;
 }
 .incoming-call-avatar-wrap {
   position: relative;
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 12px;
+  width: 50px;
+  height: 50px;
+  margin: 0 auto 8px;
 }
 .contact-avatar.incoming-call-avatar {
-  width: 64px;
-  height: 64px;
-  border: 3px solid color-mix(in srgb, var(--accent) 42%, var(--surface-raised));
-  font-size: 22px;
-  box-shadow: 0 10px 28px color-mix(in srgb, var(--accent) 20%, transparent);
+  width: 50px;
+  height: 50px;
+  border: 0;
+  font-size: 18px;
+  box-shadow: none;
 }
 .incoming-call-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0 0 5px;
-  color: var(--accent);
-  font-size: 10px;
-  font-weight: 760;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  margin: 0 0 3px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 620;
 }
 .incoming-call-name {
   color: var(--text);
-  font-size: 25px;
-  font-weight: 780;
-  letter-spacing: -0.03em;
+  font-size: 20px;
+  font-weight: 740;
+  letter-spacing: -0.02em;
 }
 .incoming-call-subtitle {
   margin: 5px 0 0;
@@ -7480,58 +7472,63 @@ input[type="range"]:active::-webkit-slider-thumb {
 .incoming-call-actions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 9px;
-  margin-top: 22px;
+  gap: 8px;
+  margin-top: 16px;
 }
 .screen-call-action {
-  display: grid;
-  grid-template-columns: 32px minmax(0, 1fr);
+  display: inline-flex;
   align-items: center;
-  justify-items: start;
-  gap: 8px;
-  min-height: 54px;
-  padding: 8px 10px;
-  border: 1px solid var(--line-strong);
-  border-radius: 12px;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
   background: var(--surface-subtle);
   color: var(--text-soft);
   font-size: 11px;
   font-weight: 750;
   transition:
     border-color 120ms ease,
-    background 120ms ease,
-    transform 120ms ease;
+    background 120ms ease;
 }
 .screen-call-action:hover {
   border-color: var(--line-accent);
   background: var(--surface-hover);
-  transform: translateY(-2px);
 }
 .screen-call-action .icon-circle {
-  display: grid;
-  width: 32px;
-  height: 32px;
+  display: inline-grid;
+  width: 16px;
+  height: 16px;
   place-items: center;
-  border-radius: 10px;
-  font-size: 13px;
+  border-radius: 0;
+  background: transparent;
+  font-size: 11px;
 }
 .screen-call-action.accept .icon-circle {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: transparent;
+  color: var(--success);
 }
 .screen-call-action.decline .icon-circle {
-  background: var(--danger-soft);
+  background: transparent;
   color: var(--danger);
 }
 .screen-call-action.accept {
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  border-color: color-mix(in srgb, var(--success) 30%, var(--line));
+  background: var(--success-soft);
+  color: var(--success);
+}
+.screen-call-action.decline {
+  border-color: color-mix(in srgb, var(--danger) 28%, var(--line));
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 .incoming-call-ignore {
   display: inline-flex;
   min-height: 30px;
   align-items: center;
   gap: 6px;
-  margin-top: 11px;
+  margin-top: 8px;
   padding: 4px 8px;
   border: 0;
   border-radius: 8px;

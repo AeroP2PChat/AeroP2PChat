@@ -1,4 +1,5 @@
-import { blobatarUri } from "blobatar/uri";
+import { _parts as getBlobatarParts } from "blobatar/internal";
+import "blobatar/motion.css";
 import "@fontsource-variable/inter";
 
 const container = document.getElementById("toast-container");
@@ -8,7 +9,37 @@ function createToastAvatar(label, id) {
   avatar.className = "toast-avatar";
   avatar.setAttribute("role", "img");
   avatar.setAttribute("aria-label", `${label || "Contact"} avatar`);
-  avatar.style.backgroundImage = `url("${blobatarUri(String(id || "unknown"))}")`;
+
+  const namespace = "http://www.w3.org/2000/svg";
+  const parts = getBlobatarParts(String(id || "unknown"), {
+    animate: "always",
+    traits: { "body.r": 0.999 },
+  });
+  const svg = document.createElementNS(namespace, "svg");
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.setAttribute("aria-hidden", "true");
+  for (const [property, value] of Object.entries(parts.vars || {})) {
+    svg.style.setProperty(property, value);
+  }
+  if (parts.bg) {
+    const background = document.createElementNS(namespace, "path");
+    background.setAttribute("d", parts.bg.d);
+    background.setAttribute("fill", parts.bg.fill);
+    svg.append(background);
+  }
+  const animatedRoot = document.createElementNS(namespace, "g");
+  animatedRoot.setAttribute("class", parts.cls || "");
+  const parsedParts = new DOMParser().parseFromString(
+    `<svg xmlns="${namespace}">${parts.inner}</svg>`,
+    "image/svg+xml",
+  );
+  animatedRoot.append(
+    ...Array.from(parsedParts.documentElement.children, (child) =>
+      document.importNode(child, true),
+    ),
+  );
+  svg.append(animatedRoot);
+  avatar.append(svg);
   return avatar;
 }
 
