@@ -40,6 +40,12 @@
   --danger-soft: #f8dde3;
   --info: #5378c7;
   --info-soft: #e0e7f8;
+  --call-positive: #278653;
+  --call-positive-soft: #e0f2e7;
+  --call-negative: #c93645;
+  --call-negative-soft: #f9e4e7;
+  --call-active: #456fc1;
+  --call-active-soft: #e3eaf8;
   --shadow-sm:
     0 1px 2px rgba(50, 52, 72, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.3) inset;
   --shadow-md: 0 12px 30px rgba(50, 52, 72, 0.1);
@@ -114,6 +120,12 @@ body:is([data-theme="dark"], [data-theme="ultra-dark"]) {
   --danger-soft: #3d2430;
   --info: #89b4fa;
   --info-soft: #222f4a;
+  --call-positive: #78db99;
+  --call-positive-soft: #173326;
+  --call-negative: #ff7078;
+  --call-negative-soft: #3a181d;
+  --call-active: #8db8ff;
+  --call-active-soft: #182943;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 14px 36px rgba(5, 5, 10, 0.28);
   --shadow-lg: 0 28px 72px rgba(5, 5, 10, 0.48);
@@ -156,6 +168,12 @@ body[data-theme="ultra-dark"] {
   --danger-soft: #2c1118;
   --info: #c7c7c7;
   --info-soft: #121212;
+  --call-positive: #65d69b;
+  --call-positive-soft: #0d2418;
+  --call-negative: #ff737b;
+  --call-negative-soft: #2c1115;
+  --call-active: #b8cfff;
+  --call-active-soft: #111824;
   --shadow-sm: none;
   --shadow-md: none;
   --shadow-lg: none;
@@ -9437,4 +9455,77 @@ textarea:focus,
   .message-selection-bar .ghost-button i {
     font-size: 11px;
   }
+}
+
+/* Call controls use stable semantic colors instead of the user accent. */
+.chat-actions .ghost-button.call:not(:disabled),
+.call-action.accept,
+.screen-call-action.accept {
+  border-color: color-mix(in srgb, var(--call-positive) 42%, var(--line));
+  background: var(--call-positive-soft);
+  color: var(--call-positive);
+}
+.screen-call-action.accept .icon-circle {
+  color: var(--call-positive);
+}
+.chat-actions .ghost-button.call:hover:not(:disabled),
+.call-action.accept:hover:not(:disabled),
+.screen-call-action.accept:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--call-positive) 72%, var(--line));
+  background: color-mix(
+    in srgb,
+    var(--call-positive-soft) 82%,
+    var(--call-positive)
+  );
+  color: var(--call-positive);
+}
+
+.chat-actions #disconnect-chat:not(:disabled),
+.call-action.decline,
+.call-action.hangup,
+.call-action.toggle.disabled,
+.screen-call-action.decline {
+  border-color: color-mix(in srgb, var(--call-negative) 42%, var(--line));
+  background: var(--call-negative-soft);
+  color: var(--call-negative);
+}
+.screen-call-action.decline .icon-circle {
+  color: var(--call-negative);
+}
+.chat-actions #disconnect-chat:hover:not(:disabled),
+.call-action.decline:hover:not(:disabled),
+.call-action.hangup:hover:not(:disabled),
+.call-action.toggle.disabled:hover:not(:disabled),
+.screen-call-action.decline:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--call-negative) 72%, var(--line));
+  background: color-mix(
+    in srgb,
+    var(--call-negative-soft) 82%,
+    var(--call-negative)
+  );
+  color: var(--call-negative);
+}
+
+.call-action.toggle.enabled {
+  border-color: var(--line);
+  background: var(--surface-subtle);
+  color: var(--text-soft);
+}
+.call-action.toggle.active:not(.disabled),
+.call-action.camera.active,
+.call-action.stream.active {
+  border-color: color-mix(in srgb, var(--call-active) 42%, var(--line));
+  background: var(--call-active-soft);
+  color: var(--call-active);
+}
+.call-action.toggle.active:hover:not(.disabled),
+.call-action.camera.active:hover:not(:disabled),
+.call-action.stream.active:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--call-active) 72%, var(--line));
+  background: color-mix(
+    in srgb,
+    var(--call-active-soft) 82%,
+    var(--call-active)
+  );
+  color: var(--call-active);
 }
