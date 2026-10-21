@@ -1599,10 +1599,10 @@
             <button
               type="button"
               class="settings-nav-item"
-              data-settings-nav="updates"
+              data-settings-nav="info"
             >
-              <i class="fa-solid fa-rotate" aria-hidden="true"></i>
-              Updates
+              <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+              Info
             </button>
             <button
               type="button"
@@ -2187,17 +2187,76 @@
                 </div>
               </section>
 
-              <section class="settings-section" data-settings-page="updates">
+              <section class="settings-section" data-settings-page="info">
                 <div class="settings-page-heading">
                   <div>
-                    <h3>Updates</h3>
+                    <h3>About Aero</h3>
                     <p>
-                      Check for new versions and choose how update downloads are
-                      handled.
+                      Application details, developer links, support and updates.
                     </p>
                   </div>
                 </div>
+                <div class="about-app-card">
+                  <div class="about-app-identity">
+                    <div class="about-app-icon" aria-hidden="true">
+                      <img src="/app.png" alt="" />
+                    </div>
+                    <div>
+                      <h4>Aero P2P Chat</h4>
+                      <p>Fast, direct and privacy-friendly peer-to-peer chat.</p>
+                    </div>
+                  </div>
+                  <dl class="about-app-details">
+                    <div>
+                      <dt>Version</dt>
+                      <dd id="about-app-version">—</dd>
+                    </div>
+                    <div>
+                      <dt>Developer</dt>
+                      <dd>Tenkayro · Jonas Grimm</dd>
+                    </div>
+                    <div>
+                      <dt>License</dt>
+                      <dd>MIT</dd>
+                    </div>
+                  </dl>
+                  <div class="about-app-actions">
+                    <button
+                      id="about-website-button"
+                      class="ghost-button"
+                      type="button"
+                    >
+                      <i class="fa-solid fa-globe" aria-hidden="true"></i>
+                      Website
+                    </button>
+                    <button
+                      id="about-repo-button"
+                      class="ghost-button"
+                      type="button"
+                    >
+                      <i class="fa-brands fa-github" aria-hidden="true"></i>
+                      Repository
+                    </button>
+                    <button
+                      id="about-donate-button"
+                      class="about-donate-button"
+                      type="button"
+                    >
+                      <i class="fa-solid fa-heart" aria-hidden="true"></i>
+                      Donate
+                    </button>
+                  </div>
+                </div>
                 <div class="update-settings-stack">
+                  <div class="about-section-heading">
+                    <div>
+                      <h4>Updates</h4>
+                      <p>
+                        Keep Aero current with the latest security fixes and
+                        improvements.
+                      </p>
+                    </div>
+                  </div>
                   <p
                     id="update-platform-note"
                     class="settings-help update-platform-note"

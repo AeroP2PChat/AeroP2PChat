@@ -267,6 +267,10 @@ const autoDownloadUpdatesToggle = document.querySelector(
   "#auto-download-updates-toggle",
 );
 const updatePlatformNote = document.querySelector("#update-platform-note");
+const aboutAppVersion = document.querySelector("#about-app-version");
+const aboutWebsiteButton = document.querySelector("#about-website-button");
+const aboutRepoButton = document.querySelector("#about-repo-button");
+const aboutDonateButton = document.querySelector("#about-donate-button");
 let startupUpdateModalShownForVersion = "";
 let updateSettingsStatus = "";
 let updateAutoDownloadInFlight = false;
@@ -1212,6 +1216,8 @@ const linuxTerminalCommandName =
   projectConfig.linux.commandName ||
   "aerop2p";
 const githubRepoUrl = `https://github.com/${githubRepo}`;
+const appWebsiteUrl = packageInfo.author?.url || "https://tenkayro.de/app/aero";
+const donateUrl = "https://github.com/sponsors/Tenkayro";
 const githubRawBaseUrl = `https://raw.githubusercontent.com/${githubRepo}/${projectConfig.branch || "main"}`;
 const latestReleaseUrl = `${githubRepoUrl}/releases/latest`;
 const latestManifestUrl = `${latestReleaseUrl}/download/latest.yml`;
@@ -1223,6 +1229,8 @@ const linuxUpdateCommands = {
   installed: linuxInstallCommand,
   website: linuxWebsiteUpdateCommand,
 };
+
+if (aboutAppVersion) aboutAppVersion.textContent = `v${currentVersion}`;
 
 function setTitlebarActionLabel(button, text) {
   button.querySelector(".titlebar-action-label").textContent = text;
@@ -16232,6 +16240,18 @@ autostartHidden.addEventListener("change", () => {
 
 closeToTrayToggle.addEventListener("change", () => {
   saveAppSettings({ closeToTray: closeToTrayToggle.checked });
+});
+
+aboutWebsiteButton?.addEventListener("click", () => {
+  void openExternalLinkWithConfirmation(appWebsiteUrl);
+});
+
+aboutRepoButton?.addEventListener("click", () => {
+  void openExternalLinkWithConfirmation(githubRepoUrl);
+});
+
+aboutDonateButton?.addEventListener("click", () => {
+  void openExternalLinkWithConfirmation(donateUrl);
 });
 
 checkUpdatesButton.addEventListener("click", async () => {
