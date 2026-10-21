@@ -33,7 +33,7 @@ assert.match(
 );
 assert.match(
   result,
-  /<Property Id="ARPURLINFOABOUT" Value="https:\/\/tenkayro\.de\/app\/aero" \/>/,
+  /<Property Id="ARPURLINFOABOUT" Value="https:\/\/github\.com\/AeroP2PChat\/AeroP2PChat" \/>/,
 );
 assert.match(
   result,

@@ -1216,7 +1216,7 @@ const linuxTerminalCommandName =
   projectConfig.linux.commandName ||
   "aerop2p";
 const githubRepoUrl = `https://github.com/${githubRepo}`;
-const appWebsiteUrl = packageInfo.author?.url || "https://tenkayro.de/app/aero";
+const appWebsiteUrl = packageInfo.author?.url || githubRepoUrl;
 const donateUrl = "https://github.com/sponsors/Tenkayro";
 const githubRawBaseUrl = `https://raw.githubusercontent.com/${githubRepo}/${projectConfig.branch || "main"}`;
 const latestReleaseUrl = `${githubRepoUrl}/releases/latest`;

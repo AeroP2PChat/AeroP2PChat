@@ -15,12 +15,6 @@ server.
 Open the interactive installer and choose what you want to do:
 
 ```sh
-curl -fsSL https://tenkayro.de/sh/aero | sh
-```
-
-If the short URL is unavailable:
-
-```sh
 curl -fsSL https://raw.githubusercontent.com/AeroP2PChat/AeroP2PChat/main/install.sh | sh
 ```
 
@@ -80,7 +74,7 @@ diagnostics; they intentionally fail on Windows instead of cross-compiling.
 
 ## Links
 
-- [Website](https://tenkayro.de/app/aero/)
+- [Project page](https://github.com/AeroP2PChat/AeroP2PChat)
 - [Releases](https://github.com/AeroP2PChat/AeroP2PChat/releases/latest)
 - [Issues](https://github.com/AeroP2PChat/AeroP2PChat/issues)
 - [MIT License](./LICENSE)
