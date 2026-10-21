@@ -31,11 +31,22 @@ function formatWait(milliseconds) {
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
-  if (!credential.value.trim()) return;
+  if (submit.disabled || !credential.value.trim()) return;
   submit.disabled = true;
   status.textContent = "Checking…";
-  const result = await window.aeroSecurity.submit(credential.value);
+  let result;
+  try {
+    result = await window.aeroSecurity.submit(credential.value);
+  } catch {
+    result = {
+      ok: false,
+      error: "The App Lock request could not be completed. Try again.",
+    };
+  }
   credential.value = "";
+  credential.type = "password";
+  reveal.textContent = "Show";
+  reveal.setAttribute("aria-label", "Show entry");
   submit.disabled = false;
   if (result?.ok) return;
   status.textContent = result?.blocked

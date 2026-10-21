@@ -7,6 +7,15 @@ const {
 
 const APP_LOCK_VERSION = 1;
 const RECOVERY_CODE_COUNT = 10;
+const MAX_CREDENTIAL_LENGTH = 128;
+const WEAK_PINS = new Set([
+  "112233",
+  "123321",
+  "102030",
+  "159753",
+  "147258",
+  "520131",
+]);
 const LEGACY_SCRYPT_OPTIONS = {
   N: 32768,
   r: 8,
@@ -26,6 +35,8 @@ function validatePin(value) {
   }
   if (
     /^(\d)\1+$/.test(pin) ||
+    /^(\d{2,4})\1+$/.test(pin) ||
+    WEAK_PINS.has(pin) ||
     "01234567890123456789".includes(pin) ||
     "98765432109876543210".includes(pin)
   ) {
@@ -179,7 +190,9 @@ function verifyAppLockCredential(
     };
   }
 
-  const credential = String(credentialValue ?? "").trim();
+  const credential = String(credentialValue ?? "")
+    .trim()
+    .slice(0, MAX_CREDENTIAL_LENGTH);
   let recoveryIndex = -1;
   let matched = false;
   let matchedPin = false;

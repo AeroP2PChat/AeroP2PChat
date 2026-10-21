@@ -2188,11 +2188,15 @@ function requestAppLockAuthentication({
         contextIsolation: true,
         sandbox: true,
         nodeIntegration: false,
+        devTools: false,
       },
     });
     appLockWindow = securityWindow;
     securityWindow.setMenuBarVisibility(false);
     securityWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+    securityWindow.webContents.on("will-navigate", (event) =>
+      event.preventDefault(),
+    );
     securityWindow.once("ready-to-show", () => securityWindow.show());
     securityWindow.on("closed", () => {
       if (appLockWindow === securityWindow) appLockWindow = null;
@@ -2298,7 +2302,10 @@ async function lockRunningApp(reason = "system-lock") {
   updateTrayMenu();
   closeCallHealthWindow();
   if (toastWindow && !toastWindow.isDestroyed()) toastWindow.hide();
-  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.hide();
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send("app-locked");
+    mainWindow.hide();
+  }
   recordDiagnosticEvent("security", "app-locked", { reason });
 
   const authenticated = await requestAppLockAuthentication({
@@ -2315,6 +2322,8 @@ async function lockRunningApp(reason = "system-lock") {
   updateConnectionBadge();
   updateTrayMenu();
   if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send("app-unlocked");
+    if (mainWindow.isMinimized()) mainWindow.restore();
     mainWindow.show();
     mainWindow.focus();
   } else {

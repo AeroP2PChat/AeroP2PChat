@@ -1087,6 +1087,7 @@ const remoteCallStatus = {
   muted: false,
   deafened: false,
 };
+let appLockDeafenedForLock = false;
 const autoFitResizeObserver =
   typeof ResizeObserver === "function"
     ? new ResizeObserver((entries) => {
@@ -1313,6 +1314,31 @@ platformApi.onAppLockCountdown((state = {}) => {
   appLockCountdown.title = label;
   appLockCountdown.setAttribute("aria-label", label);
 });
+
+platformApi.onAppLocked(() => {
+  if (screenShareState.localStream) {
+    stopLocalScreenShare({
+      message: "Screen sharing stopped because Aero was locked.",
+    });
+  }
+  if (callState.localCameraEnabled) {
+    void setLocalCameraEnabled(false);
+  }
+  if (callState.status === "active" && !callState.deafened) {
+    appLockDeafenedForLock = true;
+    setCallDeafened(true);
+    addSystemMessage(
+      "Microphone and call audio were muted because Aero was locked.",
+    );
+  }
+});
+
+platformApi.onAppUnlocked(() => {
+  if (!appLockDeafenedForLock) return;
+  appLockDeafenedForLock = false;
+  if (callState.status === "active") setCallDeafened(false);
+});
+
 const mobileWebLayoutQuery = window.matchMedia(
   "(max-width: 820px), (hover: none) and (pointer: coarse)",
 );
@@ -1413,7 +1439,7 @@ function setMobileTab(tab) {
   if (nextTab === "settings") {
     openSettings();
   } else if (!settingsModal.classList.contains("hidden")) {
-    settingsModal.classList.add("hidden");
+    hideSettingsModal();
   }
 }
 
@@ -1533,6 +1559,17 @@ function showAppLockRecoveryCodes(codes) {
   appLockRecoveryCodes.textContent = codes.join("\n");
   appLockRecovery.classList.remove("hidden");
   appLockRecovery.scrollIntoView({ block: "nearest" });
+}
+
+function clearAppLockRecoveryCodes() {
+  if (!appLockRecovery || !appLockRecoveryCodes) return;
+  appLockRecoveryCodes.textContent = "";
+  appLockRecovery.classList.add("hidden");
+}
+
+function hideSettingsModal() {
+  settingsModal.classList.add("hidden");
+  clearAppLockRecoveryCodes();
 }
 
 function clearAppLockPinFields() {
@@ -10638,6 +10675,7 @@ function resetCallState() {
   });
   remoteCallStatus.muted = false;
   remoteCallStatus.deafened = false;
+  appLockDeafenedForLock = false;
 
   mediaConn?.close();
   if (incomingMediaConn && incomingMediaConn !== mediaConn) {
@@ -15126,6 +15164,11 @@ function selectSettingsPage(page = "appearance") {
     renderLegalLicenses();
     legalLicensesRendered = true;
   }
+  if (selectedPage === "security") {
+    void refreshAppLockStatus();
+  } else {
+    clearAppLockRecoveryCodes();
+  }
   if (pageChanged && settingsContent) {
     settingsContent.scrollTop = 0;
   }
@@ -15403,7 +15446,7 @@ function switchPrimaryModal(targetModal) {
   if (requiredUpdateModal) return false;
 
   if (targetModal !== changelogModal) closeChangelog();
-  if (targetModal !== settingsModal) settingsModal.classList.add("hidden");
+  if (targetModal !== settingsModal) hideSettingsModal();
   if (targetModal !== profileModal) profileModal.classList.add("hidden");
   if (targetModal !== startupUpdateModal)
     startupUpdateModal.classList.add("hidden");
@@ -18257,7 +18300,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 settingsClose.addEventListener("click", () => {
-  settingsModal.classList.add("hidden");
+  hideSettingsModal();
   if (!platformApi.isElectron) {
     setMobileTab("contacts");
   }
@@ -18265,7 +18308,7 @@ settingsClose.addEventListener("click", () => {
 
 settingsModal.addEventListener("click", (event) => {
   if (event.target === settingsModal && platformApi.isElectron) {
-    settingsModal.classList.add("hidden");
+    hideSettingsModal();
   }
 });
 
@@ -18402,8 +18445,7 @@ appLockSaveCodesButton?.addEventListener("click", async () => {
 });
 
 appLockHideCodesButton?.addEventListener("click", () => {
-  appLockRecoveryCodes.textContent = "";
-  appLockRecovery.classList.add("hidden");
+  clearAppLockRecoveryCodes();
 });
 
 resetAllSettingsButton.addEventListener("click", async () => {
@@ -18437,7 +18479,7 @@ resetAllSettingsButton.addEventListener("click", async () => {
   await applyAudioOutputDevice();
   await saveAppConfig();
 
-  settingsModal.classList.add("hidden");
+  hideSettingsModal();
   if (!platformApi.isElectron) {
     setMobileTab("contacts");
   }
@@ -18467,7 +18509,7 @@ fullAppResetButton?.addEventListener("click", async () => {
 
 reopenWelcomeScreenButton.addEventListener("click", () => {
   clearSettingsSearch();
-  settingsModal.classList.add("hidden");
+  hideSettingsModal();
   if (!platformApi.isElectron) {
     setMobileTab("contacts");
   }
@@ -18750,7 +18792,7 @@ document.addEventListener("keydown", (event) => {
       updateModal.classList.add("hidden");
     }
     callHealthPopover.classList.add("hidden");
-    settingsModal.classList.add("hidden");
+    hideSettingsModal();
     changelogModal.classList.add("hidden");
     closeConnectionPanel();
     closeStreamSetup();

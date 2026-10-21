@@ -432,6 +432,14 @@ export function createPlatformApi() {
       return electron?.onAppLockCountdown?.(callback) || null;
     },
 
+    onAppLocked(callback) {
+      return electron?.onAppLocked?.(callback) || null;
+    },
+
+    onAppUnlocked(callback) {
+      return electron?.onAppUnlocked?.(callback) || null;
+    },
+
     async enableAppLock(details) {
       return (
         electron?.enableAppLock?.(details) || { ok: false, unsupported: true }

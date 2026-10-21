@@ -92,6 +92,16 @@ contextBridge.exposeInMainWorld("aeroChat", {
     ipcRenderer.on("app-lock-countdown", listener);
     return () => ipcRenderer.removeListener("app-lock-countdown", listener);
   },
+  onAppLocked: (callback) => {
+    const listener = () => callback();
+    ipcRenderer.on("app-locked", listener);
+    return () => ipcRenderer.removeListener("app-locked", listener);
+  },
+  onAppUnlocked: (callback) => {
+    const listener = () => callback();
+    ipcRenderer.on("app-unlocked", listener);
+    return () => ipcRenderer.removeListener("app-unlocked", listener);
+  },
   enableAppLock: (details) => ipcRenderer.invoke("app-lock-enable", details),
   changeAppLockPin: (details) =>
     ipcRenderer.invoke("app-lock-change-pin", details),

@@ -14,6 +14,8 @@ function assert(value, message) {
 
 assert(!validatePin("123456").ok, "A sequential PIN was accepted.");
 assert(!validatePin("111111").ok, "A repeated PIN was accepted.");
+assert(!validatePin("123123").ok, "A repeated-block PIN was accepted.");
+assert(!validatePin("112233").ok, "A common PIN was accepted.");
 assert(validatePin("604927").ok, "A valid PIN was rejected.");
 assert(
   getAutoLockRemainingSeconds(300, 45, 120) === 255,
