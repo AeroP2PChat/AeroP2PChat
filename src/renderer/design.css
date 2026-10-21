@@ -5585,37 +5585,44 @@ body:has(> .workspace-page:not(.hidden)) {
   font-size: 10px;
   text-align: center;
 }
-.general-settings-stack,
-.update-settings-stack {
+.general-settings-stack {
   display: grid;
   gap: 10px;
 }
 .about-app-card {
   display: grid;
   gap: 14px;
-  margin-bottom: 14px;
-  padding: 15px;
+  margin-bottom: 10px;
+  padding: 16px;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  background:
-    linear-gradient(135deg, var(--accent-soft), transparent 48%),
-    var(--surface-raised);
-  box-shadow: var(--shadow-sm);
+  background: var(--surface-raised);
 }
 .about-app-identity {
   display: flex;
   align-items: center;
   gap: 12px;
 }
+.about-app-identity-copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.about-app-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
 .about-app-icon {
   display: grid;
-  width: 48px;
-  height: 48px;
-  flex: 0 0 48px;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
   place-items: center;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 13px;
+  border-radius: 12px;
   background: var(--surface);
 }
 .about-app-icon img {
@@ -5624,34 +5631,46 @@ body:has(> .workspace-page:not(.hidden)) {
   object-fit: cover;
 }
 .about-app-identity h4,
-.about-section-heading h4 {
+.about-settings-heading h4 {
   margin: 0;
   color: var(--text);
   font-size: 13px;
 }
 .about-app-identity p,
-.about-section-heading p {
-  margin: 3px 0 0;
+.about-settings-heading p {
+  margin: 0;
   color: var(--muted);
   font-size: 10px;
   line-height: 1.45;
 }
+.about-version-pill {
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
 .about-app-details {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 20px;
   margin: 0;
 }
 .about-app-details > div {
-  display: grid;
-  gap: 3px;
+  display: flex;
   min-width: 0;
-  padding: 9px 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-top: 1px solid var(--line);
 }
 .about-app-details dt {
+  flex: 0 0 auto;
   color: var(--muted);
   font-size: 9px;
   font-weight: 700;
@@ -5664,36 +5683,47 @@ body:has(> .workspace-page:not(.hidden)) {
   overflow: hidden;
   color: var(--text);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 650;
+  text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.about-app-runtime {
+  margin: -4px 0 0;
+  color: var(--faint);
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
 }
 .about-app-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 7px;
 }
 .about-app-actions button {
   display: inline-flex;
-  min-height: 34px;
+  min-height: 32px;
+  padding: 0 12px;
   align-items: center;
   justify-content: center;
   gap: 7px;
+  font-size: 11px;
 }
-.about-app-actions .about-donate-button {
-  border-color: color-mix(in srgb, var(--danger) 45%, var(--line));
-  background: var(--danger-soft);
-  color: var(--danger);
+.about-app-actions .about-donate-button i {
+  color: var(--accent);
 }
-.about-app-actions .about-donate-button:hover:not(:disabled) {
-  border-color: var(--danger);
-  background: color-mix(in srgb, var(--danger-soft) 80%, var(--danger) 20%);
+.about-settings-group {
+  display: grid;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
 }
-.about-section-heading {
-  padding: 2px 1px;
+.about-settings-heading {
+  display: grid;
+  gap: 3px;
 }
-.general-settings-group,
-.update-settings-group {
+.general-settings-group {
   display: grid;
   gap: 10px;
   padding: 11px;
@@ -5701,13 +5731,12 @@ body:has(> .workspace-page:not(.hidden)) {
   border-radius: var(--radius-sm);
   background: var(--surface-raised);
 }
-.general-settings-heading h4,
-.update-settings-heading h4 {
+.general-settings-heading h4 {
   margin: 0;
   color: var(--text);
   font-size: 11px;
 }
-.update-settings-check-row {
+.about-update-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -5720,15 +5749,13 @@ body:has(> .workspace-page:not(.hidden)) {
   gap: 7px;
   white-space: nowrap;
 }
-.update-settings-check-row .settings-help {
-  margin: 0;
-}
-.update-platform-note {
+.about-update-row .settings-help {
   margin: 0;
 }
 @media (max-width: 720px) {
   .about-app-details {
     grid-template-columns: 1fr;
+    gap: 0;
   }
   .about-app-actions button {
     flex: 1 1 120px;

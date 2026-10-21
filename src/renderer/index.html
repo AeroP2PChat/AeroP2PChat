@@ -2189,10 +2189,8 @@
               <section class="settings-section" data-settings-page="info">
                 <div class="settings-page-heading">
                   <div>
-                    <h3>About Aero</h3>
-                    <p>
-                      Application details, developer links, support and updates.
-                    </p>
+                    <h3>Info</h3>
+                    <p>Version, build details and ways to support Aero.</p>
                   </div>
                 </div>
                 <div class="about-app-card">
@@ -2200,15 +2198,24 @@
                     <div class="about-app-icon" aria-hidden="true">
                       <img src="/app.png" alt="" />
                     </div>
-                    <div>
-                      <h4>Aero P2P Chat</h4>
+                    <div class="about-app-identity-copy">
+                      <div class="about-app-title-row">
+                        <h4>Aero P2P Chat</h4>
+                        <span id="about-app-version" class="about-version-pill"
+                          >v—</span
+                        >
+                      </div>
                       <p>Fast, direct and privacy-friendly peer-to-peer chat.</p>
                     </div>
                   </div>
                   <dl class="about-app-details">
                     <div>
-                      <dt>Version</dt>
-                      <dd id="about-app-version">—</dd>
+                      <dt>Platform</dt>
+                      <dd id="about-app-platform">—</dd>
+                    </div>
+                    <div>
+                      <dt>Installation</dt>
+                      <dd id="about-app-installation">—</dd>
                     </div>
                     <div>
                       <dt>Developer</dt>
@@ -2219,6 +2226,10 @@
                       <dd>MIT</dd>
                     </div>
                   </dl>
+                  <p
+                    id="about-app-runtime"
+                    class="about-app-runtime hidden"
+                  ></p>
                   <div class="about-app-actions">
                     <button
                       id="about-website-button"
@@ -2238,7 +2249,7 @@
                     </button>
                     <button
                       id="about-donate-button"
-                      class="about-donate-button"
+                      class="ghost-button about-donate-button"
                       type="button"
                     >
                       <i class="fa-solid fa-heart" aria-hidden="true"></i>
@@ -2246,64 +2257,30 @@
                     </button>
                   </div>
                 </div>
-                <div class="update-settings-stack">
-                  <div class="about-section-heading">
-                    <div>
-                      <h4>Updates</h4>
-                      <p>
-                        Keep Aero current with the latest security fixes and
-                        improvements.
-                      </p>
-                    </div>
+                <div class="about-settings-group">
+                  <div class="about-settings-heading">
+                    <h4>Updates</h4>
+                    <p id="update-platform-note" class="settings-help"></p>
                   </div>
-                  <p
-                    id="update-platform-note"
-                    class="settings-help update-platform-note"
-                  ></p>
-                  <div class="update-settings-group">
-                    <div class="update-settings-heading">
-                      <div>
-                        <h4>Version check</h4>
-                        <p>
-                          Ask the official Aero release service for the latest
-                          version.
-                        </p>
-                      </div>
-                    </div>
-                    <div class="update-settings-check-row">
-                      <button
-                        id="check-updates-button"
-                        class="ghost-button"
-                        type="button"
-                      >
-                        <i class="fa-solid fa-rotate" aria-hidden="true"></i>
-                        Check now
-                      </button>
-                      <span
-                        id="update-check-status"
-                        class="settings-help"
-                        aria-live="polite"
-                      ></span>
-                    </div>
+                  <div class="about-update-row">
+                    <button
+                      id="check-updates-button"
+                      class="ghost-button"
+                      type="button"
+                    >
+                      <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                      Check now
+                    </button>
+                    <span
+                      id="update-check-status"
+                      class="settings-help"
+                      aria-live="polite"
+                    ></span>
                   </div>
-                  <div class="update-settings-group">
-                    <div class="update-settings-heading">
-                      <div>
-                        <h4>Downloads</h4>
-                        <p>
-                          Download verified updates in the background when they
-                          become available.
-                        </p>
-                      </div>
-                    </div>
-                    <label class="settings-check">
-                      <input
-                        id="auto-download-updates-toggle"
-                        type="checkbox"
-                      />
-                      <span>Automatically download updates</span>
-                    </label>
-                  </div>
+                  <label class="settings-check">
+                    <input id="auto-download-updates-toggle" type="checkbox" />
+                    <span>Automatically download updates</span>
+                  </label>
                 </div>
               </section>
 

@@ -268,6 +268,9 @@ const autoDownloadUpdatesToggle = document.querySelector(
 );
 const updatePlatformNote = document.querySelector("#update-platform-note");
 const aboutAppVersion = document.querySelector("#about-app-version");
+const aboutAppPlatform = document.querySelector("#about-app-platform");
+const aboutAppInstallation = document.querySelector("#about-app-installation");
+const aboutAppRuntime = document.querySelector("#about-app-runtime");
 const aboutWebsiteButton = document.querySelector("#about-website-button");
 const aboutRepoButton = document.querySelector("#about-repo-button");
 const aboutDonateButton = document.querySelector("#about-donate-button");
@@ -1239,6 +1242,63 @@ function setTitlebarActionLabel(button, text) {
 }
 const platformApi = createPlatformApi();
 const platform = platformApi.platform;
+
+const aboutPlatformLabels = {
+  win32: "Windows",
+  linux: "Linux",
+  darwin: "macOS",
+  "chrome-extension": "Chrome",
+  web: "Web",
+};
+
+function describeAboutPlatform() {
+  const label = aboutPlatformLabels[platform] || platform;
+  const arch = String(platformApi.arch || "").replace(/^ia32$/, "x86");
+  return arch ? `${label} · ${arch}` : label;
+}
+
+function describeAboutInstallation() {
+  if (platformApi.isChromeExtension) return "Extension";
+  if (!platformApi.isElectron) return "Web app";
+  if (platformApi.isWindowsStore) return "Microsoft Store";
+  if (platform === "win32") {
+    return platformApi.isPackaged ? "Windows installer" : "Development build";
+  }
+  if (platform === "linux") {
+    if (platformApi.isAppImage) return "AppImage";
+    return platformApi.isPackaged ? "RPM / DEB package" : "Development build";
+  }
+  if (platform === "darwin") {
+    return platformApi.isPackaged ? "macOS app" : "Development build";
+  }
+  return platformApi.isPackaged ? "Packaged build" : "Development build";
+}
+
+function describeAboutRuntime() {
+  const versions = platformApi.versions || {};
+  const browserVersion =
+    versions.chrome ||
+    /(?:Chrome|Chromium)\/([\d.]+)/.exec(navigator.userAgent || "")?.[1] ||
+    "";
+  return [
+    versions.electron ? `Electron ${versions.electron}` : "",
+    browserVersion ? `Chromium ${browserVersion.split(".")[0]}` : "",
+    versions.node ? `Node ${versions.node}` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
+if (aboutAppPlatform) aboutAppPlatform.textContent = describeAboutPlatform();
+if (aboutAppInstallation) {
+  aboutAppInstallation.textContent = describeAboutInstallation();
+}
+if (aboutAppRuntime) {
+  const runtimeDescription = describeAboutRuntime();
+  aboutAppRuntime.textContent = runtimeDescription;
+  aboutAppRuntime.classList.toggle("hidden", !runtimeDescription);
+}
+
 platformApi.onAppLockCountdown((state = {}) => {
   const visible =
     state.enabled === true && Number.isFinite(state.remainingSeconds);

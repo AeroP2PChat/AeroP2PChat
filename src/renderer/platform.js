@@ -102,6 +102,8 @@ export function createPlatformApi() {
   const isElectron = Boolean(electron);
   const isWindowsStore = Boolean(electron?.isWindowsStore);
   const isAppImage = Boolean(electron?.isAppImage);
+  const arch = String(electron?.arch || "");
+  const runtimeVersions = electron?.versions || {};
   const browserTempFiles = new Map();
   let browserTempDirectoryPromise = null;
 
@@ -141,6 +143,8 @@ export function createPlatformApi() {
     isPackaged: Boolean(electron?.isPackaged),
     isWindowsStore,
     isAppImage,
+    arch,
+    versions: runtimeVersions,
     usesLinuxSystemScreenPicker: Boolean(electron?.usesLinuxSystemScreenPicker),
     isChromeExtension,
     hasNativeWindowControls: isElectron,
