@@ -112,3 +112,15 @@ export async function deleteStoredConversation(identityId, peerId) {
   const database = await databasePromise;
   await database.delete(STORE_NAME, conversationKey(identityId, peerId));
 }
+
+export async function clearStoredConversations(identityId = "") {
+  const database = await databasePromise;
+  const keys = identityId
+    ? await database.getAllKeysFromIndex(STORE_NAME, "identityId", identityId)
+    : await database.getAllKeys(STORE_NAME);
+  if (!keys.length) return 0;
+  const transaction = database.transaction(STORE_NAME, "readwrite");
+  await Promise.all(keys.map((key) => transaction.store.delete(key)));
+  await transaction.done;
+  return keys.length;
+}

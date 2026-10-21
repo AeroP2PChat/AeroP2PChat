@@ -2176,6 +2176,45 @@
                       </button>
                     </div>
                   </article>
+                  <article id="chat-history-card" class="security-card">
+                    <div class="security-card-heading">
+                      <div class="security-icon">
+                        <i
+                          class="fa-regular fa-comments"
+                          aria-hidden="true"
+                        ></i>
+                      </div>
+                      <div>
+                        <strong>Chat history</strong>
+                        <span
+                          >Choose whether conversations are kept after Aero
+                          closes.</span
+                        >
+                      </div>
+                    </div>
+                    <label class="settings-check chat-history-toggle">
+                      <input
+                        id="save-chat-history-toggle"
+                        type="checkbox"
+                        aria-describedby="chat-history-description"
+                      />
+                      <span>Save chat history on this device</span>
+                    </label>
+                    <p
+                      id="chat-history-description"
+                      class="settings-description chat-history-note"
+                    >
+                      When off, messages stay visible only until Aero closes.
+                      Turning this off removes previously saved conversations
+                      from this device. Files and voice messages are no longer
+                      available after a restart.
+                    </p>
+                    <p
+                      id="chat-history-status"
+                      class="chat-history-status"
+                      aria-live="polite"
+                    ></p>
+                  </article>
                   <p class="security-limit-note">
                     <i class="fa-solid fa-circle-info" aria-hidden="true"></i
                     ><span

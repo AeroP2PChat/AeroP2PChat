@@ -1544,6 +1544,7 @@ function getDefaultAppSettings() {
     autoDownloadUpdates: false,
     showUpdateModal: true,
     readReceipts: true,
+    saveChatHistory: true,
     fileAutoDownloadTrusted: false,
     fileDownloadMode: "ask",
     fileDownloadDirectory: "",
@@ -1591,6 +1592,7 @@ function normalizeConfig(config = {}) {
     autoDownloadUpdates: Boolean(settings.autoDownloadUpdates),
     showUpdateModal: settings.showUpdateModal !== false,
     readReceipts: settings.readReceipts !== false,
+    saveChatHistory: settings.saveChatHistory !== false,
     fileAutoDownloadTrusted: Boolean(settings.fileAutoDownloadTrusted),
     fileDownloadMode: ["ask", "downloads", "custom"].includes(
       settings.fileDownloadMode,

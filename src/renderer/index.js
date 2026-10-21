@@ -26,6 +26,7 @@ import {
   isValidReleaseAssetUrl,
 } from "./update-security.mjs";
 import {
+  clearStoredConversations,
   deleteStoredConversation,
   loadStoredConversations,
   storeConversation,
@@ -485,6 +486,10 @@ const focusedNotificationsToggle = document.querySelector(
   "#focused-notifications-toggle",
 );
 const readReceiptsToggle = document.querySelector("#read-receipts-toggle");
+const saveChatHistoryToggle = document.querySelector(
+  "#save-chat-history-toggle",
+);
+const chatHistoryStatus = document.querySelector("#chat-history-status");
 const voiceAutoDownloadToggle = document.querySelector(
   "#voice-auto-download-toggle",
 );
@@ -660,6 +665,7 @@ const connections = new Map();
 const pendingConnections = new Map();
 const chatHistory = new Map();
 const chatHistorySaveTimers = new Map();
+const pendingChatHistorySaves = new Set();
 let renderedMessageLimit = DEFAULT_MESSAGE_WINDOW;
 let contactSearchMatches = null;
 let imageOptimizationModulePromise = null;
@@ -2691,6 +2697,7 @@ function normalizeAppSettings() {
     startHidden: appConfig.appSettings.startHidden !== false,
     closeToTray: appConfig.appSettings.closeToTray !== false,
     readReceipts: appConfig.appSettings.readReceipts !== false,
+    saveChatHistory: appConfig.appSettings.saveChatHistory !== false,
     voiceAutoDownload: Boolean(appConfig.appSettings.voiceAutoDownload),
     voiceWaveform: appConfig.appSettings.voiceWaveform !== false,
     fileAutoDownloadTrusted: Boolean(
@@ -3372,6 +3379,9 @@ function renderAppSettings() {
     (updateChecksSupported ? "" : "Updates are unavailable on this platform.");
   updatePlatformNote.textContent = updatePlatformMessage;
   readReceiptsToggle.checked = appConfig.appSettings.readReceipts;
+  if (saveChatHistoryToggle) {
+    saveChatHistoryToggle.checked = appConfig.appSettings.saveChatHistory;
+  }
   voiceAutoDownloadToggle.checked = appConfig.appSettings.voiceAutoDownload;
   voiceWaveformToggle.checked = appConfig.appSettings.voiceWaveform;
   fileAutoDownloadToggle.checked =
@@ -5663,21 +5673,80 @@ function ensureChatHistory(peerId) {
   return chatHistory.get(peerId);
 }
 
+function isChatHistorySavingEnabled() {
+  return appConfig?.appSettings?.saveChatHistory !== false;
+}
+
+function trackChatHistorySave(promise) {
+  const tracked = Promise.resolve(promise).catch(() => {});
+  pendingChatHistorySaves.add(tracked);
+  void tracked.finally(() => pendingChatHistorySaves.delete(tracked));
+  return tracked;
+}
+
+function clearPendingChatHistorySaves() {
+  for (const timer of chatHistorySaveTimers.values()) {
+    clearTimeout(timer);
+  }
+  chatHistorySaveTimers.clear();
+}
+
 function scheduleChatHistorySave(peerId) {
-  if (!peerId || !identity?.id) return;
+  if (!peerId || !identity?.id || !isChatHistorySavingEnabled()) return;
   clearTimeout(chatHistorySaveTimers.get(peerId));
   chatHistorySaveTimers.set(
     peerId,
     setTimeout(() => {
       chatHistorySaveTimers.delete(peerId);
-      void storeConversation(identity.id, peerId, ensureChatHistory(peerId)).catch(
-        (error) => writeDevLog(`Chat history save failed: ${error.message}`),
+      if (!identity?.id || !isChatHistorySavingEnabled()) return;
+      trackChatHistorySave(
+        storeConversation(identity.id, peerId, ensureChatHistory(peerId)).catch(
+          (error) => writeDevLog(`Chat history save failed: ${error.message}`),
+        ),
       );
     }, 250),
   );
 }
 
+async function persistAllChatHistories() {
+  if (!identity?.id || !isChatHistorySavingEnabled()) return;
+  const saves = [];
+  for (const [peerId, messages] of chatHistory) {
+    if (!isValidAeroId(peerId) || !Array.isArray(messages) || !messages.length) {
+      continue;
+    }
+    saves.push(
+      trackChatHistorySave(
+        storeConversation(identity.id, peerId, messages).catch((error) => {
+          writeDevLog(`Chat history save failed: ${error.message}`);
+        }),
+      ),
+    );
+  }
+  await Promise.allSettled(saves);
+}
+
+async function removeStoredChatHistories() {
+  clearPendingChatHistorySaves();
+  await Promise.allSettled([...pendingChatHistorySaves]);
+  try {
+    const removed = await clearStoredConversations();
+    writeDevLog(`Removed ${removed} stored conversation(s).`);
+  } catch (error) {
+    writeDevLog(`Chat history cleanup failed: ${error.message}`);
+    throw error;
+  }
+}
+
 async function hydrateChatHistory() {
+  if (!isChatHistorySavingEnabled()) {
+    try {
+      await removeStoredChatHistories();
+    } catch {
+      // The cleanup error is already logged. Keep the app usable.
+    }
+    return;
+  }
   try {
     const conversations = await loadStoredConversations(identity.id);
     for (const { peerId, messages: storedMessages } of conversations) {
@@ -18446,6 +18515,47 @@ appLockSaveCodesButton?.addEventListener("click", async () => {
 
 appLockHideCodesButton?.addEventListener("click", () => {
   clearAppLockRecoveryCodes();
+});
+
+saveChatHistoryToggle?.addEventListener("change", async () => {
+  const enabled = saveChatHistoryToggle.checked;
+  if (!enabled && isChatHistorySavingEnabled()) {
+    const confirmed = await showAppDialog({
+      title: "Turn off chat history saving?",
+      message:
+        "Previously saved conversations will be deleted from this device. Messages in this session stay visible until Aero closes.",
+      confirmText: "Delete and turn off",
+      cancelText: "Cancel",
+      danger: true,
+    });
+    if (!confirmed) {
+      saveChatHistoryToggle.checked = true;
+      return;
+    }
+  }
+
+  saveChatHistoryToggle.disabled = true;
+  chatHistoryStatus.textContent = "";
+  try {
+    await saveAppSettings({ saveChatHistory: enabled });
+    if (enabled) {
+      await persistAllChatHistories();
+      chatHistoryStatus.textContent =
+        "Chat history will be saved on this device.";
+    } else {
+      await removeStoredChatHistories();
+      chatHistoryStatus.textContent =
+        "Chat history is no longer saved. Saved conversations were removed.";
+    }
+  } catch (error) {
+    writeDevLog(`Chat history setting failed: ${error.message}`);
+    chatHistoryStatus.textContent = enabled
+      ? "Chat history was enabled, but this session could not be saved."
+      : "Chat history is off, but saved conversations could not be removed.";
+  } finally {
+    saveChatHistoryToggle.disabled = false;
+    saveChatHistoryToggle.checked = isChatHistorySavingEnabled();
+  }
 });
 
 resetAllSettingsButton.addEventListener("click", async () => {
