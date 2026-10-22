@@ -855,15 +855,33 @@
             aria-label="Selected messages"
           >
             <strong id="message-selection-count">0 selected</strong>
-            <button id="selection-copy" class="ghost-button" type="button">
-              <i class="fa-solid fa-copy" aria-hidden="true"></i> Copy
+            <button
+              id="selection-all"
+              class="ghost-button icon-only-button selection-action"
+              type="button"
+              title="Select all messages"
+              aria-label="Select all messages"
+              aria-pressed="false"
+            >
+              <i class="fa-solid fa-check-double" aria-hidden="true"></i>
+            </button>
+            <button
+              id="selection-copy"
+              class="ghost-button icon-only-button selection-action"
+              type="button"
+              title="Copy selected messages"
+              aria-label="Copy selected messages"
+            >
+              <i class="fa-solid fa-copy" aria-hidden="true"></i>
             </button>
             <button
               id="selection-delete"
-              class="ghost-button danger"
+              class="ghost-button danger icon-only-button selection-action"
               type="button"
+              title="Delete selected messages"
+              aria-label="Delete selected messages"
             >
-              <i class="fa-solid fa-trash" aria-hidden="true"></i> Delete
+              <i class="fa-solid fa-trash" aria-hidden="true"></i>
             </button>
             <button
               id="selection-close"

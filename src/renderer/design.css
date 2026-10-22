@@ -2768,9 +2768,6 @@ body.wallpapers-disabled .boot-screen {
   gap: 9px;
   cursor: pointer;
 }
-.message-row.selectable.mine {
-  flex-direction: row-reverse;
-}
 .message-selector {
   display: grid;
   flex: 0 0 22px;
@@ -9517,6 +9514,17 @@ textarea:focus,
   font-size: 10px;
   font-weight: 700;
 }
+.message-selection-bar .selection-action {
+  width: 34px;
+  min-width: 34px;
+  padding: 0;
+  font-size: 11px;
+}
+.message-selection-bar .selection-action.active {
+  border-color: color-mix(in srgb, var(--accent) 44%, var(--line));
+  background: var(--accent-soft);
+  color: var(--accent);
+}
 .message-selection-bar .ghost-button:hover:not(:disabled) {
   border-color: var(--line-strong);
   background: var(--surface-hover);
@@ -9528,8 +9536,17 @@ textarea:focus,
   color: var(--danger);
 }
 .message-row.selectable {
-  gap: 11px;
+  gap: 9px;
   padding-block: 2px;
+}
+.message-row.selectable.mine {
+  justify-content: flex-end;
+}
+.message-row.selectable.theirs .bubble {
+  order: 1;
+}
+.message-row.selectable.theirs .message-selector {
+  order: 2;
 }
 .message-selector {
   flex-basis: 24px;

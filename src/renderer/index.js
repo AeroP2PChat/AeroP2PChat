@@ -238,6 +238,7 @@ const messageSelectionBar = document.querySelector("#message-selection-bar");
 const messageSelectionCount = document.querySelector(
   "#message-selection-count",
 );
+const selectionAll = document.querySelector("#selection-all");
 const selectionCopy = document.querySelector("#selection-copy");
 const selectionDelete = document.querySelector("#selection-delete");
 const selectionClose = document.querySelector("#selection-close");
@@ -817,6 +818,7 @@ let contextMessage = null;
 let replyTarget = null;
 let selectingMessages = false;
 const selectedMessageIds = new Set();
+let messageSelectionAnchorId = null;
 let contextParticipantTarget = null;
 let contextStreamTarget = "";
 let selectedScreenSource = null;
@@ -6748,8 +6750,26 @@ function createChatMessage(item) {
   });
   row.addEventListener("click", (event) => {
     if (!selectingMessages || event.target.closest("a, button, audio")) return;
-    if (selectedMessageIds.has(id)) selectedMessageIds.delete(id);
-    else selectedMessageIds.add(id);
+    const history = activePeerId ? ensureChatHistory(activePeerId) : [];
+    if (event.shiftKey && messageSelectionAnchorId) {
+      const anchorIndex = history.findIndex(
+        (entry) => entry.id === messageSelectionAnchorId,
+      );
+      const clickedIndex = history.findIndex((entry) => entry.id === id);
+      if (anchorIndex >= 0 && clickedIndex >= 0) {
+        const start = Math.min(anchorIndex, clickedIndex);
+        const end = Math.max(anchorIndex, clickedIndex);
+        for (const entry of history.slice(start, end + 1)) {
+          selectedMessageIds.add(entry.id);
+        }
+      } else {
+        selectedMessageIds.add(id);
+      }
+    } else {
+      if (selectedMessageIds.has(id)) selectedMessageIds.delete(id);
+      else selectedMessageIds.add(id);
+      messageSelectionAnchorId = id;
+    }
     updateMessageSelectionUi();
     renderChatHistory({ scrollState: captureChatScrollState() });
   });
@@ -6974,6 +6994,7 @@ function renderChatHistory({ scrollState = null } = {}) {
     renderedMessageLimit = DEFAULT_MESSAGE_WINDOW;
     selectingMessages = false;
     selectedMessageIds.clear();
+    messageSelectionAnchorId = null;
     updateMessageSelectionUi();
     clearReplyTarget();
     chatSearchInput.value = "";
@@ -13441,13 +13462,25 @@ function closeMessageMenu() {
 function updateMessageSelectionUi() {
   messageSelectionBar.classList.toggle("hidden", !selectingMessages);
   messageSelectionCount.textContent = `${selectedMessageIds.size} selected`;
+  const history = activePeerId ? ensureChatHistory(activePeerId) : [];
+  const allSelected =
+    history.length > 0 &&
+    history.every((item) => selectedMessageIds.has(item.id));
+  selectionAll.disabled = history.length === 0;
+  selectionAll.classList.toggle("active", allSelected);
+  selectionAll.setAttribute("aria-pressed", String(allSelected));
+  selectionAll.title = allSelected ? "Clear selection" : "Select all messages";
+  selectionAll.setAttribute("aria-label", selectionAll.title);
   selectionCopy.disabled = selectedMessageIds.size === 0;
   selectionDelete.disabled = selectedMessageIds.size === 0;
 }
 
 function setMessageSelectionMode(enabled) {
   selectingMessages = Boolean(enabled);
-  if (!selectingMessages) selectedMessageIds.clear();
+  if (!selectingMessages) {
+    selectedMessageIds.clear();
+    messageSelectionAnchorId = null;
+  }
   updateMessageSelectionUi();
   renderChatHistory();
 }
@@ -18788,6 +18821,22 @@ chatMenuBlock.addEventListener("click", async () => {
 chatSearchInput.addEventListener("input", updateChatSearch);
 chatSearchClose.addEventListener("click", () => setChatSearchOpen(false));
 selectionClose.addEventListener("click", () => setMessageSelectionMode(false));
+selectionAll.addEventListener("click", () => {
+  if (!activePeerId) return;
+  const history = ensureChatHistory(activePeerId);
+  const allSelected =
+    history.length > 0 &&
+    history.every((item) => selectedMessageIds.has(item.id));
+  selectedMessageIds.clear();
+  if (!allSelected) {
+    for (const item of history) selectedMessageIds.add(item.id);
+    messageSelectionAnchorId = history.at(-1)?.id || null;
+  } else {
+    messageSelectionAnchorId = null;
+  }
+  updateMessageSelectionUi();
+  renderChatHistory({ scrollState: captureChatScrollState() });
+});
 selectionCopy.addEventListener("click", () => {
   if (!activePeerId) return;
   const text = ensureChatHistory(activePeerId)
