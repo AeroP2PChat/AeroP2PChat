@@ -1600,6 +1600,7 @@ function getDefaultAppSettings() {
     theme: "system",
     customTheme: "",
     presenceStatus: "online",
+    chatStyle: "bubbles",
   };
 }
 
@@ -1659,6 +1660,11 @@ function normalizeConfig(config = {}) {
     )
       ? settings.presenceStatus
       : "online",
+    chatStyle: ["bubbles", "discord", "minimal", "glass"].includes(
+      settings.chatStyle,
+    )
+      ? settings.chatStyle
+      : "bubbles",
     theme: ["system", "light", "dark", "ultra-dark"].includes(settings.theme)
       ? settings.theme
       : "system",

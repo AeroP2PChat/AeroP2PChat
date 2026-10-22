@@ -471,6 +471,9 @@ const accentColorSelect = document.querySelector("#accent-color-select");
 const customAccentColorInput = document.querySelector("#custom-accent-color");
 const messageDensitySelect = document.querySelector("#message-density-select");
 const chatFontSizeSelect = document.querySelector("#chat-font-size-select");
+const chatStyleOptions = [
+  ...document.querySelectorAll('input[name="chat-style"]'),
+];
 const compactLayoutToggle = document.querySelector("#compact-layout-toggle");
 const reduceMotionToggle = document.querySelector("#reduce-motion-toggle");
 const resetSidebarWidthButton = document.querySelector("#reset-sidebar-width");
@@ -1301,6 +1304,10 @@ const settingDefaults = new Map(
     "custom-accent-color": "#147fa6",
     "message-density-select": "comfortable",
     "chat-font-size-select": "normal",
+    "chat-style-bubbles": { checked: true, targetId: "chat-style-bubbles" },
+    "chat-style-discord": { checked: true, targetId: "chat-style-bubbles" },
+    "chat-style-minimal": { checked: true, targetId: "chat-style-bubbles" },
+    "chat-style-glass": { checked: true, targetId: "chat-style-bubbles" },
     "compact-layout-toggle": false,
     "wallpaper-enabled-toggle": true,
     "wallpaper-accent-tint-toggle": false,
@@ -2983,6 +2990,11 @@ function normalizeAppSettings() {
     )
       ? appConfig.appSettings.chatFontSize
       : "normal",
+    chatStyle: ["bubbles", "discord", "minimal", "glass"].includes(
+      appConfig.appSettings.chatStyle,
+    )
+      ? appConfig.appSettings.chatStyle
+      : "bubbles",
     reducedMotion: Boolean(appConfig.appSettings.reducedMotion),
     customTheme:
       typeof appConfig.appSettings.customTheme === "string"
@@ -3125,6 +3137,7 @@ function applyAppearancePreferences() {
   document.body.dataset.messageDensity =
     settings.messageDensity || "comfortable";
   document.body.dataset.chatFontSize = settings.chatFontSize || "normal";
+  document.body.dataset.chatStyle = settings.chatStyle || "bubbles";
   document.body.classList.toggle(
     "reduce-motion",
     Boolean(settings.reducedMotion),
@@ -3547,6 +3560,9 @@ function renderAppSettings() {
   );
   messageDensitySelect.value = appConfig.appSettings.messageDensity;
   chatFontSizeSelect.value = appConfig.appSettings.chatFontSize;
+  for (const option of chatStyleOptions) {
+    option.checked = option.value === appConfig.appSettings.chatStyle;
+  }
   compactLayoutToggle.checked = appConfig.appSettings.compactLayout;
   reduceMotionToggle.checked = appConfig.appSettings.reducedMotion;
   syncEnhancedSelect(accentColorSelect);
@@ -6883,6 +6899,11 @@ function createChatMessage(item) {
   const bubble = document.createElement("article");
   bubble.className = "bubble";
 
+  const author = document.createElement("span");
+  author.className = "bubble-author";
+  author.textContent =
+    sender === "me" ? "You" : getPeerLabel(peerId, connections.get(peerId));
+
   const footer = document.createElement("span");
   footer.className = "bubble-footer";
   const timestamp = document.createElement("time");
@@ -6937,7 +6958,7 @@ function createChatMessage(item) {
     });
     bubble.append(quote);
   }
-  bubble.append(body, footer);
+  bubble.append(author, body, footer);
   if (Array.isArray(item.reactions) && item.reactions.length) {
     const reactions = document.createElement("div");
     reactions.className = "message-reactions";
@@ -16991,6 +17012,12 @@ messageDensitySelect.addEventListener("change", () => {
 chatFontSizeSelect.addEventListener("change", () => {
   saveAppSettings({ chatFontSize: chatFontSizeSelect.value });
 });
+
+for (const option of chatStyleOptions) {
+  option.addEventListener("change", () => {
+    if (option.checked) saveAppSettings({ chatStyle: option.value });
+  });
+}
 
 compactLayoutToggle.addEventListener("change", () => {
   saveAppSettings({ compactLayout: compactLayoutToggle.checked });

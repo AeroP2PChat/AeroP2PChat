@@ -2857,6 +2857,103 @@ body.wallpapers-disabled .boot-screen {
   color: var(--text);
   box-shadow: var(--shadow-sm);
 }
+.bubble-author {
+  display: none;
+}
+
+/* Discord-style feed: every message shares one readable left edge. */
+body[data-chat-style="discord"] .message-row.mine,
+body[data-chat-style="discord"] .message-row.theirs {
+  position: relative;
+  justify-content: flex-start;
+  min-height: 44px;
+  padding-left: 42px;
+}
+body[data-chat-style="discord"] .message-row.mine::before,
+body[data-chat-style="discord"] .message-row.theirs::before {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface-raised);
+  color: var(--text-soft);
+  content: "C";
+  font-size: 10px;
+  font-weight: 800;
+}
+body[data-chat-style="discord"] .message-row.mine::before {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
+  background: var(--accent-soft);
+  color: var(--accent);
+  content: "Y";
+}
+body[data-chat-style="discord"] .bubble {
+  width: min(100%, 760px);
+  max-width: min(92%, 760px);
+  padding: 1px 4px 5px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body[data-chat-style="discord"] .bubble-author {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 780;
+}
+body[data-chat-style="discord"] .mine .bubble-author {
+  color: var(--accent);
+}
+body[data-chat-style="discord"] .bubble p {
+  line-height: 1.45;
+}
+body[data-chat-style="discord"] .bubble-footer {
+  justify-content: flex-start;
+  margin-top: 2px;
+  font-size: 8px;
+}
+
+/* Minimal keeps direction but removes decorative containers. */
+body[data-chat-style="minimal"] .bubble {
+  max-width: min(78%, 620px);
+  padding: 6px 10px;
+  border: 0;
+  border-left: 2px solid var(--line-strong);
+  border-radius: 2px;
+  background: transparent;
+  box-shadow: none;
+}
+body[data-chat-style="minimal"] .mine .bubble {
+  border-right: 2px solid var(--accent);
+  border-left: 0;
+  background: transparent;
+  box-shadow: none;
+}
+body[data-chat-style="minimal"] .bubble-footer {
+  margin-top: 2px;
+  opacity: 0.72;
+}
+
+/* Glass remains bubble-based, with wallpaper-friendly translucency. */
+body[data-chat-style="glass"] .bubble {
+  border-color: color-mix(in srgb, var(--line-strong) 62%, transparent);
+  border-radius: 18px 18px 18px 6px;
+  background: color-mix(in srgb, var(--surface-raised) 68%, transparent);
+  box-shadow: 0 8px 24px color-mix(in srgb, #000 11%, transparent);
+  backdrop-filter: blur(14px) saturate(1.15);
+}
+body[data-chat-style="glass"] .mine .bubble {
+  border-color: color-mix(in srgb, var(--accent) 38%, transparent);
+  border-radius: 18px 18px 6px 18px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
 .mine .bubble {
   border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
   border-radius: 15px 15px 5px 15px;
@@ -5661,9 +5758,154 @@ body:has(> .workspace-page:not(.hidden)) {
 .appearance-layout-options .settings-check {
   min-height: 34px;
 }
+.chat-look-settings {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 7px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+}
+.chat-look-settings legend {
+  margin-bottom: 7px;
+  color: var(--text-soft);
+  font-size: 10px;
+  font-weight: 720;
+}
+.chat-look-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+.chat-look-option {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  padding: 7px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--surface) 74%, transparent);
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    transform 140ms ease;
+}
+.chat-look-option:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-hover);
+  transform: translateY(-1px);
+}
+.chat-look-option:has(input:checked) {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: var(--accent-soft);
+}
+.chat-look-option input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.chat-look-option > span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+.chat-look-option strong {
+  color: var(--text);
+  font-size: 9px;
+}
+.chat-look-option small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-look-preview {
+  position: relative;
+  display: block;
+  height: 48px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 80% 20%, var(--accent-soft), transparent 42%),
+    var(--canvas);
+}
+.chat-look-preview i {
+  position: absolute;
+  display: block;
+  height: 7px;
+  border-radius: 5px;
+  background: var(--surface-subtle);
+}
+.chat-look-preview i:nth-child(1) {
+  top: 7px;
+  left: 7px;
+  width: 48%;
+}
+.chat-look-preview i:nth-child(2) {
+  top: 20px;
+  right: 7px;
+  width: 55%;
+  background: color-mix(in srgb, var(--accent) 28%, var(--surface-subtle));
+}
+.chat-look-preview i:nth-child(3) {
+  top: 34px;
+  left: 7px;
+  width: 36%;
+}
+.chat-look-preview.discord i {
+  left: 17px;
+  right: auto;
+  height: 3px;
+  border-radius: 1px;
+  background: var(--text-soft);
+  opacity: 0.72;
+}
+.chat-look-preview.discord i::before {
+  position: absolute;
+  top: -3px;
+  left: -11px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  content: "";
+}
+.chat-look-preview.discord i:nth-child(1) { width: 52%; }
+.chat-look-preview.discord i:nth-child(2) { top: 22px; width: 66%; }
+.chat-look-preview.discord i:nth-child(3) { top: 36px; width: 43%; }
+.chat-look-preview.minimal i {
+  right: auto;
+  left: 8px;
+  height: 3px;
+  border-radius: 0;
+  background: var(--text-soft);
+  opacity: 0.62;
+}
+.chat-look-preview.minimal i:nth-child(2) {
+  right: 8px;
+  left: auto;
+  border-right: 2px solid var(--accent);
+}
+.chat-look-preview.glass i {
+  border: 1px solid color-mix(in srgb, var(--line-strong) 60%, transparent);
+  background: color-mix(in srgb, var(--surface-raised) 54%, transparent);
+  box-shadow: 0 3px 8px color-mix(in srgb, #000 10%, transparent);
+}
+.chat-look-preview.glass i:nth-child(2) {
+  border-color: color-mix(in srgb, var(--accent) 38%, transparent);
+  background: color-mix(in srgb, var(--accent) 19%, transparent);
+}
 @media (max-width: 460px) {
   .appearance-layout-options {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .chat-look-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 #custom-accent-color {
