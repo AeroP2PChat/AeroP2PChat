@@ -4286,7 +4286,31 @@ app.whenReady().then(async () => {
       return { ok: false, error: "Windows Hello is not available for this request." };
     }
     const authenticationRequest = activeAppLockRequest;
-    const result = await requestWindowsHello("Unlock Aero P2P Chat");
+    const helloParentWindow = appLockWindow;
+    // Windows Hello is presented by Windows in a separate system surface.
+    // Temporarily lowering our always-on-top lock window prevents Aero from
+    // covering that trusted prompt. If verification fails, restore the lock
+    // window and its original protection immediately.
+    if (helloParentWindow && !helloParentWindow.isDestroyed()) {
+      helloParentWindow.setAlwaysOnTop(false);
+      helloParentWindow.setFocusable(false);
+      helloParentWindow.blur();
+    }
+    let result;
+    try {
+      result = await requestWindowsHello("Unlock Aero P2P Chat");
+    } finally {
+      if (
+        helloParentWindow &&
+        !helloParentWindow.isDestroyed() &&
+        activeAppLockRequest === authenticationRequest
+      ) {
+        helloParentWindow.setFocusable(true);
+        helloParentWindow.setAlwaysOnTop(true);
+        helloParentWindow.show();
+        helloParentWindow.focus();
+      }
+    }
     if (activeAppLockRequest !== authenticationRequest) {
       return { ok: false, error: "Authentication request is no longer active." };
     }

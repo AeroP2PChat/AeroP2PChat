@@ -371,6 +371,8 @@ const welcomeCloseToTray = document.querySelector("#welcome-close-to-tray");
 const welcomeBack = document.querySelector("#welcome-back");
 const welcomeNext = document.querySelector("#welcome-next");
 const settingsModal = document.querySelector("#settings-modal");
+const settingResetMenu = document.querySelector("#setting-reset-menu");
+const settingResetAction = document.querySelector("#setting-reset-action");
 const settingsClose = document.querySelector("#settings-close");
 const settingsSearchInput = document.querySelector("#settings-search-input");
 const settingsSearchClear = document.querySelector("#settings-search-clear");
@@ -1288,6 +1290,127 @@ function setTitlebarActionLabel(button, text) {
   button.setAttribute("aria-label", text);
 }
 const platformApi = createPlatformApi();
+
+const settingDefaults = new Map(
+  Object.entries({
+    "theme-system": { checked: true, targetId: "theme-system" },
+    "theme-light": { checked: true, targetId: "theme-system" },
+    "theme-dark": { checked: true, targetId: "theme-system" },
+    "theme-ultra-dark": { checked: true, targetId: "theme-system" },
+    "accent-color-select": "system",
+    "custom-accent-color": "#147fa6",
+    "message-density-select": "comfortable",
+    "chat-font-size-select": "normal",
+    "compact-layout-toggle": false,
+    "wallpaper-enabled-toggle": true,
+    "wallpaper-accent-tint-toggle": false,
+    "wallpaper-boot-toggle": true,
+    "reduce-motion-toggle": false,
+    "autostart-toggle": true,
+    "autostart-open": { checked: true, targetId: "autostart-hidden" },
+    "autostart-hidden": { checked: true, targetId: "autostart-hidden" },
+    "close-to-tray-toggle": true,
+    "windows-hello-enabled": false,
+    "lock-on-tray": true,
+    "lock-on-minimize": false,
+    "lock-on-system-lock": true,
+    "lock-on-suspend": true,
+    "auto-lock-enabled": true,
+    "auto-lock-delay": "300",
+    "auto-lock-countdown-enabled": true,
+    "save-chat-history-toggle": true,
+    "auto-download-updates-toggle": false,
+    "notifications-toggle": true,
+    "message-notifications-toggle": true,
+    "message-preview-toggle": true,
+    "call-notifications-toggle": true,
+    "focused-notifications-toggle": false,
+    "read-receipts-toggle": true,
+    "sounds-toggle": true,
+    "message-sound-toggle": true,
+    "ringtone-sound-toggle": true,
+    "ringtone-loop-toggle": true,
+    "ringtone-preset-select": () => defaultRingtonePreset.id,
+    "call-event-sound-toggle": true,
+    "connected-sound-toggle": true,
+    "voice-auto-download-toggle": false,
+    "voice-waveform-toggle": true,
+    "file-auto-download-toggle": false,
+    "file-download-mode-select": "ask",
+    "microphone-select": "default",
+    "camera-select": "default",
+    "speaker-select": "default",
+    "mic-profile-select": "voice-isolation",
+    "mic-mode-select": "auto",
+    "mic-sensitivity-slider": "55",
+    "mic-noise-reduction-slider": "55",
+    "mic-boost-slider": "100",
+    "mic-eq-low-slider": "0",
+    "mic-eq-mid-slider": "0",
+    "mic-eq-high-slider": "0",
+    "remote-volume-slider": "100",
+  }),
+);
+let settingResetTarget = null;
+
+function getSettingResetControl(target) {
+  const direct = target.closest?.("input[id], select[id]");
+  if (direct && settingDefaults.has(direct.id)) return direct;
+  const labelled = target.closest?.("label")?.querySelector("input[id], select[id]");
+  if (labelled && settingDefaults.has(labelled.id)) return labelled;
+  const enhanced = target.closest?.(".aero-select")?.querySelector("select[id]");
+  if (enhanced && settingDefaults.has(enhanced.id)) return enhanced;
+  return null;
+}
+
+function getSettingDefault(control) {
+  const configured = settingDefaults.get(control.id);
+  return typeof configured === "function" ? configured() : configured;
+}
+
+function getSettingResetDestination(control) {
+  const configured = getSettingDefault(control);
+  const targetId =
+    configured && typeof configured === "object" ? configured.targetId : "";
+  return (targetId && document.getElementById(targetId)) || control;
+}
+
+function isSettingAtDefault(control) {
+  const configured = getSettingDefault(control);
+  const destination = getSettingResetDestination(control);
+  const defaultValue =
+    configured && typeof configured === "object"
+      ? configured.checked
+      : configured;
+  if (["checkbox", "radio"].includes(destination.type)) {
+    return destination.checked === Boolean(defaultValue);
+  }
+  return String(destination.value) === String(defaultValue);
+}
+
+function closeSettingResetMenu() {
+  settingResetMenu?.classList.add("hidden");
+  settingResetTarget = null;
+}
+
+function resetSettingToDefault() {
+  if (!settingResetTarget || isSettingAtDefault(settingResetTarget)) return;
+  const configured = getSettingDefault(settingResetTarget);
+  const destination = getSettingResetDestination(settingResetTarget);
+  const defaultValue =
+    configured && typeof configured === "object"
+      ? configured.checked
+      : configured;
+  if (["checkbox", "radio"].includes(destination.type)) {
+    destination.checked = Boolean(defaultValue);
+  } else {
+    destination.value = String(defaultValue);
+    destination.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  destination.dispatchEvent(new Event("change", { bubbles: true }));
+  destination.focus();
+  closeSettingResetMenu();
+}
 const platform = platformApi.platform;
 
 const aboutPlatformLabels = {
@@ -18683,6 +18806,31 @@ for (const item of settingsNavItems) {
 }
 
 settingsSearchInput?.addEventListener("input", renderSettingsSearchResults);
+settingsModal?.addEventListener("contextmenu", (event) => {
+  const control = getSettingResetControl(event.target);
+  if (!control || !settingResetMenu || !settingResetAction) return;
+  event.preventDefault();
+  event.stopPropagation();
+  closeAppMenu();
+  closeContactMenu();
+  closeMessageMenu();
+  closeParticipantMenu();
+  closeStreamMenu();
+  closeChatMoreMenu();
+  settingResetTarget = control;
+  settingResetAction.disabled = isSettingAtDefault(control);
+  settingResetMenu.classList.remove("hidden");
+  const padding = 8;
+  settingResetMenu.style.left = `${Math.max(
+    padding,
+    Math.min(event.clientX, window.innerWidth - settingResetMenu.offsetWidth - padding),
+  )}px`;
+  settingResetMenu.style.top = `${Math.max(
+    padding,
+    Math.min(event.clientY, window.innerHeight - settingResetMenu.offsetHeight - padding),
+  )}px`;
+});
+settingResetAction?.addEventListener("click", resetSettingToDefault);
 logsRefresh?.addEventListener("click", () => void refreshDiagnosticLogs());
 logsOpenFolder?.addEventListener("click", () =>
   window.aeroChat?.openDiagnosticLogsFolder?.(),
@@ -19299,6 +19447,9 @@ menuDeleteEveryone.addEventListener("click", async () => {
 });
 
 document.addEventListener("click", (event) => {
+  if (!settingResetMenu?.contains(event.target)) {
+    closeSettingResetMenu();
+  }
   if (!contactMenu.contains(event.target)) {
     closeContactMenu();
   }
@@ -19343,6 +19494,7 @@ document.addEventListener("keydown", (event) => {
     return;
   }
   if (event.key === "Escape") {
+    closeSettingResetMenu();
     closeAppMenu();
     closeContactMenu();
     closeMessageMenu();

@@ -7586,6 +7586,10 @@ input[type="range"]:active::-webkit-slider-thumb {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
+.setting-reset-menu {
+  width: 176px;
+  min-width: 176px;
+}
 .app-menu {
   width: 228px;
   min-width: 228px;
