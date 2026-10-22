@@ -34,6 +34,7 @@
   --success: #40a66b;
   --success-soft: #dff3e7;
   --warning: #c17b13;
+  --modified-star: #a85f00;
   --warning-soft: #f9ead1;
   --danger: #d94b64;
   --danger-hover: #c33c54;
@@ -114,6 +115,7 @@ body:is([data-theme="dark"], [data-theme="ultra-dark"]) {
   --success: #a6e3a1;
   --success-soft: #20352a;
   --warning: #f9e2af;
+  --modified-star: #ffd166;
   --warning-soft: #3a3024;
   --danger: #f38ba8;
   --danger-hover: #f6a2b9;
@@ -7596,20 +7598,33 @@ input[type="range"]:active::-webkit-slider-thumb {
 .setting-modified::after {
   position: absolute;
   z-index: 2;
-  top: -5px;
-  right: -5px;
-  display: grid;
-  width: 15px;
-  height: 15px;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line));
-  border-radius: 999px;
-  background: var(--surface-raised);
-  color: var(--accent);
+  top: 0;
+  right: 0;
+  color: var(--modified-star);
   content: "★";
-  font-size: 7px;
+  font-size: 9px;
   line-height: 1;
   pointer-events: none;
+}
+.settings-check.setting-modified::after,
+.settings-choice label.setting-modified::after {
+  position: static;
+  flex: 0 0 auto;
+  margin-left: auto;
+  align-self: center;
+}
+.theme-switcher label.setting-modified::after {
+  top: 5px;
+  right: 6px;
+}
+.settings-field.setting-modified::after,
+.voice-profile-field.setting-modified::after {
+  top: 1px;
+  right: 1px;
+}
+.settings-range.setting-modified::after {
+  top: 2px;
+  right: -12px;
 }
 .app-menu {
   width: 228px;
