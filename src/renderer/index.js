@@ -1411,6 +1411,38 @@ function resetSettingToDefault() {
   destination.focus();
   closeSettingResetMenu();
 }
+
+function getSettingIndicatorHost(control) {
+  if (control.type === "radio" && control.name) {
+    const checked = document.querySelector(
+      `input[type="radio"][name="${CSS.escape(control.name)}"]:checked`,
+    );
+    if (checked) control = checked;
+  }
+  return (
+    control.closest("label") ||
+    control.closest(".settings-field, .settings-range, .settings-choice")
+  );
+}
+
+function refreshModifiedSettingIndicators() {
+  settingsModal
+    ?.querySelectorAll(".setting-modified")
+    .forEach((element) => element.classList.remove("setting-modified"));
+  const processedDefaults = new Set();
+  for (const id of settingDefaults.keys()) {
+    const control = document.getElementById(id);
+    if (!control) continue;
+    const destination = getSettingResetDestination(control);
+    if (processedDefaults.has(destination.id)) continue;
+    processedDefaults.add(destination.id);
+    if (isSettingAtDefault(control)) continue;
+    const host = getSettingIndicatorHost(control);
+    if (host) {
+      host.classList.add("setting-modified");
+    }
+  }
+}
 const platform = platformApi.platform;
 
 const aboutPlatformLabels = {
@@ -1704,6 +1736,7 @@ function renderAutoLockSettings() {
   autoLockCountdownEnabled.disabled = !security.autoLockEnabled;
   autoLockOptions?.classList.toggle("is-disabled", !security.autoLockEnabled);
   syncEnhancedSelect(autoLockDelay);
+  refreshModifiedSettingIndicators();
 }
 
 function renderAppLockSettings() {
@@ -2772,6 +2805,7 @@ function renderAudioSettings() {
   syncEnhancedSelects();
   updateRangeFill(micBoostSlider, appConfig.audio.micBoost, 0, 200);
   updateRangeFill(remoteVolumeSlider, appConfig.audio.remoteVolume, 0, 100);
+  refreshModifiedSettingIndicators();
 }
 
 function updateRangeFill(input, value, min, max) {
@@ -3668,6 +3702,7 @@ function renderAppSettings() {
 
   renderWelcomeSettings();
   syncPresenceStatusIndicator();
+  refreshModifiedSettingIndicators();
 }
 
 function syncPresenceStatusIndicator() {
@@ -18831,6 +18866,12 @@ settingsModal?.addEventListener("contextmenu", (event) => {
   )}px`;
 });
 settingResetAction?.addEventListener("click", resetSettingToDefault);
+settingsModal?.addEventListener("input", () => {
+  queueMicrotask(refreshModifiedSettingIndicators);
+});
+settingsModal?.addEventListener("change", () => {
+  queueMicrotask(refreshModifiedSettingIndicators);
+});
 logsRefresh?.addEventListener("click", () => void refreshDiagnosticLogs());
 logsOpenFolder?.addEventListener("click", () =>
   window.aeroChat?.openDiagnosticLogsFolder?.(),

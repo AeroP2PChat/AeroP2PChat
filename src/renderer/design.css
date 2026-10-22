@@ -7590,6 +7590,27 @@ input[type="range"]:active::-webkit-slider-thumb {
   width: 176px;
   min-width: 176px;
 }
+.setting-modified {
+  position: relative;
+}
+.setting-modified::after {
+  position: absolute;
+  z-index: 2;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  width: 15px;
+  height: 15px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line));
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--accent);
+  content: "★";
+  font-size: 7px;
+  line-height: 1;
+  pointer-events: none;
+}
 .app-menu {
   width: 228px;
   min-width: 228px;
