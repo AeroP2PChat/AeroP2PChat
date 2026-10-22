@@ -1695,19 +1695,26 @@ function normalizeConfig(config = {}) {
     config.security && typeof config.security === "object"
       ? config.security
       : {};
+  const hasSmartLockDefaults = security.lockDefaultsVersion === 1;
   config.security = {
     appLockRequired: security.appLockRequired === true,
     windowsHelloEnabled:
       process.platform === "win32" && security.windowsHelloEnabled === true,
-    autoLockEnabled: Boolean(security.autoLockEnabled),
+    autoLockEnabled:
+      security.autoLockEnabled === undefined
+        ? true
+        : Boolean(security.autoLockEnabled),
     autoLockSeconds: allowedAutoLockSeconds.has(security.autoLockSeconds)
       ? security.autoLockSeconds
       : 300,
     showAutoLockCountdown: security.showAutoLockCountdown !== false,
     lockOnMinimize: security.lockOnMinimize === true,
-    lockOnTray: security.lockOnTray === true,
+    lockOnTray: hasSmartLockDefaults
+      ? security.lockOnTray !== false
+      : true,
     lockOnSystemLock: security.lockOnSystemLock !== false,
     lockOnSuspend: security.lockOnSuspend !== false,
+    lockDefaultsVersion: 1,
   };
 
   const audio = {

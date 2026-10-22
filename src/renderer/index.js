@@ -1543,17 +1543,24 @@ function normalizeAutoLockSettings() {
     appConfig.security && typeof appConfig.security === "object"
       ? appConfig.security
       : {};
+  const hasSmartLockDefaults = security.lockDefaultsVersion === 1;
   appConfig.security = {
     ...security,
-    autoLockEnabled: Boolean(security.autoLockEnabled),
+    autoLockEnabled:
+      security.autoLockEnabled === undefined
+        ? true
+        : Boolean(security.autoLockEnabled),
     autoLockSeconds: allowedSeconds.has(security.autoLockSeconds)
       ? security.autoLockSeconds
       : 300,
     showAutoLockCountdown: security.showAutoLockCountdown !== false,
-    lockOnTray: security.lockOnTray === true,
+    lockOnTray: hasSmartLockDefaults
+      ? security.lockOnTray !== false
+      : true,
     lockOnMinimize: security.lockOnMinimize === true,
     lockOnSystemLock: security.lockOnSystemLock !== false,
     lockOnSuspend: security.lockOnSuspend !== false,
+    lockDefaultsVersion: 1,
   };
   return appConfig.security;
 }
