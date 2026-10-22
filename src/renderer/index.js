@@ -191,6 +191,18 @@ const localParticipantCard = document.querySelector("#local-participant-card");
 const remoteParticipantCard = document.querySelector(
   "#remote-participant-card",
 );
+const localParticipantAvatarShell = document.querySelector(
+  "#local-participant-avatar-shell",
+);
+const remoteParticipantAvatarShell = document.querySelector(
+  "#remote-participant-avatar-shell",
+);
+const localParticipantAvatar = document.querySelector(
+  "#local-participant-avatar",
+);
+const remoteParticipantAvatar = document.querySelector(
+  "#remote-participant-avatar",
+);
 const localVideo = document.querySelector("#local-video");
 const remoteVideo = document.querySelector("#remote-video");
 const localPipVideo = document.querySelector("#local-pip-video");
@@ -9927,6 +9939,22 @@ function updateParticipantCard(
   video?.classList.toggle("hidden", !shouldShowVideo);
 }
 
+function updateCallParticipantAvatar(shell, avatar, id, label, speaking) {
+  if (!shell || !avatar) {
+    return;
+  }
+
+  const avatarId = String(id || "unknown");
+  if (avatar.dataset.avatarId !== avatarId) {
+    applyAvatarAppearance(avatar, avatarId, "hover");
+    avatar.dataset.avatarId = avatarId;
+  }
+  avatar.setAttribute("role", "img");
+  avatar.setAttribute("aria-label", `${label || "Contact"} avatar`);
+  shell.classList.toggle("speaking", Boolean(speaking));
+  avatar.querySelector(".mo-root")?.classList.toggle("mo-always", Boolean(speaking));
+}
+
 function hasStreamForTarget(target) {
   return target === "local"
     ? Boolean(screenShareState.localStream)
@@ -10047,6 +10075,8 @@ function refreshCallStage() {
   const inCallWithStagePeer = callState.peerId === stagePeerId;
   const localLabel = getLocalParticipantLabel();
   const remoteLabel = getRemoteParticipantLabel(stagePeerId);
+  const localSpeaking = localVoiceGateIsOpen && !callState.muted;
+  const remoteSpeaking = remoteVoiceIsActive && !remoteCallStatus.muted;
   const localScreenActive = Boolean(screenShareState.localStream);
   const remoteStreamAvailable = Boolean(screenShareState.remoteStream);
   const remoteScreenHidden =
@@ -10108,6 +10138,20 @@ function refreshCallStage() {
       getPeerNameStyle(stagePeerId, getPeerIdentityId(stagePeerId)),
     );
   }
+  updateCallParticipantAvatar(
+    localParticipantAvatarShell,
+    localParticipantAvatar,
+    identity.id,
+    localLabel,
+    localSpeaking,
+  );
+  updateCallParticipantAvatar(
+    remoteParticipantAvatarShell,
+    remoteParticipantAvatar,
+    getPeerIdentityId(stagePeerId, connections.get(stagePeerId)),
+    remoteLabel,
+    remoteSpeaking,
+  );
   if (localParticipantStatus) {
     localParticipantStatus.textContent = inCallWithStagePeer
       ? localScreenActive
@@ -10178,14 +10222,14 @@ function refreshCallStage() {
     localParticipantCard,
     localVideo,
     showLocalVideo,
-    localVoiceGateIsOpen && !callState.muted,
+    localSpeaking,
     Boolean(callState.localErrorMessage),
   );
   updateParticipantCard(
     remoteParticipantCard,
     remoteVideo,
     showRemoteVideo,
-    remoteVoiceIsActive && !remoteCallStatus.muted,
+    remoteSpeaking,
   );
   refreshAutoFitText();
 }

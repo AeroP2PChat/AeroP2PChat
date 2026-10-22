@@ -20,4 +20,11 @@ assert.match(
   /linear-gradient\(var\(--accent\), var\(--accent\)\)/,
 );
 
+assert.match(css, /\.participant-avatar-shell\.speaking::after/);
+assert.match(css, /@keyframes participant-speaking-ring/);
+assert.match(
+  css,
+  /\.participant-card\.streaming \.participant-avatar-shell/,
+);
+
 console.log("Theme style tests passed.");
