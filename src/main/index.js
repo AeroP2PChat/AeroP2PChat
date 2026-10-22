@@ -1704,6 +1704,10 @@ function normalizeConfig(config = {}) {
       ? security.autoLockSeconds
       : 300,
     showAutoLockCountdown: security.showAutoLockCountdown !== false,
+    lockOnMinimize: security.lockOnMinimize === true,
+    lockOnTray: security.lockOnTray === true,
+    lockOnSystemLock: security.lockOnSystemLock !== false,
+    lockOnSuspend: security.lockOnSuspend !== false,
   };
 
   const audio = {
@@ -2175,6 +2179,8 @@ function showMainWindow() {
       if (appLockWindow.isMinimized()) appLockWindow.restore();
       appLockWindow.show();
       appLockWindow.focus();
+    } else {
+      void unlockLockedApp();
     }
     return;
   }
@@ -2365,7 +2371,34 @@ function startAutoLockMonitor() {
   checkAutoLockTimer();
 }
 
-async function lockRunningApp(reason = "system-lock") {
+async function unlockLockedApp() {
+  if (appUnlocked || !appLockRecord?.enabled || activeAppLockRequest) return;
+  const authenticated = await requestAppLockAuthentication({
+    title: "Unlock Aero",
+    description:
+      "Enter your App Lock PIN or a one-time recovery code to continue.",
+    cancelable: false,
+    startup: true,
+  });
+  if (!authenticated) return;
+  appUnlocked = true;
+  appUnlockedAt = Date.now();
+  updateConnectionBadge();
+  updateTrayMenu();
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send("app-unlocked");
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+  } else {
+    createWindow({ hidden: false });
+  }
+}
+
+async function lockRunningApp(
+  reason = "system-lock",
+  { promptImmediately = true, hideWindow = true } = {},
+) {
   if (
     !appStartupReady ||
     !appLockRecord?.enabled ||
@@ -2383,31 +2416,10 @@ async function lockRunningApp(reason = "system-lock") {
   if (toastWindow && !toastWindow.isDestroyed()) toastWindow.hide();
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send("app-locked");
-    mainWindow.hide();
+    if (hideWindow) mainWindow.hide();
   }
   recordDiagnosticEvent("security", "app-locked", { reason });
-
-  const authenticated = await requestAppLockAuthentication({
-    title: "Unlock Aero",
-    description:
-      "Enter your App Lock PIN or a one-time recovery code to continue.",
-    cancelable: false,
-    startup: true,
-  });
-  if (!authenticated) return;
-
-  appUnlocked = true;
-  appUnlockedAt = Date.now();
-  updateConnectionBadge();
-  updateTrayMenu();
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send("app-unlocked");
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.show();
-    mainWindow.focus();
-  } else {
-    createWindow({ hidden: false });
-  }
+  if (promptImmediately) await unlockLockedApp();
 }
 
 async function performFullAppReset() {
@@ -4155,6 +4167,26 @@ function createWindow({ hidden = false } = {}) {
 
     event.preventDefault();
     win.hide();
+    if (appConfig.security?.lockOnTray === true) {
+      void lockRunningApp("sent-to-tray", {
+        promptImmediately: false,
+        hideWindow: true,
+      });
+    }
+  });
+  win.on("minimize", () => {
+    if (appConfig.security?.lockOnMinimize === true) {
+      void lockRunningApp("minimized", {
+        promptImmediately: false,
+        hideWindow: false,
+      });
+    }
+  });
+  win.on("restore", () => {
+    if (!appUnlocked && appLockRecord?.enabled && !activeAppLockRequest) {
+      win.hide();
+      void unlockLockedApp();
+    }
   });
   win.on("closed", () => {
     recordDiagnosticEvent("window", "closed");
@@ -4979,10 +5011,14 @@ app.whenReady().then(async () => {
     notifyRendererShutdown("shutdown");
   });
   powerMonitor.on("lock-screen", () => {
-    void lockRunningApp("system-lock");
+    if (appConfig.security?.lockOnSystemLock !== false) {
+      void lockRunningApp("system-lock");
+    }
   });
   powerMonitor.on("suspend", () => {
-    void lockRunningApp("suspend");
+    if (appConfig.security?.lockOnSuspend !== false) {
+      void lockRunningApp("suspend");
+    }
   });
 
   app.on("activate", () => {

@@ -423,6 +423,10 @@ const autoLockDelay = document.querySelector("#auto-lock-delay");
 const autoLockCountdownEnabled = document.querySelector(
   "#auto-lock-countdown-enabled",
 );
+const lockOnTray = document.querySelector("#lock-on-tray");
+const lockOnMinimize = document.querySelector("#lock-on-minimize");
+const lockOnSystemLock = document.querySelector("#lock-on-system-lock");
+const lockOnSuspend = document.querySelector("#lock-on-suspend");
 const appLockStatusMessage = document.querySelector("#app-lock-status-message");
 const appLockRecovery = document.querySelector("#app-lock-recovery");
 const appLockRecoveryCodes = document.querySelector("#app-lock-recovery-codes");
@@ -1546,6 +1550,10 @@ function normalizeAutoLockSettings() {
       ? security.autoLockSeconds
       : 300,
     showAutoLockCountdown: security.showAutoLockCountdown !== false,
+    lockOnTray: security.lockOnTray === true,
+    lockOnMinimize: security.lockOnMinimize === true,
+    lockOnSystemLock: security.lockOnSystemLock !== false,
+    lockOnSuspend: security.lockOnSuspend !== false,
   };
   return appConfig.security;
 }
@@ -1558,6 +1566,10 @@ function renderAutoLockSettings() {
   autoLockEnabled.checked = security.autoLockEnabled;
   autoLockDelay.value = String(security.autoLockSeconds);
   autoLockCountdownEnabled.checked = security.showAutoLockCountdown;
+  if (lockOnTray) lockOnTray.checked = security.lockOnTray;
+  if (lockOnMinimize) lockOnMinimize.checked = security.lockOnMinimize;
+  if (lockOnSystemLock) lockOnSystemLock.checked = security.lockOnSystemLock;
+  if (lockOnSuspend) lockOnSuspend.checked = security.lockOnSuspend;
   autoLockDelay.disabled = !security.autoLockEnabled;
   autoLockCountdownEnabled.disabled = !security.autoLockEnabled;
   autoLockOptions?.classList.toggle("is-disabled", !security.autoLockEnabled);
@@ -18736,6 +18748,19 @@ autoLockCountdownEnabled?.addEventListener("change", () => {
   renderAutoLockSettings();
   void saveAppConfig();
 });
+
+for (const [control, key] of [
+  [lockOnTray, "lockOnTray"],
+  [lockOnMinimize, "lockOnMinimize"],
+  [lockOnSystemLock, "lockOnSystemLock"],
+  [lockOnSuspend, "lockOnSuspend"],
+]) {
+  control?.addEventListener("change", () => {
+    normalizeAutoLockSettings();
+    appConfig.security[key] = control.checked;
+    void saveAppConfig();
+  });
+}
 
 appLockEnableButton?.addEventListener("click", async () => {
   appLockStatusMessage.textContent = "";

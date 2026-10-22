@@ -2139,6 +2139,30 @@
                       id="auto-lock-settings"
                       class="auto-lock-settings hidden"
                     >
+                      <div class="lock-trigger-settings">
+                        <div class="lock-trigger-heading">
+                          <strong>Lock Aero when</strong>
+                          <span>Choose the moments that should require authentication again.</span>
+                        </div>
+                        <div class="lock-trigger-grid">
+                          <label class="settings-check lock-trigger-option">
+                            <input id="lock-on-tray" type="checkbox" />
+                            <span><strong>Sent to tray</strong><small>Closing the window keeps Aero locked in the background.</small></span>
+                          </label>
+                          <label class="settings-check lock-trigger-option">
+                            <input id="lock-on-minimize" type="checkbox" />
+                            <span><strong>Minimized</strong><small>Require unlock when restoring the window.</small></span>
+                          </label>
+                          <label class="settings-check lock-trigger-option">
+                            <input id="lock-on-system-lock" type="checkbox" />
+                            <span><strong>Device is locked</strong><small>Follow the operating system lock screen.</small></span>
+                          </label>
+                          <label class="settings-check lock-trigger-option">
+                            <input id="lock-on-suspend" type="checkbox" />
+                            <span><strong>Device sleeps</strong><small>Lock before suspend or hibernation.</small></span>
+                          </label>
+                        </div>
+                      </div>
                       <div class="auto-lock-heading">
                         <div>
                           <strong>Automatic lock</strong
