@@ -388,7 +388,7 @@ const logsRefresh = document.querySelector("#logs-refresh");
 const logsOpenFolder = document.querySelector("#logs-open-folder");
 const logsSearch = document.querySelector("#logs-search");
 const logsSummary = document.querySelector("#logs-summary");
-const logsList = document.querySelector("#logs-list");
+const logsSessionSelect = document.querySelector("#logs-session-select");
 const logsViewerTitle = document.querySelector("#logs-viewer-title");
 const logsViewerMeta = document.querySelector("#logs-viewer-meta");
 const logsEntries = document.querySelector("#logs-entries");
@@ -15453,6 +15453,11 @@ function renderDiagnosticEntries() {
           .includes(query),
   );
   visibleDiagnosticLogText = visible.map((entry) => entry.raw).join("\n");
+  if (logsSummary) {
+    logsSummary.textContent = query
+      ? `${visible.length} of ${selectedDiagnosticEntries.length}`
+      : `${visible.length} entr${visible.length === 1 ? "y" : "ies"}`;
+  }
   logsCopy.disabled = visible.length === 0;
   logsEntries.replaceChildren();
   if (!visible.length) {
@@ -15533,38 +15538,32 @@ async function selectDiagnosticLog(id) {
 }
 
 function renderDiagnosticLogList() {
-  if (!logsList) return;
-  logsList.replaceChildren();
+  if (!logsSessionSelect) return;
+  logsSessionSelect.replaceChildren();
   if (!diagnosticLogs.length) {
-    const empty = document.createElement("p");
-    empty.className = "logs-list-empty";
-    empty.textContent = "No diagnostic sessions found.";
-    logsList.append(empty);
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "No sessions available";
+    logsSessionSelect.append(option);
+    logsSessionSelect.disabled = true;
     return;
   }
+  logsSessionSelect.disabled = false;
   diagnosticLogs.forEach((entry, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "log-session";
-    button.classList.toggle("active", entry.id === selectedDiagnosticLogId);
-    const icon = renderIcon(entry.current ? "fa-solid fa-wave-square" : "fa-regular fa-file-lines");
-    const copy = document.createElement("span");
-    const title = document.createElement("strong");
-    title.textContent = entry.current ? "Current session" : formatLogDate(entry.modified, false);
-    const meta = document.createElement("span");
-    meta.textContent = `${index === 0 ? "Latest · " : ""}${formatLogDate(entry.modified)} · ${formatByteCount(entry.size)}`;
-    copy.append(title, meta);
-    button.append(icon, copy);
-    button.addEventListener("click", () => void selectDiagnosticLog(entry.id));
-    logsList.append(button);
+    const option = document.createElement("option");
+    option.value = entry.id;
+    option.textContent = entry.current
+      ? `Current session · ${formatByteCount(entry.size)}`
+      : `${index === 0 ? "Latest · " : ""}${formatLogDate(entry.modified)} · ${formatByteCount(entry.size)}`;
+    option.selected = entry.id === selectedDiagnosticLogId;
+    logsSessionSelect.append(option);
   });
 }
 
 async function refreshDiagnosticLogs() {
-  if (!logsList || !window.aeroChat?.listDiagnosticLogs) return;
+  if (!logsSessionSelect || !window.aeroChat?.listDiagnosticLogs) return;
   logsRefresh?.classList.add("spinning");
   diagnosticLogs = await window.aeroChat.listDiagnosticLogs();
-  logsSummary.textContent = `${diagnosticLogs.length} session${diagnosticLogs.length === 1 ? "" : "s"}`;
   const nextId = diagnosticLogs.some((entry) => entry.id === selectedDiagnosticLogId)
     ? selectedDiagnosticLogId
     : diagnosticLogs[0]?.id || "";
@@ -18670,6 +18669,9 @@ logsOpenFolder?.addEventListener("click", () =>
   window.aeroChat?.openDiagnosticLogsFolder?.(),
 );
 logsSearch?.addEventListener("input", renderDiagnosticEntries);
+logsSessionSelect?.addEventListener("change", () => {
+  if (logsSessionSelect.value) void selectDiagnosticLog(logsSessionSelect.value);
+});
 logsCopy?.addEventListener("click", () => {
   if (visibleDiagnosticLogText) void writeClipboardText(visibleDiagnosticLogText);
 });

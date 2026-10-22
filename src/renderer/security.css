@@ -215,12 +215,10 @@ form {
 }
 
 .hello-button svg {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-width: 1.7;
+  width: 15px;
+  height: 15px;
+  fill: currentColor;
+  stroke: none;
 }
 
 .method-divider {

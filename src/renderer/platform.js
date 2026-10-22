@@ -428,6 +428,16 @@ export function createPlatformApi() {
       );
     },
 
+    async setWindowsHelloEnabled(enabled) {
+      return (
+        electron?.setWindowsHelloEnabled?.(enabled === true) || {
+          ok: false,
+          unsupported: true,
+          error: "Windows Hello is only available in the Windows desktop app.",
+        }
+      );
+    },
+
     onAppLockCountdown(callback) {
       return electron?.onAppLockCountdown?.(callback) || null;
     },

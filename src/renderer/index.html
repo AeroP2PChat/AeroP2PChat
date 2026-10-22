@@ -2412,24 +2412,29 @@
                   </div>
                 </div>
                 <div class="logs-toolbar">
+                  <label class="logs-session-picker">
+                    <span>Session</span>
+                    <select id="logs-session-select" aria-label="Log session">
+                      <option value="">No sessions</option>
+                    </select>
+                  </label>
                   <label class="logs-search">
                     <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                     <input
                       id="logs-search"
                       type="search"
-                      placeholder="Filter entries"
+                      placeholder="Search this log"
                       aria-label="Filter log entries"
                     />
                   </label>
-                  <div id="logs-summary" class="logs-summary" aria-live="polite"></div>
+                  <div id="logs-summary" class="logs-summary" aria-live="polite">0 entries</div>
                 </div>
                 <div class="logs-workspace">
-                  <aside id="logs-list" class="logs-list" aria-label="Log sessions"></aside>
                   <section class="logs-viewer" aria-label="Selected log">
                     <header class="logs-viewer-header">
                       <div>
                         <strong id="logs-viewer-title">Select a session</strong>
-                        <span id="logs-viewer-meta">Recent logs appear newest first.</span>
+                        <span id="logs-viewer-meta">Newest entries appear at the bottom.</span>
                       </div>
                       <button
                         id="logs-copy"
