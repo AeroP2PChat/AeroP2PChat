@@ -9530,10 +9530,8 @@ textarea:focus,
   background: var(--surface-hover);
   color: var(--text);
 }
-.message-selection-bar .ghost-button.danger {
-  border-color: color-mix(in srgb, var(--danger) 24%, var(--line));
-  background: color-mix(in srgb, var(--danger-soft) 54%, var(--surface));
-  color: var(--danger);
+.selection-delete-menu {
+  min-width: 204px;
 }
 .message-row.selectable {
   gap: 9px;

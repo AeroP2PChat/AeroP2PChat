@@ -37,6 +37,8 @@ assert.match(
 assert.doesNotMatch(css, /\.message-row\.selectable\.mine\s*{[^}]*flex-direction:\s*row-reverse/s);
 assert.match(html, /id="selection-all"/);
 assert.match(html, /id="selection-copy"[\s\S]*aria-label="Copy selected messages"/);
+assert.match(html, /id="selection-delete-local"/);
+assert.match(html, /id="selection-delete-everyone"/);
 assert.match(renderer, /event\.shiftKey && messageSelectionAnchorId/);
 
 console.log("Theme style tests passed.");

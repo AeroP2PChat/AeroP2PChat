@@ -242,6 +242,13 @@ const selectionAll = document.querySelector("#selection-all");
 const selectionCopy = document.querySelector("#selection-copy");
 const selectionDelete = document.querySelector("#selection-delete");
 const selectionClose = document.querySelector("#selection-close");
+const selectionDeleteMenu = document.querySelector("#selection-delete-menu");
+const selectionDeleteLocal = document.querySelector(
+  "#selection-delete-local",
+);
+const selectionDeleteEveryone = document.querySelector(
+  "#selection-delete-everyone",
+);
 const typingIndicator = document.querySelector("#typing-indicator");
 const messageForm = document.querySelector("#message-form");
 const messageInput = document.querySelector("#message-input");
@@ -13459,6 +13466,42 @@ function closeMessageMenu() {
   contextMessage = null;
 }
 
+function closeSelectionDeleteMenu() {
+  selectionDeleteMenu.classList.add("hidden");
+  selectionDelete.setAttribute("aria-expanded", "false");
+}
+
+function openSelectionDeleteMenu() {
+  if (!activePeerId || selectedMessageIds.size === 0) return;
+  const selectedItems = ensureChatHistory(activePeerId).filter((item) =>
+    selectedMessageIds.has(item.id),
+  );
+  const connectionOpen = Boolean(connections.get(activePeerId)?.open);
+  const canDeleteEveryone =
+    selectedItems.length > 0 &&
+    selectedItems.every((item) => item.sender === "me") &&
+    connectionOpen;
+  selectionDeleteEveryone.disabled = !canDeleteEveryone;
+  selectionDeleteEveryone.title = canDeleteEveryone
+    ? "Delete the selected messages on both devices"
+    : selectedItems.some((item) => item.sender !== "me")
+      ? "Received messages can only be deleted for you"
+      : "Your contact must be connected";
+
+  const rect = selectionDelete.getBoundingClientRect();
+  selectionDeleteMenu.classList.remove("hidden");
+  const left = Math.min(
+    rect.right - selectionDeleteMenu.offsetWidth,
+    window.innerWidth - selectionDeleteMenu.offsetWidth - 10,
+  );
+  selectionDeleteMenu.style.left = `${Math.max(10, left)}px`;
+  selectionDeleteMenu.style.top = `${Math.min(
+    rect.bottom + 6,
+    window.innerHeight - selectionDeleteMenu.offsetHeight - 10,
+  )}px`;
+  selectionDelete.setAttribute("aria-expanded", "true");
+}
+
 function updateMessageSelectionUi() {
   messageSelectionBar.classList.toggle("hidden", !selectingMessages);
   messageSelectionCount.textContent = `${selectedMessageIds.size} selected`;
@@ -13477,6 +13520,7 @@ function updateMessageSelectionUi() {
 
 function setMessageSelectionMode(enabled) {
   selectingMessages = Boolean(enabled);
+  closeSelectionDeleteMenu();
   if (!selectingMessages) {
     selectedMessageIds.clear();
     messageSelectionAnchorId = null;
@@ -18846,10 +18890,45 @@ selectionCopy.addEventListener("click", () => {
   void writeClipboardText(text);
   setMessageSelectionMode(false);
 });
-selectionDelete.addEventListener("click", async () => {
+selectionDelete.addEventListener("click", (event) => {
+  event.stopPropagation();
+  if (!selectionDeleteMenu.classList.contains("hidden")) {
+    closeSelectionDeleteMenu();
+    return;
+  }
+  openSelectionDeleteMenu();
+});
+selectionDeleteLocal.addEventListener("click", async () => {
   if (!activePeerId) return;
+  closeSelectionDeleteMenu();
   const ids = [...selectedMessageIds];
   for (const id of ids) await deleteMessageLocally(activePeerId, id);
+  setMessageSelectionMode(false);
+});
+selectionDeleteEveryone.addEventListener("click", async () => {
+  if (!activePeerId || selectionDeleteEveryone.disabled) return;
+  const peerId = activePeerId;
+  const selectedItems = ensureChatHistory(peerId).filter(
+    (item) => selectedMessageIds.has(item.id) && item.sender === "me",
+  );
+  closeSelectionDeleteMenu();
+  const confirmed = await showAppDialog({
+    title: "Delete selected messages for everyone?",
+    message: `${selectedItems.length} selected message${selectedItems.length === 1 ? "" : "s"} will be removed from both devices.`,
+    confirmText: "Delete for everyone",
+    cancelText: "Cancel",
+    danger: true,
+  });
+  if (!confirmed) return;
+
+  const conn = connections.get(peerId);
+  for (const item of selectedItems) {
+    if (!sendProtocolMessage(conn, "delete-message", { messageId: item.id })) {
+      setStatus("offline", "The contact disconnected during deletion.");
+      break;
+    }
+    await deleteMessageLocally(peerId, item.id);
+  }
   setMessageSelectionMode(false);
 });
 
@@ -18951,6 +19030,12 @@ document.addEventListener("click", (event) => {
     closeMessageMenu();
   }
   if (
+    !selectionDeleteMenu.contains(event.target) &&
+    !selectionDelete.contains(event.target)
+  ) {
+    closeSelectionDeleteMenu();
+  }
+  if (
     !chatMoreMenu.contains(event.target) &&
     !chatMoreButton.contains(event.target)
   ) {
@@ -18982,6 +19067,7 @@ document.addEventListener("keydown", (event) => {
     closeAppMenu();
     closeContactMenu();
     closeMessageMenu();
+    closeSelectionDeleteMenu();
     closeChatMoreMenu();
     closeDetailsModal();
     setChatSearchOpen(false);

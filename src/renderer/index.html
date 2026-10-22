@@ -876,10 +876,12 @@
             </button>
             <button
               id="selection-delete"
-              class="ghost-button danger icon-only-button selection-action"
+              class="ghost-button icon-only-button selection-action"
               type="button"
               title="Delete selected messages"
               aria-label="Delete selected messages"
+              aria-haspopup="menu"
+              aria-expanded="false"
             >
               <i class="fa-solid fa-trash" aria-hidden="true"></i>
             </button>
@@ -3660,6 +3662,27 @@
           <span>Delete for everyone</span>
         </button>
       </div>
+    </div>
+
+    <div
+      id="selection-delete-menu"
+      class="context-menu selection-delete-menu hidden"
+      role="menu"
+      aria-label="Delete selected messages"
+    >
+      <button id="selection-delete-local" type="button" role="menuitem">
+        <i class="fa-solid fa-trash" aria-hidden="true"></i>
+        <span>Delete for me</span>
+      </button>
+      <button
+        id="selection-delete-everyone"
+        class="danger"
+        type="button"
+        role="menuitem"
+      >
+        <i class="fa-solid fa-users-slash" aria-hidden="true"></i>
+        <span>Delete for everyone</span>
+      </button>
     </div>
 
     <div
