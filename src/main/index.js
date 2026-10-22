@@ -675,6 +675,49 @@ async function cleanupOldDiagnosticLogs() {
   }
 }
 
+async function listDiagnosticLogs() {
+  const entries = await readdir(diagnosticLogDirectory, { withFileTypes: true });
+  const logs = await Promise.all(
+    entries
+      .filter((entry) => entry.isFile() && /^aero-.*\.log$/i.test(entry.name))
+      .map(async (entry) => {
+        const logPath = join(diagnosticLogDirectory, entry.name);
+        const details = await stat(logPath);
+        return {
+          id: `file:${entry.name}`,
+          name: entry.name,
+          size: details.size,
+          modified: details.mtimeMs,
+          current: resolve(logPath) === resolve(diagnosticLogPath),
+        };
+      }),
+  );
+  if (!logs.some((entry) => entry.current)) {
+    try {
+      const details = await stat(diagnosticLogPath);
+      logs.push({
+        id: "current",
+        name: basename(diagnosticLogPath),
+        size: details.size,
+        modified: details.mtimeMs,
+        current: true,
+      });
+    } catch {
+      // The current log can be unavailable during a very early startup failure.
+    }
+  }
+  return logs.sort((left, right) => right.modified - left.modified);
+}
+
+function resolveDiagnosticLogId(id) {
+  if (id === "current") return diagnosticLogPath;
+  const name = String(id || "").replace(/^file:/, "");
+  if (!/^aero-[a-zA-Z0-9._-]+\.log$/.test(name) || basename(name) !== name) {
+    return "";
+  }
+  return join(diagnosticLogDirectory, name);
+}
+
 if (!allowMultipleInstances) {
   const hasSingleInstanceLock = app.requestSingleInstanceLock();
 
@@ -4341,6 +4384,30 @@ app.whenReady().then(async () => {
       String(details.event || "event").slice(0, 160),
       details.data && typeof details.data === "object" ? details.data : {},
     );
+  });
+  ipcMain.handle("list-diagnostic-logs", async (event) => {
+    if (!isCustomSoundRequest(event)) return [];
+    try {
+      return await listDiagnosticLogs();
+    } catch {
+      return [];
+    }
+  });
+  ipcMain.handle("read-diagnostic-log", async (event, id) => {
+    if (!isCustomSoundRequest(event)) return { ok: false };
+    const logPath = resolveDiagnosticLogId(id);
+    if (!logPath) return { ok: false, error: "Invalid log selection." };
+    try {
+      const content = await readFile(logPath, "utf8");
+      return { ok: true, content: content.slice(-maxDiagnosticLogBytes) };
+    } catch (error) {
+      return { ok: false, error: error?.message || "Log could not be read." };
+    }
+  });
+  ipcMain.handle("open-diagnostic-logs-folder", async (event) => {
+    if (!isCustomSoundRequest(event)) return { ok: false };
+    shell.showItemInFolder(diagnosticLogPath);
+    return { ok: true };
   });
   ipcMain.handle("download-update", async (event, details = {}) => {
     if (!isCustomSoundRequest(event)) {

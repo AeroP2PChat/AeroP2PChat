@@ -39,6 +39,11 @@ assert.match(html, /id="selection-all"/);
 assert.match(html, /id="selection-copy"[\s\S]*aria-label="Copy selected messages"/);
 assert.match(html, /id="selection-delete-local"/);
 assert.match(html, /id="selection-delete-everyone"/);
+assert.match(html, /data-settings-nav="logs"/);
+assert.match(html, /data-settings-page="logs"/);
+assert.match(css, /\.logs-workspace/);
 assert.match(renderer, /event\.shiftKey && messageSelectionAnchorId/);
+assert.match(renderer, /Messages from your contact will remain\./);
+assert.match(renderer, /refreshDiagnosticLogs/);
 
 console.log("Theme style tests passed.");

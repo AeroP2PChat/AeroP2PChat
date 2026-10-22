@@ -191,6 +191,10 @@ contextBridge.exposeInMainWorld("aeroChat", {
   log: (msg) => ipcRenderer.send("console-log", msg),
   diagnosticEvent: (event, data = {}) =>
     ipcRenderer.send("diagnostic-event", { event, data }),
+  listDiagnosticLogs: () => ipcRenderer.invoke("list-diagnostic-logs"),
+  readDiagnosticLog: (id) => ipcRenderer.invoke("read-diagnostic-log", id),
+  openDiagnosticLogsFolder: () =>
+    ipcRenderer.invoke("open-diagnostic-logs-folder"),
 });
 
 contextBridge.exposeInMainWorld("aeroChatNotification", {

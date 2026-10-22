@@ -384,8 +384,21 @@ const settingsPages = Array.from(
   document.querySelectorAll("[data-settings-page]"),
 );
 const settingsContent = document.querySelector(".settings-grid");
+const logsRefresh = document.querySelector("#logs-refresh");
+const logsOpenFolder = document.querySelector("#logs-open-folder");
+const logsSearch = document.querySelector("#logs-search");
+const logsSummary = document.querySelector("#logs-summary");
+const logsList = document.querySelector("#logs-list");
+const logsViewerTitle = document.querySelector("#logs-viewer-title");
+const logsViewerMeta = document.querySelector("#logs-viewer-meta");
+const logsEntries = document.querySelector("#logs-entries");
+const logsCopy = document.querySelector("#logs-copy");
 let activeSettingsPage = "";
 let settingsSearchResultsCache = [];
+let diagnosticLogs = [];
+let selectedDiagnosticLogId = "";
+let selectedDiagnosticEntries = [];
+let visibleDiagnosticLogText = "";
 const resetAllSettingsButton = document.querySelector("#reset-all-settings");
 const fullAppResetButton = document.querySelector("#full-app-reset");
 const reopenWelcomeScreenButton = document.querySelector(
@@ -13476,16 +13489,17 @@ function openSelectionDeleteMenu() {
   const selectedItems = ensureChatHistory(activePeerId).filter((item) =>
     selectedMessageIds.has(item.id),
   );
+  const ownSelectedItems = selectedItems.filter((item) => item.sender === "me");
   const connectionOpen = Boolean(connections.get(activePeerId)?.open);
   const canDeleteEveryone =
-    selectedItems.length > 0 &&
-    selectedItems.every((item) => item.sender === "me") &&
-    connectionOpen;
+    ownSelectedItems.length > 0 && connectionOpen;
   selectionDeleteEveryone.disabled = !canDeleteEveryone;
   selectionDeleteEveryone.title = canDeleteEveryone
-    ? "Delete the selected messages on both devices"
-    : selectedItems.some((item) => item.sender !== "me")
-      ? "Received messages can only be deleted for you"
+    ? selectedItems.length === ownSelectedItems.length
+      ? "Delete the selected messages on both devices"
+      : `Delete your ${ownSelectedItems.length} selected message${ownSelectedItems.length === 1 ? "" : "s"} on both devices`
+    : ownSelectedItems.length === 0
+      ? "Only messages you sent can be deleted for everyone"
       : "Your contact must be connected";
 
   const rect = selectionDelete.getBoundingClientRect();
@@ -15359,6 +15373,9 @@ function selectSettingsPage(page = "appearance") {
   } else {
     clearAppLockRecoveryCodes();
   }
+  if (selectedPage === "logs") {
+    void refreshDiagnosticLogs();
+  }
   if (pageChanged && settingsContent) {
     settingsContent.scrollTop = 0;
   }
@@ -15374,6 +15391,184 @@ function selectSettingsPage(page = "appearance") {
   }
   activeSettingsPage = selectedPage;
   settingsContent?.scrollTo({ top: 0, behavior: "auto" });
+}
+
+function formatLogDate(timestamp, includeTime = true) {
+  const date = new Date(Number(timestamp));
+  if (!Number.isFinite(date.getTime())) return "Unknown date";
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    ...(includeTime ? { timeStyle: "short" } : {}),
+  }).format(date);
+}
+
+function parseDiagnosticLog(content) {
+  return String(content || "")
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => {
+      const match = /^\[([^\]]+)](?: \[([^\]]+)])?\s*(.*)$/.exec(line);
+      if (!match) return { raw: line, timestamp: "", level: "INFO", message: line };
+      const [, timestamp, rawLevel = "INFO", rawMessage = ""] = match;
+      const level = rawLevel.toUpperCase();
+      if (level === "EVENT") {
+        try {
+          const event = JSON.parse(rawMessage);
+          const details =
+            event.data && Object.keys(event.data).length
+              ? JSON.stringify(event.data)
+              : "";
+          return {
+            raw: line,
+            timestamp,
+            level,
+            message: `${event.scope || "app"} · ${event.event || "event"}`,
+            details,
+          };
+        } catch {
+          // Keep malformed event lines readable as plain log entries.
+        }
+      }
+      return { raw: line, timestamp, level, message: rawMessage };
+    });
+}
+
+function renderDiagnosticEntries() {
+  if (!logsEntries) return;
+  const query = String(logsSearch?.value || "").trim().toLowerCase();
+  const visible = selectedDiagnosticEntries.filter((entry) =>
+    !query
+      ? true
+      : `${entry.level} ${entry.message} ${entry.details || ""}`
+          .toLowerCase()
+          .includes(query),
+  );
+  visibleDiagnosticLogText = visible.map((entry) => entry.raw).join("\n");
+  logsCopy.disabled = visible.length === 0;
+  logsEntries.replaceChildren();
+  if (!visible.length) {
+    const empty = document.createElement("div");
+    empty.className = "logs-empty-state";
+    empty.append(renderIcon("fa-solid fa-filter-circle-xmark"));
+    const label = document.createElement("span");
+    label.textContent = selectedDiagnosticEntries.length
+      ? "No matching entries"
+      : "This log is empty";
+    empty.append(label);
+    logsEntries.append(empty);
+    return;
+  }
+
+  for (const entry of visible.slice(-2000)) {
+    const row = document.createElement("article");
+    const levelClass = ["ERROR", "WARN"].includes(entry.level)
+      ? entry.level.toLowerCase()
+      : entry.level === "EVENT"
+        ? "event"
+        : "info";
+    row.className = `log-entry ${levelClass}`;
+    const rail = document.createElement("span");
+    rail.className = "log-entry-rail";
+    const body = document.createElement("div");
+    body.className = "log-entry-body";
+    const header = document.createElement("div");
+    header.className = "log-entry-header";
+    const level = document.createElement("span");
+    level.className = "log-level";
+    level.textContent = entry.level;
+    const time = document.createElement("time");
+    const parsedTime = Date.parse(entry.timestamp);
+    time.textContent = Number.isFinite(parsedTime)
+      ? new Date(parsedTime).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        })
+      : entry.timestamp;
+    header.append(level, time);
+    const message = document.createElement("p");
+    message.textContent = entry.message || "—";
+    body.append(header, message);
+    if (entry.details) {
+      const details = document.createElement("code");
+      details.textContent = entry.details;
+      body.append(details);
+    }
+    row.append(rail, body);
+    logsEntries.append(row);
+  }
+}
+
+async function selectDiagnosticLog(id) {
+  selectedDiagnosticLogId = id;
+  renderDiagnosticLogList();
+  logsViewerTitle.textContent = "Loading log…";
+  logsViewerMeta.textContent = "Reading local diagnostics";
+  logsCopy.disabled = true;
+  const result = await window.aeroChat?.readDiagnosticLog?.(id);
+  if (selectedDiagnosticLogId !== id) return;
+  const metadata = diagnosticLogs.find((entry) => entry.id === id);
+  if (!result?.ok) {
+    selectedDiagnosticEntries = [];
+    logsViewerTitle.textContent = "Log unavailable";
+    logsViewerMeta.textContent = result?.error || "The log could not be read.";
+    renderDiagnosticEntries();
+    return;
+  }
+  selectedDiagnosticEntries = parseDiagnosticLog(result.content);
+  logsViewerTitle.textContent = metadata?.current
+    ? "Current session"
+    : formatLogDate(metadata?.modified, false);
+  logsViewerMeta.textContent = `${formatLogDate(metadata?.modified)} · ${formatByteCount(metadata?.size || 0)} · ${selectedDiagnosticEntries.length} entries`;
+  renderDiagnosticEntries();
+}
+
+function renderDiagnosticLogList() {
+  if (!logsList) return;
+  logsList.replaceChildren();
+  if (!diagnosticLogs.length) {
+    const empty = document.createElement("p");
+    empty.className = "logs-list-empty";
+    empty.textContent = "No diagnostic sessions found.";
+    logsList.append(empty);
+    return;
+  }
+  diagnosticLogs.forEach((entry, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "log-session";
+    button.classList.toggle("active", entry.id === selectedDiagnosticLogId);
+    const icon = renderIcon(entry.current ? "fa-solid fa-wave-square" : "fa-regular fa-file-lines");
+    const copy = document.createElement("span");
+    const title = document.createElement("strong");
+    title.textContent = entry.current ? "Current session" : formatLogDate(entry.modified, false);
+    const meta = document.createElement("span");
+    meta.textContent = `${index === 0 ? "Latest · " : ""}${formatLogDate(entry.modified)} · ${formatByteCount(entry.size)}`;
+    copy.append(title, meta);
+    button.append(icon, copy);
+    button.addEventListener("click", () => void selectDiagnosticLog(entry.id));
+    logsList.append(button);
+  });
+}
+
+async function refreshDiagnosticLogs() {
+  if (!logsList || !window.aeroChat?.listDiagnosticLogs) return;
+  logsRefresh?.classList.add("spinning");
+  diagnosticLogs = await window.aeroChat.listDiagnosticLogs();
+  logsSummary.textContent = `${diagnosticLogs.length} session${diagnosticLogs.length === 1 ? "" : "s"}`;
+  const nextId = diagnosticLogs.some((entry) => entry.id === selectedDiagnosticLogId)
+    ? selectedDiagnosticLogId
+    : diagnosticLogs[0]?.id || "";
+  renderDiagnosticLogList();
+  if (nextId) await selectDiagnosticLog(nextId);
+  else {
+    selectedDiagnosticLogId = "";
+    selectedDiagnosticEntries = [];
+    logsViewerTitle.textContent = "No logs available";
+    logsViewerMeta.textContent = "A new session log is created when Aero starts.";
+    renderDiagnosticEntries();
+  }
+  logsRefresh?.classList.remove("spinning");
 }
 
 function getSettingsSearchPageLabel(page) {
@@ -18461,6 +18656,14 @@ for (const item of settingsNavItems) {
 }
 
 settingsSearchInput?.addEventListener("input", renderSettingsSearchResults);
+logsRefresh?.addEventListener("click", () => void refreshDiagnosticLogs());
+logsOpenFolder?.addEventListener("click", () =>
+  window.aeroChat?.openDiagnosticLogsFolder?.(),
+);
+logsSearch?.addEventListener("input", renderDiagnosticEntries);
+logsCopy?.addEventListener("click", () => {
+  if (visibleDiagnosticLogText) void writeClipboardText(visibleDiagnosticLogText);
+});
 settingsSearchClear?.addEventListener("click", () =>
   clearSettingsSearch({ focus: true }),
 );
@@ -18914,7 +19117,10 @@ selectionDeleteEveryone.addEventListener("click", async () => {
   closeSelectionDeleteMenu();
   const confirmed = await showAppDialog({
     title: "Delete selected messages for everyone?",
-    message: `${selectedItems.length} selected message${selectedItems.length === 1 ? "" : "s"} will be removed from both devices.`,
+    message:
+      selectedItems.length === selectedMessageIds.size
+        ? `${selectedItems.length} selected message${selectedItems.length === 1 ? "" : "s"} will be removed from both devices.`
+        : `${selectedItems.length} of ${selectedMessageIds.size} selected messages were sent by you and will be removed from both devices. Messages from your contact will remain.`,
     confirmText: "Delete for everyone",
     cancelText: "Cancel",
     danger: true,

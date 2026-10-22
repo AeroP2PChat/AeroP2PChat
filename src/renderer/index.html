@@ -1644,6 +1644,14 @@
             <button
               type="button"
               class="settings-nav-item"
+              data-settings-nav="logs"
+            >
+              <i class="fa-solid fa-list-ul" aria-hidden="true"></i>
+              Logs
+            </button>
+            <button
+              type="button"
+              class="settings-nav-item"
               data-settings-nav="legal"
             >
               <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
@@ -2360,6 +2368,77 @@
                     <input id="auto-download-updates-toggle" type="checkbox" />
                     <span>Automatically download updates</span>
                   </label>
+                </div>
+              </section>
+
+              <section class="settings-section" data-settings-page="logs">
+                <div class="settings-page-heading logs-page-heading">
+                  <div>
+                    <h3>Logs</h3>
+                    <p>
+                      Inspect recent app sessions and diagnostic events stored
+                      locally on this device.
+                    </p>
+                  </div>
+                  <div class="logs-heading-actions">
+                    <button
+                      id="logs-refresh"
+                      class="ghost-button icon-only-button"
+                      type="button"
+                      title="Refresh logs"
+                      aria-label="Refresh logs"
+                    >
+                      <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                    </button>
+                    <button
+                      id="logs-open-folder"
+                      class="ghost-button icon-only-button"
+                      type="button"
+                      title="Open logs folder"
+                      aria-label="Open logs folder"
+                    >
+                      <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="logs-toolbar">
+                  <label class="logs-search">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input
+                      id="logs-search"
+                      type="search"
+                      placeholder="Filter entries"
+                      aria-label="Filter log entries"
+                    />
+                  </label>
+                  <div id="logs-summary" class="logs-summary" aria-live="polite"></div>
+                </div>
+                <div class="logs-workspace">
+                  <aside id="logs-list" class="logs-list" aria-label="Log sessions"></aside>
+                  <section class="logs-viewer" aria-label="Selected log">
+                    <header class="logs-viewer-header">
+                      <div>
+                        <strong id="logs-viewer-title">Select a session</strong>
+                        <span id="logs-viewer-meta">Recent logs appear newest first.</span>
+                      </div>
+                      <button
+                        id="logs-copy"
+                        class="ghost-button icon-only-button"
+                        type="button"
+                        title="Copy visible log entries"
+                        aria-label="Copy visible log entries"
+                        disabled
+                      >
+                        <i class="fa-solid fa-copy" aria-hidden="true"></i>
+                      </button>
+                    </header>
+                    <div id="logs-entries" class="logs-entries" role="log">
+                      <div class="logs-empty-state">
+                        <i class="fa-solid fa-file-waveform" aria-hidden="true"></i>
+                        <span>No log selected</span>
+                      </div>
+                    </div>
+                  </section>
                 </div>
               </section>
 
