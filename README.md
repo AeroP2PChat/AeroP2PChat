@@ -42,18 +42,25 @@ aerop2p uninstall
 ## Development and releases
 
 Local development and release preparation use Windows with Node.js 22, Git,
-GitHub CLI and npm. Check the workstation with `npm run doctor`.
+GitHub CLI, npm and a Debian WSL2 distribution. Check the Windows workstation
+with `npm run doctor`.
 
 - `npm run dev` starts the Electron development build.
 - `npm run build` or `npm run build:windows` builds the native Windows MSI setup and
   Microsoft Store MSIX locally.
+- `npm run build:linux:wsl` builds AppImage, RPM and DEB locally in Debian WSL
+  without creating or uploading a release.
 - The MSI installs system-wide in `Program Files`; user settings remain in the
   current Windows user's Electron `userData` directory.
 - `npm run build:store` builds only the Microsoft Store MSIX.
-- `npm run release` builds and uploads the Windows setup locally, keeps the MSIX
-  for Partner Center, and starts the Linux GitHub Actions workflow.
-- `.github/workflows/linux-release.yml` builds AppImage, RPM and DEB natively on
-  Ubuntu, completes `latest.yml`, and optionally publishes the draft release.
+- `npm run release` builds the Windows setup and Store MSIX natively on Windows,
+  builds AppImage, RPM and DEB in Debian WSL, and uploads the public artifacts to
+  the GitHub release. The MSIX remains local for Partner Center.
+- The WSL build uses an isolated source directory and Linux dependency cache
+  below `~/.cache/aero-p2p-chat-release`. Finished Linux packages are copied to
+  `dist/build/artifacts` beside the Windows packages.
+- Set `AERO_WSL_DISTRO` before starting the release to use a WSL distribution
+  name other than the default `Debian`.
 
 The Linux-only `build:linux:*` commands remain available for CI and native Linux
 diagnostics; they intentionally fail on Windows instead of cross-compiling.

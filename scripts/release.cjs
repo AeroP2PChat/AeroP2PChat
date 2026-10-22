@@ -3,10 +3,8 @@ const {
   compareVersions,
   downloadStoreMsix,
   executeRelease,
-  findLinuxWorkflowRun,
   getReleaseState,
   parseVersion,
-  watchLinuxWorkflow,
 } = require("./release-help.cjs");
 
 function formatMinimumVersion(value) {
@@ -199,7 +197,7 @@ async function main() {
       `Version       ${state.currentVersion} → ${nextVersion}`,
       `Mindestversion ${minimumVersion}`,
       "Windows       MSI + MSIX (lokal)",
-      "Linux         AppImage + RPM + DEB (GitHub Actions)",
+      "Linux         AppImage + RPM + DEB (lokal in Debian WSL)",
       `Chrome        ${chromeLabel}`,
       `GitHub        ${publishRelease ? "Automatisch veröffentlichen" : "Als Entwurf behalten"}`,
     ].join("\n"),
@@ -252,45 +250,10 @@ async function main() {
     },
   );
 
-  log.step("Warte auf den Linux-Workflow");
-  const workflowRun = findLinuxWorkflowRun(result);
-  log.info(`Linux-Workflow: ${workflowRun.url}`);
-  watchLinuxWorkflow(workflowRun.databaseId);
-  log.success("AppImage, RPM und DEB wurden erfolgreich gebaut.");
-
-  const downloadAppx = unwrap(
-    await confirm({
-      message: "Lokalen Microsoft-Store-MSIX-Pfad jetzt anzeigen?",
-      active: "Ja",
-      inactive: "Nein",
-      initialValue: true,
-    }),
-  );
-  let msixPath = "";
-  if (downloadAppx) {
-    const downloadSpinner = spinner();
-    downloadSpinner.start("Microsoft-Store-MSIX wird vorbereitet …");
-    try {
-      const downloadedMsix = await downloadStoreMsix(
-        workflowRun.databaseId,
-        result.tag,
-      );
-      msixPath = downloadedMsix.path;
-      downloadSpinner.stop(
-        `MSIX bereit · ${formatFileSize(downloadedMsix.size)}`,
-      );
-      log.info(`Datei: ${msixPath}`);
-    } catch (error) {
-      downloadSpinner.error("MSIX konnte nicht gefunden werden.");
-      throw error;
-    }
-  }
-
-  outro(
-    msixPath
-      ? `${result.tag} fertig · MSIX wurde lokal gespeichert.`
-      : `${result.tag} fertig · MSIX bleibt lokal im Build-Ordner verfügbar.`,
-  );
+  const localMsix = await downloadStoreMsix();
+  log.success("Windows- und Linux-Pakete wurden lokal gebaut.");
+  log.info(`Microsoft-Store-MSIX: ${localMsix.path}`);
+  outro(`${result.tag} fertig · alle Artefakte liegen im lokalen Build-Ordner.`);
 }
 
 main().catch(async (error) => {

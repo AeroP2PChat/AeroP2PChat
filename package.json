@@ -2,6 +2,7 @@
   "name": "aero-p2p-chat",
   "version": "26.69.0",
   "description": "A clean peer-to-peer chat client for Windows and Linux.",
+  "homepage": "https://github.com/AeroP2PChat/AeroP2PChat",
   "license": "MIT",
   "author": {
     "name": "Tenkayro",
@@ -21,6 +22,7 @@
     "build": "node scripts/run-logged-command.cjs build node scripts/ci-build-release.cjs --platform=windows",
     "renderer:build": "node scripts/run-logged-command.cjs renderer:build npx vite build",
     "build:linux": "node scripts/run-logged-command.cjs build:linux node scripts/build-linux.cjs",
+    "build:linux:wsl": "node scripts/run-logged-command.cjs build:linux:wsl node scripts/build-linux-wsl.cjs",
     "build:linux:appimage": "node scripts/run-logged-command.cjs build:linux:appimage node scripts/build-linux.cjs --target=AppImage",
     "build:linux:rpm": "node scripts/run-logged-command.cjs build:linux:rpm node scripts/build-linux.cjs --target=rpm",
     "build:linux:deb": "node scripts/run-logged-command.cjs build:linux:deb node scripts/build-linux.cjs --target=deb",

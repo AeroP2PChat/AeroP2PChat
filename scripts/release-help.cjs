@@ -158,64 +158,41 @@ function verifyArtifacts(names, platform) {
   }
 }
 
-function wait(milliseconds) {
-  Atomics.wait(
-    new Int32Array(new SharedArrayBuffer(4)),
-    0,
-    0,
-    milliseconds,
+function toWslPath(windowsPath, distro) {
+  return run(
+    "wsl.exe",
+    ["-d", distro, "--", "wslpath", "-a", windowsPath.replaceAll("\\", "/")],
+    { capture: true },
   );
 }
 
-function findLinuxWorkflowRun({ headSha, dispatchedAt, attempts = 20 }) {
-  const earliestCreatedAt = Number(dispatchedAt) - 10000;
-  for (let attempt = 1; attempt <= attempts; attempt += 1) {
-    const output = run(
-      "gh",
-      [
-        "run",
-        "list",
-        "--repo",
-        config.repo,
-        "--workflow",
-        "linux-release.yml",
-        "--commit",
-        headSha,
-        "--event",
-        "workflow_dispatch",
-        "--limit",
-        "10",
-        "--json",
-        "databaseId,createdAt,status,url,headSha",
-      ],
-      { capture: true },
-    );
-    const runs = JSON.parse(output || "[]");
-    const workflowRun = runs
-      .filter(
-        (entry) =>
-          entry.headSha === headSha &&
-          Date.parse(entry.createdAt) >= earliestCreatedAt,
-      )
-      .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))[0];
-    if (workflowRun) return workflowRun;
-    if (attempt < attempts) wait(1500);
-  }
-  throw new Error(
-    "The dispatched Linux workflow could not be found. Check GitHub Actions.",
+function runLinuxBuildInWsl(version) {
+  const distro = process.env.AERO_WSL_DISTRO || "Debian";
+  const scriptPath = toWslPath(
+    path.join(root, "scripts", "build-linux-wsl.sh"),
+    distro,
   );
-}
-
-function watchLinuxWorkflow(runId) {
-  run("gh", [
-    "run",
-    "watch",
-    String(runId),
-    "--repo",
-    config.repo,
-    "--compact",
-    "--exit-status",
+  const sourcePath = toWslPath(root, distro);
+  const outputPath = toWslPath(artifactsDir, distro);
+  run("wsl.exe", [
+    "-d",
+    distro,
+    "--",
+    "bash",
+    scriptPath,
+    sourcePath,
+    outputPath,
+    version,
   ]);
+}
+
+function ensureLinuxBuildEnvironment() {
+  const distro = process.env.AERO_WSL_DISTRO || "Debian";
+  const scriptPath = toWslPath(
+    path.join(root, "scripts", "build-linux-wsl.sh"),
+    distro,
+  );
+  run("wsl.exe", ["-d", distro, "--", "bash", scriptPath, "--check"]);
 }
 
 async function uploadReleaseAsset(tag, filePath) {
@@ -276,6 +253,7 @@ async function executeRelease(options, reporter = {}) {
   step("Preflight checks");
   ensureCleanRepository();
   run("gh", ["auth", "status"], { capture: true });
+  ensureLinuxBuildEnvironment();
   ensureTagAvailable(tag);
   const branch = run("git", ["branch", "--show-current"], { capture: true });
   if (!branch) throw new Error("Release requires a named branch.");
@@ -317,10 +295,26 @@ async function executeRelease(options, reporter = {}) {
     ];
     verifyArtifacts(windowsAssets, "Windows");
 
+    step("Build native Linux AppImage, RPM and DEB in Debian WSL");
+    runLinuxBuildInWsl(nextVersion);
+    const linuxAssets = [
+      config.release.linuxAppImageAsset,
+      config.release.linuxRpmAsset,
+      config.release.linuxDebAsset,
+      "update_manifest_linux.json",
+    ];
+    verifyArtifacts(linuxAssets, "Linux");
+    run("node", [
+      "scripts/ci-append-linux-latest.cjs",
+      path.relative(root, path.join(artifactsDir, "latest.yml")),
+      path.relative(root, artifactsDir),
+    ]);
+
     // The MSIX is for Partner Center, not a public GitHub release download.
     const releaseAssets = windowsAssets.filter(
       (name) => name !== config.release.windowsStoreMsixAsset,
     );
+    releaseAssets.push(...linuxAssets);
     if (chromeMode !== "skip") {
       step("Build Chrome extension");
       run("node", ["scripts/build-chrome-extension.cjs"]);
@@ -378,37 +372,27 @@ async function executeRelease(options, reporter = {}) {
       run("node", ["scripts/publish-chrome-extension.cjs"]);
     }
 
-    step("Dispatch Linux release workflow");
-    const headSha = run("git", ["rev-parse", "HEAD"], { capture: true });
-    const dispatchedAt = Date.now();
-    run("gh", [
-      "workflow",
-      "run",
-      "linux-release.yml",
-      "--ref",
-      branch,
-      "-f",
-      `tag=${tag}`,
-      "-f",
-      `minimum_version=${minimumVersion}`,
-      "-f",
-      `publish_release=${publishRelease}`,
-    ]);
-
-    info(`Draft ${tag} contains the native Windows setup.`);
-    info(
-      publishRelease
-        ? "The Linux workflow will add AppImage, RPM and DEB files and publish the release."
-        : "The Linux workflow will add AppImage, RPM and DEB files and keep the release as a draft.",
-    );
+    if (publishRelease) {
+      step("Publish GitHub release");
+      run("gh", [
+        "release",
+        "edit",
+        tag,
+        "--repo",
+        config.repo,
+        "--draft=false",
+        "--latest",
+      ]);
+      info(`${tag} contains the native Windows and Linux packages and is published.`);
+    } else {
+      info(`Draft ${tag} contains the native Windows and Linux packages.`);
+    }
     return {
       branch,
       tag,
       minimumVersion,
       publishRelease,
       chromeMode,
-      headSha,
-      dispatchedAt,
       msixPath: path.join(artifactsDir, config.release.windowsStoreMsixAsset),
     };
   } catch (error) {
@@ -431,13 +415,10 @@ module.exports = {
     return { path: msixPath, size: fs.statSync(msixPath).size };
   },
   executeRelease,
-  findLinuxWorkflowRun,
-  findWindowsWorkflowRun: findLinuxWorkflowRun,
   getReleaseState,
   parseVersion,
   releaseNotes,
   resolveMinimumVersion,
+  runLinuxBuildInWsl,
   uploadReleaseAsset,
-  watchLinuxWorkflow,
-  watchWindowsWorkflow: watchLinuxWorkflow,
 };
