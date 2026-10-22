@@ -72,6 +72,10 @@ const {
   verifyAppLockCredential,
 } = require("./app-lock");
 const {
+  getWindowsHelloAvailability,
+  requestWindowsHello,
+} = require("./windows-hello");
+const {
   extractChangelogAttachmentUrls,
   normalizeChangelogGist,
 } = require("./changelog-gist");
@@ -1693,6 +1697,8 @@ function normalizeConfig(config = {}) {
       : {};
   config.security = {
     appLockRequired: security.appLockRequired === true,
+    windowsHelloEnabled:
+      process.platform === "win32" && security.windowsHelloEnabled === true,
     autoLockEnabled: Boolean(security.autoLockEnabled),
     autoLockSeconds: allowedAutoLockSeconds.has(security.autoLockSeconds)
       ? security.autoLockSeconds
@@ -1982,8 +1988,18 @@ async function loadConfig() {
   return normalizeConfig({});
 }
 
-async function saveConfig(config, { allowAppLockMarkerChange = false } = {}) {
+async function saveConfig(
+  config,
+  {
+    allowAppLockMarkerChange = false,
+    allowWindowsHelloChange = false,
+  } = {},
+) {
   const normalizedConfig = normalizeConfig(config || {});
+  if (!allowWindowsHelloChange) {
+    normalizedConfig.security.windowsHelloEnabled =
+      appConfig?.security?.windowsHelloEnabled === true;
+  }
   if (
     !allowAppLockMarkerChange &&
     (appLockRecord?.enabled || appConfig?.security?.appLockRequired === true)
@@ -2030,9 +2046,14 @@ async function setConfigAppLockRequired(required) {
         ? appConfig.security
         : {}),
       appLockRequired: Boolean(required),
+      windowsHelloEnabled:
+        Boolean(required) && appConfig?.security?.windowsHelloEnabled === true,
     },
   };
-  return saveConfig(nextConfig, { allowAppLockMarkerChange: true });
+  return saveConfig(nextConfig, {
+    allowAppLockMarkerChange: true,
+    allowWindowsHelloChange: true,
+  });
 }
 
 async function saveAppLockRecoveryCodes(codesValue) {
@@ -2169,14 +2190,23 @@ function showMainWindow() {
   mainWindow.focus();
 }
 
-function getAppLockStatus() {
+async function getAppLockStatus() {
+  const windowsHelloAvailability =
+    process.platform === "win32"
+      ? await getWindowsHelloAvailability()
+      : "UnsupportedPlatform";
   return {
     enabled: Boolean(appLockRecord?.enabled),
     remainingRecoveryCodes: appLockRecord?.recovery?.hashes?.length || 0,
+    windowsHelloSupported: windowsHelloAvailability === "Available",
+    windowsHelloEnabled:
+      windowsHelloAvailability === "Available" &&
+      appConfig?.security?.windowsHelloEnabled === true,
+    windowsHelloAvailability,
   };
 }
 
-function requestAppLockAuthentication({
+async function requestAppLockAuthentication({
   title = "Confirm with App Lock",
   description = "Enter your PIN or a one-time recovery code to continue.",
   cancelable = true,
@@ -2188,6 +2218,9 @@ function requestAppLockAuthentication({
     appLockWindow?.focus();
     return Promise.resolve(false);
   }
+  const helloEnabled =
+    appConfig?.security?.windowsHelloEnabled === true &&
+    (await getWindowsHelloAvailability()) === "Available";
 
   return new Promise((resolveAuthentication) => {
     let settled = false;
@@ -2213,9 +2246,9 @@ function requestAppLockAuthentication({
           : "light";
     const securityWindow = new BrowserWindow({
       width: 420,
-      height: 350,
+      height: helloEnabled ? 410 : 350,
       minWidth: 420,
-      minHeight: 350,
+      minHeight: helloEnabled ? 410 : 350,
       resizable: false,
       maximizable: false,
       fullscreenable: false,
@@ -2257,6 +2290,7 @@ function requestAppLockAuthentication({
       description,
       cancel: cancelable ? "1" : "0",
       theme: securityTheme,
+      hello: helloEnabled ? "1" : "0",
     };
     if (process.env.ELECTRON_RENDERER_URL) {
       const securityUrl = new URL(
@@ -4203,6 +4237,38 @@ app.whenReady().then(async () => {
       remainingRecoveryCodes: result.remainingRecoveryCodes,
     };
   });
+  ipcMain.handle("app-lock-authenticate-hello", async (event) => {
+    if (
+      BrowserWindow.fromWebContents(event.sender) !== appLockWindow ||
+      !activeAppLockRequest ||
+      !appLockRecord ||
+      appConfig?.security?.windowsHelloEnabled !== true
+    ) {
+      return { ok: false, error: "Windows Hello is not available for this request." };
+    }
+    const authenticationRequest = activeAppLockRequest;
+    const result = await requestWindowsHello("Unlock Aero P2P Chat");
+    if (activeAppLockRequest !== authenticationRequest) {
+      return { ok: false, error: "Authentication request is no longer active." };
+    }
+    if (!result.ok) {
+      const messages = {
+        Canceled: "Windows Hello was canceled.",
+        DeviceBusy: "Windows Hello is busy. Try again.",
+        RetriesExhausted: "Windows Hello is temporarily locked. Use your Aero PIN.",
+        NotConfiguredForUser: "Windows Hello is not configured. Use your Aero PIN.",
+        DisabledByPolicy: "Windows Hello is disabled by system policy.",
+      };
+      return { ok: false, error: messages[result.result] || "Windows Hello could not verify you." };
+    }
+    if (authenticationRequest.startup) {
+      appUnlocked = true;
+      appUnlockedAt = Date.now();
+    }
+    authenticationRequest.finish(true);
+    if (appLockWindow && !appLockWindow.isDestroyed()) appLockWindow.close();
+    return { ok: true };
+  });
   ipcMain.on("app-lock-cancel", (event) => {
     if (BrowserWindow.fromWebContents(event.sender) !== appLockWindow) return;
     activeAppLockRequest?.finish(false);
@@ -4217,6 +4283,27 @@ app.whenReady().then(async () => {
   ipcMain.handle("app-lock-status", (event) =>
     isCustomSoundRequest(event) ? getAppLockStatus() : { enabled: false },
   );
+  ipcMain.handle("app-lock-set-windows-hello", async (event, enabled) => {
+    if (!isCustomSoundRequest(event) || !appLockRecord?.enabled) {
+      return { ok: false, error: "App Lock must be enabled first." };
+    }
+    const shouldEnable = enabled === true;
+    if (shouldEnable) {
+      if ((await getWindowsHelloAvailability()) !== "Available") {
+        return { ok: false, error: "Windows Hello is not configured or available on this device." };
+      }
+      const verified = await requestWindowsHello("Enable Windows Hello for Aero P2P Chat");
+      if (!verified.ok) return { ok: false, canceled: verified.result === "Canceled", error: "Windows Hello verification failed." };
+    }
+    await saveConfig(
+      {
+        ...appConfig,
+        security: { ...appConfig.security, windowsHelloEnabled: shouldEnable },
+      },
+      { allowWindowsHelloChange: true },
+    );
+    return { ok: true, ...(await getAppLockStatus()) };
+  });
   ipcMain.handle("app-lock-enable", async (event, details = {}) => {
     if (!isCustomSoundRequest(event))
       return { ok: false, error: "Unauthorized request." };
@@ -4232,7 +4319,7 @@ app.whenReady().then(async () => {
       return {
         ok: true,
         recoveryCodes: created.recoveryCodes,
-        ...getAppLockStatus(),
+        ...(await getAppLockStatus()),
       };
     } catch (error) {
       return { ok: false, error: error.message };
@@ -4261,7 +4348,7 @@ app.whenReady().then(async () => {
     return {
       ok: true,
       recoveryCodes: replacement.recoveryCodes,
-      ...getAppLockStatus(),
+      ...(await getAppLockStatus()),
     };
   });
   ipcMain.handle("app-lock-regenerate-codes", async (event) => {
@@ -4279,7 +4366,7 @@ app.whenReady().then(async () => {
     return {
       ok: true,
       recoveryCodes: replacement.recoveryCodes,
-      ...getAppLockStatus(),
+      ...(await getAppLockStatus()),
     };
   });
   ipcMain.handle("app-lock-save-recovery-codes", async (event, codes) => {
@@ -4307,7 +4394,7 @@ app.whenReady().then(async () => {
     if (!authenticated) return { ok: false, canceled: true };
     await setConfigAppLockRequired(false);
     await removeAppLockRecord();
-    return { ok: true, ...getAppLockStatus() };
+    return { ok: true, ...(await getAppLockStatus()) };
   });
   ipcMain.handle("full-app-reset", async (event) => {
     if (!isCustomSoundRequest(event))

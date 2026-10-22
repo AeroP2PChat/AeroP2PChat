@@ -39,6 +39,13 @@
         </div>
       </div>
       <form id="form">
+        <button id="windows-hello" class="hello-button" type="button" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 4v3M17 4v3M4 9h3M17 9h3M8 15s1.5 2 4 2 4-2 4-2M9 10.5h.01M15 10.5h.01" />
+          </svg>
+          <span>Unlock with Windows Hello</span>
+        </button>
+        <div id="method-divider" class="method-divider" hidden><span>or use your Aero PIN</span></div>
         <label for="credential">PIN or recovery code</label>
         <div class="credential-row">
           <input

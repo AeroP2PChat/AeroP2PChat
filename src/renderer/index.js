@@ -414,6 +414,8 @@ const appLockEnableButton = document.querySelector("#app-lock-enable");
 const appLockChangePinButton = document.querySelector("#app-lock-change-pin");
 const appLockNewCodesButton = document.querySelector("#app-lock-new-codes");
 const appLockDisableButton = document.querySelector("#app-lock-disable");
+const windowsHelloSettings = document.querySelector("#windows-hello-settings");
+const windowsHelloEnabled = document.querySelector("#windows-hello-enabled");
 const autoLockSettings = document.querySelector("#auto-lock-settings");
 const autoLockEnabled = document.querySelector("#auto-lock-enabled");
 const autoLockOptions = document.querySelector("#auto-lock-options");
@@ -1525,6 +1527,7 @@ function setAppLockBusy(busy) {
     appLockChangePinButton,
     appLockNewCodesButton,
     appLockDisableButton,
+    windowsHelloEnabled,
   ]) {
     if (button) button.disabled = busy;
   }
@@ -1570,6 +1573,12 @@ function renderAppLockSettings() {
     : "Off by default · no startup authentication required";
   appLockSetup.classList.toggle("hidden", enabled && !appLockPinChangeMode);
   appLockActions.classList.toggle("hidden", !enabled || appLockPinChangeMode);
+  const helloSupported = currentAppLockStatus.windowsHelloSupported === true;
+  windowsHelloSettings?.classList.toggle("hidden", !enabled || !helloSupported);
+  if (windowsHelloEnabled) {
+    windowsHelloEnabled.checked =
+      enabled && currentAppLockStatus.windowsHelloEnabled === true;
+  }
   appLockEnableButton.innerHTML = appLockPinChangeMode
     ? '<i class="fa-solid fa-key" aria-hidden="true"></i><span>Save new PIN</span>'
     : '<i class="fa-solid fa-lock" aria-hidden="true"></i><span>Enable App Lock</span>';
@@ -18762,6 +18771,36 @@ appLockChangePinButton?.addEventListener("click", () => {
     "Choose a new PIN. Your current PIN will be requested in the security window.";
   renderAppLockSettings();
   appLockPin.focus();
+});
+
+windowsHelloEnabled?.addEventListener("change", async () => {
+  const requested = windowsHelloEnabled.checked;
+  setAppLockBusy(true);
+  appLockStatusMessage.textContent = requested
+    ? "Confirm with Windows Hello to enable it…"
+    : "";
+  try {
+    const result = await platformApi.setWindowsHelloEnabled(requested);
+    if (!result?.ok) {
+      windowsHelloEnabled.checked = !requested;
+      if (!result?.canceled) {
+        appLockStatusMessage.textContent =
+          result?.error || "Windows Hello could not be updated.";
+      } else {
+        appLockStatusMessage.textContent = "Windows Hello setup was canceled.";
+      }
+      return;
+    }
+    currentAppLockStatus = result;
+    normalizeAutoLockSettings();
+    appConfig.security.windowsHelloEnabled = requested;
+    renderAppLockSettings();
+    appLockStatusMessage.textContent = requested
+      ? "Windows Hello can now unlock Aero. Your Aero PIN remains available as a fallback."
+      : "Windows Hello has been turned off for Aero.";
+  } finally {
+    setAppLockBusy(false);
+  }
 });
 
 appLockNewCodesButton?.addEventListener("click", async () => {

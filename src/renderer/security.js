@@ -15,6 +15,11 @@ const status = document.querySelector("#status");
 const submit = document.querySelector("#submit");
 const cancel = document.querySelector("#cancel");
 const reveal = document.querySelector("#reveal");
+const windowsHello = document.querySelector("#windows-hello");
+const methodDivider = document.querySelector("#method-divider");
+const helloEnabled = parameters.get("hello") === "1";
+windowsHello.hidden = !helloEnabled;
+methodDivider.hidden = !helloEnabled;
 
 title.textContent = parameters.get("title") || "Unlock Aero";
 description.textContent =
@@ -53,6 +58,23 @@ form.addEventListener("submit", async (event) => {
     ? `Too many attempts. Try again in ${formatWait(result.retryAfterMs)}.`
     : result?.error || "The PIN or recovery code is incorrect.";
   credential.focus();
+});
+
+windowsHello.addEventListener("click", async () => {
+  if (windowsHello.disabled) return;
+  windowsHello.disabled = true;
+  submit.disabled = true;
+  status.textContent = "Waiting for Windows Hello…";
+  try {
+    const result = await window.aeroSecurity.submitWindowsHello();
+    if (result?.ok) return;
+    status.textContent = result?.error || "Windows Hello could not verify you.";
+  } catch {
+    status.textContent = "Windows Hello could not be started. Use your Aero PIN.";
+  } finally {
+    windowsHello.disabled = false;
+    submit.disabled = false;
+  }
 });
 
 reveal.addEventListener("click", () => {

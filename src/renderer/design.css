@@ -4635,6 +4635,32 @@ body:has(> .workspace-page:not(.hidden)) {
   justify-content: center;
   gap: 7px;
 }
+
+.windows-hello-settings {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+}
+
+.windows-hello-settings > div {
+  display: grid;
+  gap: 3px;
+}
+
+.windows-hello-settings strong {
+  font-size: 12px;
+}
+
+.windows-hello-settings > div > span {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
 #app-lock-enable {
   display: inline-flex;
   align-items: center;

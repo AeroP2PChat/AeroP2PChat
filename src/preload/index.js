@@ -87,6 +87,8 @@ contextBridge.exposeInMainWorld("aeroChat", {
   saveConfig: (config) => ipcRenderer.invoke("save-config", config),
   getConfigPath: () => ipcRenderer.invoke("get-config-path"),
   getAppLockStatus: () => ipcRenderer.invoke("app-lock-status"),
+  setWindowsHelloEnabled: (enabled) =>
+    ipcRenderer.invoke("app-lock-set-windows-hello", enabled === true),
   onAppLockCountdown: (callback) => {
     const listener = (_event, state) => callback(state);
     ipcRenderer.on("app-lock-countdown", listener);
