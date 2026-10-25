@@ -54,6 +54,10 @@ GitHub CLI and npm. Check the workstation with `npm run doctor`.
   for Partner Center, and starts the Linux GitHub Actions workflow.
 - `.github/workflows/linux-release.yml` builds AppImage, RPM and DEB natively on
   Ubuntu, completes `latest.yml`, and optionally publishes the draft release.
+- After publication, the local release script submits the WinGet package update
+  through the locally authenticated official WingetCreate tool.
+- The one-time WinGet registration and automation setup are documented in
+  [`docs/winget.md`](docs/winget.md).
 
 The Linux-only `build:linux:*` commands remain available for CI and native Linux
 diagnostics; they intentionally fail on Windows instead of cross-compiling.

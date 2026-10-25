@@ -8,6 +8,7 @@ const {
   parseVersion,
   watchLinuxWorkflow,
 } = require("./release-help.cjs");
+const { submitWingetUpdate } = require("./winget.cjs");
 
 function formatMinimumVersion(value) {
   return value || "keine";
@@ -200,6 +201,7 @@ async function main() {
       `Mindestversion ${minimumVersion}`,
       "Windows       MSI + MSIX (lokal)",
       "Linux         AppImage + RPM + DEB (GitHub Actions)",
+      `WinGet        ${publishRelease ? "Update-PR lokal nach Veröffentlichung" : "Übersprungen (Draft)"}`,
       `Chrome        ${chromeLabel}`,
       `GitHub        ${publishRelease ? "Automatisch veröffentlichen" : "Als Entwurf behalten"}`,
     ].join("\n"),
@@ -257,6 +259,19 @@ async function main() {
   log.info(`Linux-Workflow: ${workflowRun.url}`);
   watchLinuxWorkflow(workflowRun.databaseId);
   log.success("AppImage, RPM und DEB wurden erfolgreich gebaut.");
+
+  if (result.publishRelease) {
+    log.step("Reiche das WinGet-Update lokal ein");
+    try {
+      const winget = submitWingetUpdate(result.tag);
+      log.success(`WinGet-PR für ${winget.packageId} ${winget.version} eingereicht.`);
+    } catch (error) {
+      throw new Error(
+        `${result.tag} wurde veröffentlicht, aber das WinGet-Update ist fehlgeschlagen: ${error.message || error}\n` +
+          "Nach Behebung erneut ausführen: npm run winget:update",
+      );
+    }
+  }
 
   const localMsix = await downloadStoreMsix();
   log.info(`Microsoft-Store-MSIX: ${localMsix.path}`);
