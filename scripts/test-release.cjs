@@ -31,7 +31,7 @@ const packageInfo = require("../package.json");
 const projectConfig = require("../config.json");
 const builderConfig = require("../electron-builder.config.cjs");
 assert.match(packageInfo.scripts.build, /--platform=windows/);
-assert.match(packageInfo.scripts["build:linux:wsl"], /build-linux-wsl\.cjs/);
+assert.equal(packageInfo.scripts["build:linux:wsl"], undefined);
 assert.deepEqual(builderConfig.win.target, ["msi"]);
 assert.equal(builderConfig.msi.perMachine, true);
 assert.equal(builderConfig.msi.createDesktopShortcut, "always");
@@ -50,25 +50,28 @@ assert.ok(
   "Microsoft Store MSIX MinVersion must be newer than Windows build 17134",
 );
 assert.equal(builderConfig.appx.minVersion, "10.0.17763.0");
-const wslBuild = fs.readFileSync(
-  path.join(root, "scripts", "build-linux-wsl.sh"),
+const workflow = fs.readFileSync(
+  path.join(root, ".github", "workflows", "linux-release.yml"),
   "utf8",
 );
-assert.match(wslBuild, /npm ci --prefer-offline --no-audit --no-fund/);
-assert.match(wslBuild, /ci-build-release\.cjs --platform=linux/);
-assert.match(wslBuild, /aero-p2p-chat-release/);
-assert.match(wslBuild, /Aero-P2P-Chat-Linux-x64\.AppImage/);
-assert.match(wslBuild, /Aero-P2P-Chat-Linux-x64\.rpm/);
-assert.match(wslBuild, /Aero-P2P-Chat-Linux-x64\.deb/);
+assert.match(workflow, /workflow_dispatch:/);
+assert.match(workflow, /--platform=linux/);
+assert.match(workflow, /Aero-P2P-Chat-Linux-x64\.AppImage/);
+assert.match(workflow, /Aero-P2P-Chat-Linux-x64\.rpm/);
+assert.match(workflow, /Aero-P2P-Chat-Linux-x64\.deb/);
+assert.match(workflow, /~\/\.cache\/electron-builder/);
+assert.match(workflow, /npm ci --prefer-offline --no-audit --no-fund/);
+assert.doesNotMatch(workflow, /actions\/upload-artifact/);
 
 const releaseSource = fs.readFileSync(
   path.join(root, "scripts", "release-help.cjs"),
   "utf8",
 );
-assert.match(releaseSource, /AERO_WSL_DISTRO \|\| "Debian"/);
-assert.match(releaseSource, /build-linux-wsl\.sh/);
-assert.match(releaseSource, /ensureLinuxBuildEnvironment\(\)/);
-assert.doesNotMatch(releaseSource, /linux-release\.yml/);
+assert.match(releaseSource, /linux-release\.yml/);
+assert.match(releaseSource, /"workflow",\s*"run"/);
+assert.match(releaseSource, /findLinuxWorkflowRun/);
+assert.match(releaseSource, /watchLinuxWorkflow/);
+assert.doesNotMatch(releaseSource, /AERO_WSL_DISTRO|build-linux-wsl|wsl\.exe/);
 
 const mainSource = fs.readFileSync(
   path.join(root, "src", "main", "index.js"),
