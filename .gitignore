@@ -4,6 +4,7 @@
 /build_locked/
 /node_modules
 /dist
+/manifests/
 /.env
 /.env.chrome
 /.env.store

@@ -27,12 +27,14 @@ assert.equal(
 );
 assert.equal(resolveMinimumVersion("clear", "26.52.2", "26.40.0"), "");
 assert.deepEqual(releaseDetails("26.71.0"), {
-  version: "26.71.0",
+  version: "26.71.0.0",
+  releaseVersion: "26.71.0",
   tag: "v26.71.0",
   installerUrl:
     "https://github.com/AeroP2PChat/AeroP2PChat/releases/download/v26.71.0/Aero-P2P-Chat-Windows-x64-Setup.msi",
   packageId: "Tenkayro.AeroP2PChat",
 });
+assert.deepEqual(releaseDetails("26.71.0.0"), releaseDetails("26.71.0"));
 
 const root = path.resolve(__dirname, "..");
 const packageInfo = require("../package.json");

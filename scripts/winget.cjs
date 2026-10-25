@@ -25,20 +25,23 @@ function run(args, { capture = false } = {}) {
   return capture ? String(result.stdout || "").trim() : "";
 }
 
-function normalizeVersion(value) {
+function normalizeReleaseVersion(value) {
   const version = String(value || "").replace(/^v/, "");
-  if (!/^\d+\.\d+\.\d+$/.test(version)) {
+  const match = /^(\d+\.\d+\.\d+)(?:\.0)?$/.exec(version);
+  if (!match) {
     throw new Error(`Ungültige WinGet-Version: ${value}`);
   }
-  return version;
+  return match[1];
 }
 
 function releaseDetails(value = packageInfo.version) {
-  const version = normalizeVersion(value);
-  const tag = `v${version}`;
+  const releaseVersion = normalizeReleaseVersion(value);
+  const version = `${releaseVersion}.0`;
+  const tag = `v${releaseVersion}`;
   const installerUrl = `https://github.com/${config.repo}/releases/download/${tag}/${config.release.windowsSetupAsset}`;
   return {
     version,
+    releaseVersion,
     tag,
     installerUrl,
     packageId: config.release.wingetPackageIdentifier,

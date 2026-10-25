@@ -32,13 +32,18 @@ from the local release script. No GitHub Actions secret is required.
 4. Review the values detected from the MSI and use these package values:
 
    - Package identifier: `Tenkayro.AeroP2PChat`
-   - Package version: the release version without the leading `v`
+   - Package version: `26.70.0.0` (the version reported by the installed MSI)
    - Publisher: `Tenkayro`
    - Package name: `Aero P2P Chat`
    - License: `MIT`
    - Installer scope: `machine`
    - Architecture: `x64`
    - Project URL: `https://github.com/AeroP2PChat/AeroP2PChat`
+
+   GitHub tags and `package.json` keep the three-part release version such as
+   `26.70.0`. The MSI reports `26.70.0.0` to Windows, so WinGet uses that
+   four-part value. The local helper performs this conversion automatically for
+   all later releases.
 
 5. Let WingetCreate submit the pull request. Sign in to GitHub when its OAuth
    flow opens.
@@ -75,7 +80,9 @@ flow is:
 1. builds and uploads AppImage, RPM, and DEB packages;
 2. publishes the completed GitHub release;
 3. the local release script confirms that the GitHub workflow succeeded;
-4. it runs `wingetcreate update Tenkayro.AeroP2PChat` with the released MSI URL;
+4. it converts the release version (for example `26.71.0`) to the MSI/WinGet
+   version (`26.71.0.0`) and runs
+   `wingetcreate update Tenkayro.AeroP2PChat` with the released MSI URL;
 5. WingetCreate submits the new version as a pull request to
    `microsoft/winget-pkgs` using the locally cached OAuth authorization.
 
