@@ -7,7 +7,6 @@ const {
   parseVersion,
   resolveMinimumVersion,
 } = require("./release-help.cjs");
-const { releaseDetails } = require("./winget.cjs");
 
 assert.deepEqual(parseVersion("26.52.1"), [26, 52, 1]);
 assert.equal(parseVersion("v26.52.1"), null);
@@ -26,15 +25,6 @@ assert.equal(
   "26.52.2",
 );
 assert.equal(resolveMinimumVersion("clear", "26.52.2", "26.40.0"), "");
-assert.deepEqual(releaseDetails("26.71.0"), {
-  version: "26.71.0.0",
-  releaseVersion: "26.71.0",
-  tag: "v26.71.0",
-  installerUrl:
-    "https://github.com/AeroP2PChat/AeroP2PChat/releases/download/v26.71.0/Aero-P2P-Chat-Windows-x64-Setup.msi",
-  packageId: "Tenkayro.AeroP2PChat",
-});
-assert.deepEqual(releaseDetails("26.71.0.0"), releaseDetails("26.71.0"));
 
 const root = path.resolve(__dirname, "..");
 const packageInfo = require("../package.json");
@@ -54,10 +44,7 @@ assert.equal(
   projectConfig.release.windowsStoreMsixAsset,
   "Aero-P2P-Chat-Microsoft-Store-x64.msix",
 );
-assert.equal(
-  projectConfig.release.wingetPackageIdentifier,
-  "Tenkayro.AeroP2PChat",
-);
+assert.equal(projectConfig.release.wingetPackageIdentifier, undefined);
 assert.equal(projectConfig.release.windowsStoreAppxAsset, undefined);
 assert.ok(
   Number(builderConfig.appx.minVersion.split(".")[2]) > 17134,
@@ -87,24 +74,13 @@ assert.match(releaseSource, /"workflow",\s*"run"/);
 assert.match(releaseSource, /findLinuxWorkflowRun/);
 assert.match(releaseSource, /watchLinuxWorkflow/);
 assert.doesNotMatch(releaseSource, /AERO_WSL_DISTRO|build-linux-wsl|wsl\.exe/);
-assert.match(releaseSource, /ensureWingetPackageExists/);
-
-const wingetSource = fs.readFileSync(
-  path.join(root, "scripts", "winget.cjs"),
-  "utf8",
-);
-assert.match(wingetSource, /wingetcreate/);
-assert.match(wingetSource, /"token", "--store"/);
-assert.match(wingetSource, /"update"/);
-assert.match(wingetSource, /"--submit"/);
-assert.match(wingetSource, /windowsSetupAsset/);
-assert.doesNotMatch(wingetSource, /WINGET_TOKEN|GITHUB_TOKEN/);
+assert.doesNotMatch(releaseSource, /ensureWingetPackageExists|winget/i);
 
 const releaseCliSource = fs.readFileSync(
   path.join(root, "scripts", "release.cjs"),
   "utf8",
 );
-assert.match(releaseCliSource, /submitWingetUpdate\(result\.tag\)/);
+assert.doesNotMatch(releaseCliSource, /submitWingetUpdate|winget/i);
 
 const mainSource = fs.readFileSync(
   path.join(root, "src", "main", "index.js"),

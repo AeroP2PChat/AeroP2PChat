@@ -8,7 +8,6 @@ const lockPath = path.join(root, "package-lock.json");
 const policyPath = path.join(root, "update-policy.json");
 const artifactsDir = path.join(root, "dist", "build", "artifacts");
 const config = require("../config.json");
-const { ensureWingetPackageExists } = require("./winget.cjs");
 
 function run(command, args, { capture = false } = {}) {
   const windowsCommand =
@@ -277,7 +276,6 @@ async function executeRelease(options, reporter = {}) {
   step("Preflight checks");
   ensureCleanRepository();
   run("gh", ["auth", "status"], { capture: true });
-  if (publishRelease) ensureWingetPackageExists();
   ensureTagAvailable(tag);
   const branch = run("git", ["branch", "--show-current"], { capture: true });
   if (!branch) throw new Error("Release requires a named branch.");
@@ -400,7 +398,7 @@ async function executeRelease(options, reporter = {}) {
     info(`Draft ${tag} contains the native Windows setup.`);
     info(
       publishRelease
-        ? "The Linux workflow will publish the release; the local release script will then submit the WinGet update."
+        ? "The Linux workflow will add AppImage, RPM and DEB files and publish the release."
         : "The Linux workflow will add AppImage, RPM and DEB files and keep the release as a draft.",
     );
     return {
