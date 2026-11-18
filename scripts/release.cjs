@@ -5,7 +5,6 @@ const {
   findLinuxWorkflowRun,
   getReleaseState,
   parseVersion,
-  watchLinuxWorkflow,
 } = require("./release-help.cjs");
 
 function formatMinimumVersion(value) {
@@ -252,16 +251,15 @@ async function main() {
     },
   );
 
-  log.step("Warte auf den Multi-Platform-Workflow (Windows, Linux, macOS)");
-  const workflowRun = findLinuxWorkflowRun(result);
-  log.info(`GitHub-Actions-Workflow: ${workflowRun.url}`);
-  watchLinuxWorkflow(workflowRun.databaseId);
-  log.success("Windows-, Linux- und macOS-Pakete wurden erfolgreich gebaut.");
-
-  log.info(
-    `Microsoft-Store-MSIX (privates Workflow-Artefakt): ${workflowRun.url}`,
-  );
-  outro(`${result.tag} fertig · Alle Plattform-Artefakte wurden auf GitHub erstellt.`);
+  let workflowUrl = "https://github.com/AeroP2PChat/AeroP2PChat/actions/workflows/release.yml";
+  try {
+    const workflowRun = findLinuxWorkflowRun(result);
+    if (workflowRun?.url) workflowUrl = workflowRun.url;
+  } catch {
+    // Workflow run may take a moment to appear; continue without waiting.
+  }
+  log.info(`GitHub-Actions-Workflow gestartet: ${workflowUrl}`);
+  outro(`${result.tag} gestartet · Builds für Windows, Linux & macOS laufen auf GitHub Actions.`);
 }
 
 main().catch(async (error) => {

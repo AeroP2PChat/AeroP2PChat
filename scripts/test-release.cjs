@@ -89,6 +89,7 @@ const releaseCliSource = fs.readFileSync(
   "utf8",
 );
 assert.doesNotMatch(releaseCliSource, /submitWingetUpdate|winget/i);
+assert.doesNotMatch(releaseCliSource, /watchLinuxWorkflow|watchWindowsWorkflow/);
 
 const mainSource = fs.readFileSync(
   path.join(root, "src", "main", "index.js"),
