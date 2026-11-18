@@ -50,10 +50,12 @@ GitHub CLI and npm. Check the workstation with `npm run doctor`.
 - The MSI installs system-wide in `Program Files`; user settings remain in the
   current Windows user's Electron `userData` directory.
 - `npm run build:store` builds only the Microsoft Store MSIX.
-- `npm run release` builds and uploads the Windows setup locally, keeps the MSIX
-  for Partner Center, and starts the Linux GitHub Actions workflow.
-- `.github/workflows/linux-release.yml` builds AppImage, RPM and DEB natively on
-  Ubuntu, completes `latest.yml`, and optionally publishes the draft release.
+- `npm run release` runs tests, bumps the version, pushes the release commit and tag,
+  and dispatches `.github/workflows/release.yml` on GitHub Actions.
+- `.github/workflows/release.yml` builds Windows (MSI + private Store MSIX artifact),
+  Linux (AppImage, RPM, DEB), and macOS (Universal DMG + ZIP) in parallel with npm and
+  Electron/electron-builder caching, generates `latest.yml`, and optionally publishes
+  the release.
 
 The Linux-only `build:linux:*` commands remain available for CI and native Linux
 diagnostics; they intentionally fail on Windows instead of cross-compiling.

@@ -178,7 +178,7 @@ function findLinuxWorkflowRun({ headSha, dispatchedAt, attempts = 20 }) {
         "--repo",
         config.repo,
         "--workflow",
-        "linux-release.yml",
+        "release.yml",
         "--commit",
         headSha,
         "--event",
@@ -298,29 +298,7 @@ async function executeRelease(options, reporter = {}) {
     setVersion(nextVersion);
     writeJson(policyPath, { minimumVersion });
 
-    step("Build native Windows MSI setup and Microsoft Store MSIX");
-    run("node", [
-      "scripts/ci-build-release.cjs",
-      "--platform=windows",
-      `--version=${nextVersion}`,
-    ]);
-    run("node", [
-      "scripts/ci-create-latest.cjs",
-      path.relative(root, artifactsDir),
-      ...(minimumVersion ? [`--minimum-version=${minimumVersion}`] : []),
-    ]);
-    const windowsAssets = [
-      config.release.windowsSetupAsset,
-      config.release.windowsStoreMsixAsset,
-      "update_manifest_windows.json",
-      "latest.yml",
-    ];
-    verifyArtifacts(windowsAssets, "Windows");
-
-    // The MSIX is for Partner Center, not a public GitHub release download.
-    const releaseAssets = windowsAssets.filter(
-      (name) => name !== config.release.windowsStoreMsixAsset,
-    );
+    const releaseAssets = [];
     if (chromeMode !== "skip") {
       step("Build Chrome extension");
       run("node", ["scripts/build-chrome-extension.cjs"]);
@@ -342,7 +320,7 @@ async function executeRelease(options, reporter = {}) {
     run("git", ["tag", tag]);
     run("git", ["push", "origin", tag]);
 
-    step("Create draft release and upload local artifacts");
+    step("Create draft release");
     run("gh", [
       "release",
       "create",
@@ -378,13 +356,13 @@ async function executeRelease(options, reporter = {}) {
       run("node", ["scripts/publish-chrome-extension.cjs"]);
     }
 
-    step("Dispatch Linux release workflow");
+    step("Dispatch multi-platform release workflow");
     const headSha = run("git", ["rev-parse", "HEAD"], { capture: true });
     const dispatchedAt = Date.now();
     run("gh", [
       "workflow",
       "run",
-      "linux-release.yml",
+      "release.yml",
       "--ref",
       branch,
       "-f",
@@ -395,11 +373,11 @@ async function executeRelease(options, reporter = {}) {
       `publish_release=${publishRelease}`,
     ]);
 
-    info(`Draft ${tag} contains the native Windows setup.`);
+    info(`Draft ${tag} created. No local desktop builds were run.`);
     info(
       publishRelease
-        ? "The Linux workflow will add AppImage, RPM and DEB files and publish the release."
-        : "The Linux workflow will add AppImage, RPM and DEB files and keep the release as a draft.",
+        ? "GitHub Actions is building Windows, Linux & macOS and will publish the release automatically."
+        : "GitHub Actions is building Windows, Linux & macOS and will keep the release as a draft.",
     );
     return {
       branch,

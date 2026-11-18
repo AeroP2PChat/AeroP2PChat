@@ -1,7 +1,6 @@
 const {
   bumpVersion,
   compareVersions,
-  downloadStoreMsix,
   executeRelease,
   findLinuxWorkflowRun,
   getReleaseState,
@@ -198,8 +197,9 @@ async function main() {
     [
       `Version       ${state.currentVersion} → ${nextVersion}`,
       `Mindestversion ${minimumVersion}`,
-      "Windows       MSI + MSIX (lokal)",
+      "Windows       MSI + MSIX (GitHub Actions)",
       "Linux         AppImage + RPM + DEB (GitHub Actions)",
+      "macOS         Universal DMG + ZIP (GitHub Actions)",
       `Chrome        ${chromeLabel}`,
       `GitHub        ${publishRelease ? "Automatisch veröffentlichen" : "Als Entwurf behalten"}`,
     ].join("\n"),
@@ -252,15 +252,16 @@ async function main() {
     },
   );
 
-  log.step("Warte auf den Linux-Workflow");
+  log.step("Warte auf den Multi-Platform-Workflow (Windows, Linux, macOS)");
   const workflowRun = findLinuxWorkflowRun(result);
-  log.info(`Linux-Workflow: ${workflowRun.url}`);
+  log.info(`GitHub-Actions-Workflow: ${workflowRun.url}`);
   watchLinuxWorkflow(workflowRun.databaseId);
-  log.success("AppImage, RPM und DEB wurden erfolgreich gebaut.");
+  log.success("Windows-, Linux- und macOS-Pakete wurden erfolgreich gebaut.");
 
-  const localMsix = await downloadStoreMsix();
-  log.info(`Microsoft-Store-MSIX: ${localMsix.path}`);
-  outro(`${result.tag} fertig · Linux-Artefakte wurden auf GitHub erstellt.`);
+  log.info(
+    `Microsoft-Store-MSIX (privates Workflow-Artefakt): ${workflowRun.url}`,
+  );
+  outro(`${result.tag} fertig · Alle Plattform-Artefakte wurden auf GitHub erstellt.`);
 }
 
 main().catch(async (error) => {

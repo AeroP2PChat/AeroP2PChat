@@ -22,7 +22,7 @@ function parseArgs() {
     else if (arg.startsWith("--version=")) options.version = arg.slice(10).replace(/^v/, "");
     else if (arg !== "--preserve-build") throw new Error(`Unknown option: ${arg}`);
   }
-  if (!["linux", "windows"].includes(options.platform)) throw new Error("Missing --platform=linux|windows");
+  if (!["linux", "windows", "mac"].includes(options.platform)) throw new Error("Missing --platform=linux|windows|mac");
   if (options.version !== packageInfo.version) {
     throw new Error(`Requested version ${options.version} does not match package.json ${packageInfo.version}.`);
   }
@@ -75,12 +75,18 @@ function resetPlatformOutput(platform) {
         "Aero-P2P-Chat-Microsoft-Store-x64.appx",
         "update_manifest_windows.json",
       ]
-    : [
-        config.release.linuxAppImageAsset,
-        config.release.linuxRpmAsset,
-        config.release.linuxDebAsset,
-        "update_manifest_linux.json",
-      ];
+    : platform === "mac"
+      ? [
+          config.release.macDmgAsset,
+          config.release.macZipAsset,
+          "update_manifest_mac.json",
+        ]
+      : [
+          config.release.linuxAppImageAsset,
+          config.release.linuxRpmAsset,
+          config.release.linuxDebAsset,
+          "update_manifest_linux.json",
+        ];
   for (const name of platformArtifacts) {
     fs.rmSync(path.join(artifactsDir, name), { force: true });
   }
@@ -127,6 +133,27 @@ function buildWindows(version) {
   );
 }
 
+function buildMac(version) {
+  if (process.platform !== "darwin") throw new Error("macOS packages require a macOS host.");
+  resetPlatformOutput("mac");
+  run("node", ["scripts/run-electron-vite.cjs", "build"]);
+  run(process.execPath, [
+    electronBuilderCli, "--config", "electron-builder.config.cjs",
+    "--mac", "dmg", "zip", "--universal", "--publish", "never",
+    "--config.directories.output=dist/build/mac",
+  ]);
+  const output = path.join(buildDir, "mac");
+  const assets = [
+    copyArtifact(output, config.release.macDmgAsset),
+    copyArtifact(output, config.release.macZipAsset),
+  ];
+  fs.writeFileSync(
+    path.join(artifactsDir, "update_manifest_mac.json"),
+    `${JSON.stringify({ version, platform: "mac", asset: assets[0], assets }, null, 2)}\n`,
+  );
+}
+
 const options = parseArgs();
 if (options.platform === "linux") buildLinux(options.version);
+else if (options.platform === "mac") buildMac(options.version);
 else buildWindows(options.version);

@@ -24,6 +24,8 @@
     "linuxAppImageAsset": "Aero-P2P-Chat-Linux-x64.AppImage",
     "linuxRpmAsset": "Aero-P2P-Chat-Linux-x64.rpm",
     "linuxDebAsset": "Aero-P2P-Chat-Linux-x64.deb",
+    "macDmgAsset": "Aero-P2P-Chat-macOS-universal.dmg",
+    "macZipAsset": "Aero-P2P-Chat-macOS-universal.zip",
     "chromeExtensionAsset": "Aero-P2P-Chat-Chrome-Extension.zip"
   }
 }

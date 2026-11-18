@@ -1,0 +1,326 @@
+name: Release All Platforms
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag (vX.Y.Z)
+        required: true
+        type: string
+      minimum_version:
+        description: Minimum supported version (optional)
+        required: false
+        type: string
+      publish_release:
+        description: Publish the draft after all platform artifacts are uploaded
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - name: Resolve tag & version
+        id: meta
+        shell: bash
+        run: |
+          TAG="${{ inputs.tag }}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create or reuse draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.meta.outputs.tag }}"
+          VERSION="${{ steps.meta.outputs.version }}"
+          if ! gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --repo "${{ github.repository }}" \
+              --title "Aero P2P Chat $TAG" \
+              --draft \
+              --generate-notes
+          fi
+
+  build-windows:
+    needs: create-release
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out release commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.create-release.outputs.tag }}
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/npm-cache
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      - name: Cache Electron packaging tools
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/AppData/Local/electron/Cache
+            ~/AppData/Local/electron-builder/Cache
+          key: electron-windows-${{ runner.arch }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            electron-windows-${{ runner.arch }}-
+
+      - name: Install dependencies
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+        run: npm ci --prefer-offline --no-audit --no-fund
+
+      - name: Validate release input
+        env:
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
+        run: |
+          node -e "const version=require('./package.json').version; if (process.env.RELEASE_TAG !== 'v' + version) throw new Error('Tag does not match package.json: ' + process.env.RELEASE_TAG + ' vs v' + version)"
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build Windows MSI and Store MSIX
+        env:
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
+        run: node scripts/ci-build-release.cjs --platform=windows --version="${RELEASE_TAG#v}"
+
+      - name: Upload private Store MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aero-P2P-Chat-Store-MSIX-${{ needs.create-release.outputs.tag }}
+          path: dist/build/artifacts/Aero-P2P-Chat-Microsoft-Store-x64.msix
+          retention-days: 30
+
+      - name: Upload Windows metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-meta-windows
+          path: dist/build/artifacts/update_manifest_windows.json
+          retention-days: 1
+
+      - name: Upload Windows setup to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
+        run: |
+          gh release upload "$env:RELEASE_TAG" `
+            "dist/build/artifacts/Aero-P2P-Chat-Windows-x64-Setup.msi" `
+            "dist/build/artifacts/update_manifest_windows.json" `
+            --repo "${{ github.repository }}" --clobber
+
+  build-linux:
+    needs: create-release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out release commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.create-release.outputs.tag }}
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/npm-cache
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      - name: Restore Electron packaging caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+          key: electron-linux-${{ runner.arch }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            electron-linux-${{ runner.arch }}-
+
+      - name: Install native packaging tools
+        run: sudo apt-get update && sudo apt-get install --yes fakeroot rpm
+
+      - name: Install dependencies
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+        run: npm ci --prefer-offline --no-audit --no-fund
+
+      - name: Validate release input
+        env:
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
+        run: |
+          node -e "const version=require('./package.json').version; if (process.env.RELEASE_TAG !== 'v' + version) throw new Error('Tag does not match package.json: ' + process.env.RELEASE_TAG + ' vs v' + version)"
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build AppImage, RPM and DEB
+        env:
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
+        run: node scripts/ci-build-release.cjs --platform=linux --version="${RELEASE_TAG#v}"
+
+      - name: Upload Linux metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-meta-linux
+          path: dist/build/artifacts/update_manifest_linux.json
+          retention-days: 1
+
+      - name: Upload Linux packages to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            "dist/build/artifacts/Aero-P2P-Chat-Linux-x64.AppImage" \
+            "dist/build/artifacts/Aero-P2P-Chat-Linux-x64.rpm" \
+            "dist/build/artifacts/Aero-P2P-Chat-Linux-x64.deb" \
+            "dist/build/artifacts/update_manifest_linux.json" \
+            --repo "$GITHUB_REPOSITORY" --clobber
+
+  build-macos:
+    needs: create-release
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out release commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.create-release.outputs.tag }}
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/npm-cache
+          key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
+      - name: Cache Electron packaging tools
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/electron
+            ~/Library/Caches/electron-builder
+          key: electron-macos-${{ runner.arch }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            electron-macos-${{ runner.arch }}-
+
+      - name: Install dependencies
+        env:
+          npm_config_cache: ${{ runner.temp }}/npm-cache
+        run: npm ci --prefer-offline --no-audit --no-fund
+
+      - name: Validate release input
+        env:
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
+        run: |
+          node -e "const version=require('./package.json').version; if (process.env.RELEASE_TAG !== 'v' + version) throw new Error('Tag does not match package.json: ' + process.env.RELEASE_TAG + ' vs v' + version)"
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build macOS Universal (.dmg & .zip)
+        env:
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
+        run: node scripts/ci-build-release.cjs --platform=mac --version="${RELEASE_TAG#v}"
+
+      - name: Upload macOS metadata artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-meta-mac
+          path: dist/build/artifacts/update_manifest_mac.json
+          retention-days: 1
+
+      - name: Upload macOS packages to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            "dist/build/artifacts/Aero-P2P-Chat-macOS-universal.dmg" \
+            "dist/build/artifacts/Aero-P2P-Chat-macOS-universal.zip" \
+            "dist/build/artifacts/update_manifest_mac.json" \
+            --repo "$GITHUB_REPOSITORY" --clobber
+
+  publish-release:
+    needs: [create-release, build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out release commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.create-release.outputs.tag }}
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download platform metadata artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-meta-*
+          path: dist/build/artifacts
+          merge-multiple: true
+
+      - name: Generate unified latest.yml
+        env:
+          MINIMUM_VERSION: ${{ inputs.minimum_version }}
+        run: |
+          if [ -n "$MINIMUM_VERSION" ]; then
+            node scripts/ci-create-latest.cjs dist/build/artifacts "--minimum-version=$MINIMUM_VERSION"
+          else
+            node scripts/ci-create-latest.cjs dist/build/artifacts
+          fi
+          node scripts/ci-append-linux-latest.cjs dist/build/artifacts/latest.yml dist/build/artifacts
+          node scripts/ci-append-mac-latest.cjs dist/build/artifacts/latest.yml dist/build/artifacts
+
+      - name: Upload latest.yml to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            "dist/build/artifacts/latest.yml" \
+            --repo "$GITHUB_REPOSITORY" --clobber
+
+      - name: Publish release
+        if: ${{ inputs.publish_release }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
+        run: gh release edit "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest

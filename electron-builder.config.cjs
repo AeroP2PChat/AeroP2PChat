@@ -84,6 +84,15 @@ module.exports = {
       },
     },
   },
+  mac: {
+    target: [
+      { target: "dmg", arch: ["universal"] },
+      { target: "zip", arch: ["universal"] },
+    ],
+    icon: "assets/linux-icons/1024x1024.png",
+    category: "public.app-category.social-networking",
+    artifactName: "Aero-P2P-Chat-macOS-${arch}.${ext}",
+  },
   electronLanguages: ["en-US"],
   asar: true,
 };
