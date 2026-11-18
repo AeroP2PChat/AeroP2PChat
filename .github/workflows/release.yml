@@ -103,9 +103,7 @@ jobs:
         run: npm run test
 
       - name: Build Windows MSI and Store MSIX
-        env:
-          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
-        run: node scripts/ci-build-release.cjs --platform=windows --version="${RELEASE_TAG#v}"
+        run: node scripts/ci-build-release.cjs --platform=windows --version="${{ needs.create-release.outputs.version }}"
 
       - name: Upload private Store MSIX artifact
         uses: actions/upload-artifact@v4
@@ -182,9 +180,7 @@ jobs:
         run: npm run test
 
       - name: Build AppImage, RPM and DEB
-        env:
-          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
-        run: node scripts/ci-build-release.cjs --platform=linux --version="${RELEASE_TAG#v}"
+        run: node scripts/ci-build-release.cjs --platform=linux --version="${{ needs.create-release.outputs.version }}"
 
       - name: Upload Linux metadata artifact
         uses: actions/upload-artifact@v4
@@ -253,9 +249,7 @@ jobs:
         run: npm run test
 
       - name: Build macOS Universal (.dmg & .zip)
-        env:
-          RELEASE_TAG: ${{ needs.create-release.outputs.tag }}
-        run: node scripts/ci-build-release.cjs --platform=mac --version="${RELEASE_TAG#v}"
+        run: node scripts/ci-build-release.cjs --platform=mac --version="${{ needs.create-release.outputs.version }}"
 
       - name: Upload macOS metadata artifact
         uses: actions/upload-artifact@v4
