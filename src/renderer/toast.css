@@ -1,3 +1,27 @@
+@font-face {
+  font-family: "Titillium Web";
+  src: url("./assets/fonts/TitilliumWeb-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Titillium Web";
+  src: url("./assets/fonts/TitilliumWeb-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Titillium Web";
+  src: url("./assets/fonts/TitilliumWeb-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
   --canvas: #080909;
@@ -98,7 +122,7 @@ body {
   background: transparent;
   color: var(--text);
   font-family:
-    "Inter Variable", Inter, "Segoe UI Variable Text", "Segoe UI", system-ui,
+    "Titillium Web", "Segoe UI Variable Text", "Segoe UI", system-ui,
     sans-serif;
   font-optical-sizing: auto;
   font-variation-settings: "opsz" 14;
